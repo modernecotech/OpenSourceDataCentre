@@ -1,0 +1,16 @@
+{
+  "site": {
+    "name": "pilot-edge-datacentre",
+    "country": "KE",
+    "currency": "USD"
+  },
+  "energy": {
+    "it_load_kw": 250.0,
+    "pue": 1.25,
+    "annual_hours": 8760.0,
+    "electricity_price_per_kwh": 0.14,
+    "grid_carbon_kg_per_kwh": 0.38,
+    "water_liters_per_facility_kwh": 0.25,
+    "onsite_renewable_kwh": 650000.0
+  }
+}
