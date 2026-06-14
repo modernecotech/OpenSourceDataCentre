@@ -1,0 +1,6 @@
+profile_id,role,baseline_hardware,linux_stack,accelerator,ram_or_vram,power_design_w,unit_price_low_usd,unit_price_high_usd,default_use,notes
+sbc.rk3588.control,facility_gateway,Radxa ROCK 5B+ RK3588 16-32GB,Debian or Armbian,RK3588 NPU 6 TOPS,16-32GB system RAM,30,140,260,facility telemetry OT gateways local console and edge management,48 VDC to USB-C PD or PoE HAT power path
+sbc.rk3588.edge,tenant_edge,Radxa ROCK 5B+ or Orange Pi 5 Plus RK3588,Debian or Armbian,RK3588 NPU 6 TOPS,16-32GB system RAM,30,120,240,low-power tenant services and small edge clusters,measure mainline kernel readiness per batch
+gpu.rocm.16g.default,tenant_gpu,AMD Radeon RX 9060 XT 16GB,x86 Linux with Mesa AMDGPU and ROCm,ROCm HIP OpenCL Vulkan,16GB GDDR6,160,350,430,default open-driver GPU instance and AI inference lane,validate ROCm PyTorch vLLM llama.cpp and reset behavior before production
+gpu.xpu.16g.lowpower,tenant_gpu_low_power,Intel Arc Pro B50 16GB,x86 Linux with Mesa Xe driver Level Zero OpenCL,oneAPI Level Zero OpenCL OpenVINO,16GB GDDR6,70,350,450,low-power GPU visualization media and inference lane,requires recent kernel Mesa and Intel compute runtime
+gpu.rocm.scaleup,optional_gpu,AMD RX 9070-class 16GB,x86 Linux with Mesa AMDGPU and ROCm,ROCm HIP OpenCL Vulkan,16GB GDDR6,260,500,700,higher-throughput optional pool,only add after default GPU lane is stable

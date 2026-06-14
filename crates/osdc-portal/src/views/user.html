@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Tenant Portal</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Tenant</strong>
+          <span>sovereign cloud</span>
+        </div>
+        <nav class="nav-list" aria-label="Tenant navigation">
+          <a class="active" href="/user"><span class="nav-icon">C</span>Cloud</a>
+          <a href="/user"><span class="nav-icon">A</span>AI queue</a>
+          <a href="/user"><span class="nav-icon">S</span>Storage</a>
+          <a href="/user"><span class="nav-icon">N</span>Network</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+        </nav>
+        <small>project: civic-health-research</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Tenant Cloud</h1>
+            <p>Debian, Kubernetes, Ceph, OpenStack, Kueue, vLLM</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" aria-label="Refresh tenant data">R</button>
+            <button class="icon-button" aria-label="Open API tokens">K</button>
+            <button class="primary">Provision</button>
+          </div>
+        </header>
+        <section class="content">
+          <div class="metric-grid">
+            <div class="metric"><span>Running instances</span><strong>28</strong><em>4 GPU attached</em></div>
+            <div class="metric"><span>Object storage</span><strong>18.4 TB</strong><em>Ceph RGW</em></div>
+            <div class="metric"><span>GPU queue</span><strong>11 min</strong><em>solar surplus window</em></div>
+            <div class="metric"><span>Month estimate</span><strong>$412</strong><em>power aware</em></div>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Provision Workload</h2>
+                <div class="button-row">
+                  <button class="primary">Submit</button>
+                  <button>Save template</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <form class="form-grid">
+                  <label>Name<input value="clinic-model-api"></label>
+                  <label>Service
+                    <select>
+                      <option>VM instance</option>
+                      <option>Kubernetes cluster</option>
+                      <option>AI model endpoint</option>
+                      <option>PostgreSQL database</option>
+                      <option>Object bucket</option>
+                    </select>
+                  </label>
+                  <label>Shape
+                    <select>
+                      <option>gpu-open.1x16g - AMD RX 9060 XT</option>
+                      <option>gpu-lowpower.1x16g - Intel Arc Pro B50</option>
+                      <option>edge-arm.small - RK3588</option>
+                      <option>cpu.standard - x86 KVM</option>
+                    </select>
+                  </label>
+                  <label>Linux image
+                    <select>
+                      <option>Debian stable</option>
+                      <option>Ubuntu Server LTS</option>
+                      <option>Fedora Cloud</option>
+                      <option>Rocky Linux</option>
+                      <option>Talos Kubernetes node</option>
+                    </select>
+                  </label>
+                  <label>Storage
+                    <select>
+                      <option>Ceph RBD 250 GB</option>
+                      <option>Ceph RBD 1 TB</option>
+                      <option>CephFS shared dataset</option>
+                      <option>Object bucket only</option>
+                    </select>
+                  </label>
+                  <label>Network
+                    <select>
+                      <option>research-private</option>
+                      <option>public-api</option>
+                      <option>training-isolated</option>
+                    </select>
+                  </label>
+                </form>
+              </div>
+            </section>
+
+            <section class="panel media-panel">
+              <div class="panel-header"><h2>Site</h2><span class="status info">regional-pilot</span></div>
+              <img src="/assets/prefab-panel-datacentre-exterior-02.png" alt="Prefab insulated datacentre with solar canopy">
+              <div class="panel-body">
+                <div class="flow-grid">
+                  <div class="flow-step"><strong>PV</strong><span>186 kW now</span></div>
+                  <div class="flow-step"><strong>BESS</strong><span>71% SOC</span></div>
+                  <div class="flow-step"><strong>DC bus</strong><span>392 V</span></div>
+                  <div class="flow-step"><strong>Rack bus</strong><span>48.4 V</span></div>
+                  <div class="flow-step"><strong>Queue</strong><span>14 jobs</span></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header"><h2>Service Catalog</h2><button>OpenTofu export</button></div>
+            <div class="panel-body service-grid">
+              <div class="service-tile"><strong>Compute</strong><span>OpenStack Nova, Ironic, Incus edge</span></div>
+              <div class="service-tile"><strong>Storage</strong><span>Ceph RBD, RGW, CephFS</span></div>
+              <div class="service-tile"><strong>Kubernetes</strong><span>Cluster API, Cilium, Kueue</span></div>
+              <div class="service-tile"><strong>AI</strong><span>vLLM, SGLang, KServe, Slurm</span></div>
+              <div class="service-tile"><strong>Data</strong><span>CloudNativePG, Valkey, Kafka</span></div>
+              <div class="service-tile"><strong>Security</strong><span>Keycloak, OPA, OpenBao</span></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header"><h2>Tenant Resources</h2><button>Download CSV</button></div>
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Type</th><th>Backing stack</th><th>Power class</th><th>Status</th><th>Monthly estimate</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>clinic-model-api</td><td>AI endpoint</td><td>vLLM on Kueue</td><td>gpu-open.1x16g</td><td><span class="status">Running</span></td><td>$96</td></tr>
+                <tr><td>records-db</td><td>PostgreSQL</td><td>CloudNativePG</td><td>cpu.standard</td><td><span class="status">Running</span></td><td>$42</td></tr>
+                <tr><td>imaging-bucket</td><td>Object bucket</td><td>Ceph RGW</td><td>storage.standard</td><td><span class="status">Healthy</span></td><td>$61</td></tr>
+                <tr><td>edge-screening</td><td>ARM service</td><td>RK3588 Incus</td><td>edge-arm.small</td><td><span class="status warn">Deploying</span></td><td>$11</td></tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

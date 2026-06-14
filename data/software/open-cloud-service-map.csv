@@ -1,0 +1,25 @@
+cloud_domain,user_service,baseline_open_source_stack,operator_source_of_truth,tenant_visible,notes
+identity,accounts projects roles tokens,Keycloak OPA OpenStack Keystone,Keycloak and policy repo,yes,Keystone used where OpenStack APIs require it
+compute,VM instances images keypairs security groups,OpenStack Nova Glance Neutron KVM libvirt,OpenStack and NetBox,yes,CloudStack is the small-site fallback
+bare_metal,dedicated servers and GPU nodes,OpenStack Ironic Metal3 Redfish OpenBMC,NetBox and Ironic,yes,keep GPU nodes auditable and quota-bound
+block_storage,volumes and snapshots,Ceph RBD OpenStack Cinder,Ceph and Cinder,yes,default durable tenant volume service
+object_storage,buckets lifecycle S3-compatible API,Ceph RGW,Ceph,yes,use policy gates for public buckets
+file_storage,shared file systems,CephFS OpenStack Manila,Ceph and Manila,yes,for datasets model stores and research groups
+networking,private networks routers floating IPs firewalls,OpenStack Neutron OVN FRRouting nftables,NetBox Neutron and Git,yes,export rules and IP allocations
+load_balancing,L4 L7 load balancers,OpenStack Octavia HAProxy Envoy,Octavia and Git,yes,HAProxy is simplest local default
+dns,hosted zones and records,OpenStack Designate PowerDNS,Designate and Git,yes,audit every external record change
+kubernetes,managed clusters and node pools,Cluster API Metal3 Cilium Talos or kubeadm,Kubernetes and GitOps,yes,offer only tested profiles
+containers,namespaces deployments ingress,Kubernetes Cilium cert-manager ingress-nginx Envoy Gateway,Kubernetes and GitOps,yes,shared with AI and platform services
+serverless,functions and scale-to-zero apps,Knative Serving Knative Eventing,Kubernetes and GitOps,yes,for bursty APIs and small apps
+ai_serving,model endpoints and GPU queues,KServe vLLM SGLang llama.cpp Kueue,Kubernetes Kueue and model registry,yes,show queue position energy cost and license class
+batch_hpc,jobs arrays fair-share queues,Kueue Slurm Volcano,Kueue Slurm and policy repo,yes,Slurm for HPC Kueue for Kubernetes-native jobs
+databases,managed PostgreSQL MariaDB and cache,CloudNativePG Percona Operator MariaDB Operator Valkey,Kubernetes operators and backups,yes,operator-managed not custom-built
+messaging,queues streams pubsub,NATS Apache Kafka Strimzi Apache Pulsar,Kubernetes operators,yes,choose one site default
+secrets,secrets keys certificates,OpenBao cert-manager Smallstep OpenStack Barbican,OpenBao and policy repo,yes,avoid proprietary Vault dependency
+registry,OCI images SBOM signing,Harbor cosign Syft Grype,Harbor and policy repo,yes,require signatures for platform workloads
+iac,declarative provisioning,OpenTofu Ansible Crossplane,Git and state backend,yes,OpenTofu is tenant-facing IaC
+gitops_ci,repositories pipelines deployments,Forgejo Woodpecker CI Argo CD Flux,Git and GitOps controllers,yes,all platform changes reviewed
+backup,recovery snapshots and restores,Velero Restic Kopia Borgmatic Ceph snapshots,backup catalog,yes,show restore status and last test date
+observability,metrics logs traces alerts,OpenTelemetry Prometheus VictoriaMetrics Grafana OSS Loki Tempo,Prometheus Grafana and logs,partial,tenant scope separated from operator scope
+costing,usage budgets energy and carbon,OpenCost CloudKitty OSDC Rust calculators,calculator and billing exports,yes,include power cooling carbon and GPU queue cost
+dcim,racks devices circuits IPAM,NetBox openDCIM,NetBox,partial,operator owns authoritative inventory

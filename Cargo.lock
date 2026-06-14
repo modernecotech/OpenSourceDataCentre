@@ -150,6 +150,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "osdc-portal"
+version = "0.1.0"
+
+[[package]]
 name = "osdcctl"
 version = "0.1.0"
 dependencies = [

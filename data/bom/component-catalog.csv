@@ -1,0 +1,69 @@
+category,system,component,state_of_art_reference,simplified_developing_world_choice,criticality,local_fabrication_candidate,open_vendor_neutral_note
+site,civil,geotechnical survey and drainage design,campus geotech and hydrology study,minimum geotech boreholes plus flood/drainage review,critical,no,use local licensed civil engineer
+site,civil,perimeter fence and gate,layered secure campus perimeter,chain-link or palisade fence with controlled vehicle gate,important,yes,use standard hardware
+site,civil,service yard,segregated utility and generator yards,small fenced electrical and thermal plant yard,critical,yes,leave expansion space
+building,shell,IT hall enclosure,purpose-built high-spec data hall,fire-rated modular IT room or prefabricated shell,critical,partial,use local code-compliant construction
+building,shell,electrical room,separate MV/LV galleries,dedicated ventilated electrical room,critical,yes,keep water piping out
+building,shell,thermal plant room,large mechanical gallery,serviceable plant room beside IT hall,critical,yes,allow skid removal path
+building,shell,service trench or raised floor,large raised floor or overhead galleries,shallow service trench for thermal spine and cabling,critical,yes,avoid inaccessible monolithic floor voids
+power,utility,utility service connection,dual MV utility feeds,single utility feed with second-feed provision feeding AC/DC boundary rectifier,critical,no,AC stays at site boundary not the internal critical bus
+power,utility,boundary transformer and rectifier input,redundant MV transformers and UPS input switchgear,one transformer plus rectifier input bay and pad space for second,critical,no,standard local utility transformer with certified rectifier interface
+power,distribution,AC boundary switchboard,arc-rated switchgear lineup,local-code AC input switchboard with metering for utility and fallback only,critical,no,standard breakers and busbars before DC conversion
+power,distribution,DC isolation bypass and precharge,closed-transition ATS or static transfer,serviceable 380-400 VDC isolation bypass precharge and maintenance panel,critical,no,use DC-rated breakers fuses contactors and disconnects
+power,backup,generator,paralleled N+1 generator farm,single fallback generator system feeding boundary rectifier plus rental hookup,critical,no,standard engine with local service
+power,backup,fuel tank,bulk fuel farm,48-72 hour tank sized by risk and fuel logistics,critical,no,include spill containment
+power,backup,generator quick-connect,permanent temporary-generator connection,rental-generator camlock or local equivalent,important,yes,support disaster recovery
+power,dc_microgrid,MPPT DC/DC and microgrid controller,2N centralized UPS or distributed redundant UPS,solar and sodium-ion DC microgrid controller feeding a 380-400 VDC backbone,critical,no,prove ride-through under IT and cooling load
+power,dc_microgrid,sodium-ion BESS,conventional UPS battery cabinets or electrochemical storage,sodium-ion battery cabinets on bidirectional DC/DC interface,critical,no,validate supplier maturity warranty BMS and local approvals
+power,dc_microgrid,solar PV array,optional renewable power purchase or rooftop solar,ground or canopy solar PV as core DC power input,important,partial,use commodity panels with certified DC protection gear
+power,distribution,380-400 VDC busway or cable bus,overhead AC busway or HVDC exploration,protected DC busway or cable bus with isolation per row,critical,partial,requires certified DC protection coordination
+power,distribution,48 VDC rack power shelf,intelligent metered AC rack PDU,OCP-style 48 V rack shelves or metered DC PDUs,critical,no,avoid vendor-locked power shelves and document connectors
+power,metering,DC power meters,branch circuit monitoring everywhere,main DC bus rack-row and plant skid metering,important,no,Modbus or open protocol
+cooling,rack,rear door heat exchanger,active or passive RDHx per rack,standard rear-door HX for air-cooled racks,critical,partial,document fittings and coil specs
+cooling,rack,direct-to-chip manifold,high-density CDU manifold,open rack manifold with dry-break couplings,critical,partial,use OCP-compatible couplings where possible
+cooling,rack,leak detection,rack and floor leak detection,rope leak sensor at rack and trench,critical,yes,open relay or Modbus output
+cooling,thermal_spine,hot loop pipework,facility water loop and CDU headers,warm-water/glycol underfloor or trench spine,critical,partial,use standard pipe and insulation
+cooling,thermal_spine,two-phase row module,pumped or passive two-phase loop,phase-2 modular thermosyphon cassette,optional,no,only after local service validation
+cooling,thermal_spine,row isolation valves,automated valve packages,manual isolation plus sensor ports per row,critical,yes,standard valves
+cooling,thermal_spine,hot buffer tank,thermal storage tank or separator,small hot buffer/air separator with drain/fill,important,partial,certified vessel if pressurized
+cooling,plant,plate heat exchanger,CDU/facility heat exchanger,brazed or gasketed plate heat exchanger skid,critical,partial,use standard plates and gaskets
+cooling,plant,pumps,VFD pump groups,N+1 DC-fed pump skid with VFDs BLDC drives or EC motors,critical,partial,select locally serviceable pumps and keep DC feed protected
+cooling,plant,dry cooler,high-efficiency adiabatic or dry cooler,dry cooler with EC/DC fan arrays sized for critical rejection path,critical,no,minimize water use
+cooling,plant,ground loop,ground-source field or Cold UTES,closed-loop ground heat exchanger where geology supports it,optional,partial,requires local geotech and permits
+cooling,plant,adsorption chiller,heat-driven sorption cooling module,pilot adsorption chiller cassette,optional,no,baseline heat-to-cooling research path
+cooling,plant,electric backup chiller,high-efficiency magnetic-bearing chiller,smaller modular DC-bus-compatible inverter chiller or DX backup,critical,no,must cover safe fallback and document any AC exception
+cooling,plant,water treatment,automated chemical treatment,simple filtration and chemistry plan,critical,partial,use locally available consumables
+cooling,controls,temperature sensors,dense digital sensor network,supply return rack row and plant sensors,critical,partial,4-20mA Modbus or 1-wire where appropriate
+fire,detection,aspirating smoke detection,VESDA-style high sensitivity sampling,aspirating detection in IT and electrical rooms,critical,no,use locally certified system
+fire,detection,addressable fire alarm,integrated fire alarm panel,addressable fire panel meeting local code,critical,no,authority-approved
+fire,suppression,clean agent or inert gas,clean agent plus pre-action sprinkler,locally refillable clean agent/inert gas where viable,critical,no,do not improvise life safety
+fire,suppression,portable extinguishers,clean agent and CO2 units,appropriate portable extinguishers and training,critical,no,local code
+security,physical,access control,mantrap biometric access,two-door controlled entry with card/PIN,important,partial,Leosac pilot only after safety review
+security,physical,CCTV and NVR,analytics-rich surveillance platform,local NVR with PoE cameras,important,partial,Frigate-compatible where useful
+security,physical,locks and door contacts,integrated security system,standard maglocks/strikes with door contacts,important,partial,fail-safe/fire-code compliant
+network,fabric,leaf switches,100/400/800G Ethernet fabric,25/100G leaf switches sized to workload with 48 VDC PSU options where available,critical,no,SONiC-compatible if skills exist
+network,fabric,spine switches,redundant high-bandwidth spine,collapsed core for pilot or dual spine for growth with 48 VDC PSU options,critical,no,standard Ethernet
+network,oob,out-of-band switch,OOB management network,dedicated 1G OOB switch and console server on 48 VDC or PoE-derived power,critical,no,keep separate from tenant network
+network,edge,router/firewall,redundant edge routing and DDoS stack,dual edge routers/firewalls with 48 VDC PSU options where budget allows,critical,no,open configs and backups
+network,cabling,fiber and copper structured cabling,MPO high-density fibre plant,LC fibre and Cat6A with labelled trays,critical,partial,use local installers with test reports
+racks,structure,19 inch rack,high-density proprietary or OCP rack,standard 19 inch 42U-48U rack,critical,partial,locally available and adapter-friendly
+racks,structure,Open19/OCP adapters,OCP ORV3 or Open Rack Wide,adapter plates and shelves for future open hardware,optional,yes,FreeCAD source required
+racks,structure,cable trays,overhead basket tray or ladder rack,standard ladder tray and vertical managers,important,yes,local fabrication
+compute,servers,general compute nodes,latest CPUs with liquid options,commodity 1U/2U servers powered from 48 VDC rack shelves where possible,critical,no,Redfish preferred
+compute,edge,SBC gateway nodes,proprietary facility gateways and edge appliances,RK3588 SBC trays for facility gateways and low-power edge tenancy,critical,partial,Debian or Armbian with documented schematics and recovery path
+compute,ai,primary open-driver GPU nodes,CUDA-dominant proprietary GPU fleet,AMD RX 9060 XT 16GB GPU nodes for ROCm and open Linux acceleration,optional,no,default GPU lane avoids CUDA lock-in
+compute,ai,low-power GPU nodes,entry workstation GPUs or proprietary AI edge modules,Intel Arc Pro B50 16GB nodes for 70W low-power GPU service,optional,no,use oneAPI Level Zero OpenCL and OpenVINO where suitable
+compute,management,management nodes,dedicated control-plane cluster,3 small management servers,critical,no,run NetBox monitoring Git registry
+storage,primary,Ceph storage nodes,dense NVMe/HDD object and block storage,3-5 Ceph nodes using commodity disks with 48 VDC PSU path where possible,critical,no,standard drives and NICs
+storage,backup,backup target,object storage and tape tiers,offline disk/tape backup plus remote replication if available,critical,partial,sovereign restore path
+software,platform,Kubernetes platform,managed Kubernetes platform,bare-metal Kubernetes with Kueue,critical,no,open-source stack
+software,hpc,Slurm scheduler,HPC scheduler integration,Slurm profile for training/HPC users,optional,no,use where users need it
+software,dcim,DCIM and IPAM,commercial DCIM suite,NetBox or openDCIM,critical,no,source of truth
+software,observability,metrics logs traces,commercial observability suite,Prometheus/VictoriaMetrics Grafana OSS OpenTelemetry,critical,no,open metrics
+software,identity,IAM and policy,enterprise IAM and PAM,Keycloak plus OPA policies,critical,no,open identity
+software,automation,configuration automation,commercial orchestration,Ansible/OpenTofu plus Rust control plane,important,no,version everything
+software,ai_serving,LLM serving platform,managed AI platform,vLLM/SGLang serving open models,optional,no,license-gated model registry
+operations,commissioning,load bank testing,full L1-L5 commissioning,scaled L1-L5 commissioning with load banks,critical,no,do not skip
+operations,tools,technician tools,vendor service toolkits,multimeter clamp meter thermal camera crimpers fibre tester,important,no,locally own tools
+operations,spares,critical spares,vendor managed spares,local spares cabinet,critical,no,pumps sensors fans disks PSUs NICs SFPs filters
+operations,documentation,runbooks,digital twin and vendor manuals,printed and offline runbooks plus source-controlled docs,critical,yes,local language where needed

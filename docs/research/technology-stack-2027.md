@@ -24,9 +24,11 @@ This document turns the project vision into a stack recommendation for datacentr
 | Free cooling | Water-side economizers; air-side only where filtration/humidity and pollution are acceptable | ENERGY STAR notes water-side economizers can bypass chillers when conditions allow. | Requires climate analysis and redundancy for liquid-cooled AI loads. |
 | Building integration | BACnet/IP, Modbus TCP, OPC UA, MQTT, Project Haystack, Brick | BACnet is the building automation norm; OPC UA provides secure industrial data modelling; MQTT is useful for telemetry; Haystack/Brick provide semantics. | Protocol gateways should be isolated from IT networks and authenticated. |
 | Distributed building control | Eclipse VOLTTRON where agent-based control is useful | VOLTTRON is open-source and designed for distributed sensing/control in buildings and grids. | Python ecosystem; integrate with Rust over APIs/message bus rather than rewriting immediately. |
-| Solar/storage EMS | OpenEMS, NREL REopt for planning | OpenEMS targets PV, battery storage, EV charging, heat pumps, and tariffs. REopt supports cost-optimal solar/storage planning. | OpenEMS licensing includes AGPL/EPL components; review before embedding. |
+| Solar/storage/DC microgrid EMS | OpenEMS, NREL REopt for planning, sodium-ion BESS, MPPT DC/DC converters, bidirectional battery converters, 380-400 VDC backbone, and 48 VDC rack power | OpenEMS targets PV, battery storage, EV charging, heat pumps, and tariffs. REopt supports cost-optimal solar/storage planning. Sodium-ion is increasingly aimed at stationary storage. 380/400 VDC distribution reduces repeated AC/DC conversion while 48 V aligns with rack and telecom-style equipment. | OpenEMS licensing includes AGPL/EPL components; review before embedding. Sodium-ion suppliers need extra validation because the market is younger than LFP. DC protection, arc-fault behavior, isolation monitoring, and local code approval are major design gates. |
 | DCIM/source of truth | NetBox for network/IP/DCIM; openDCIM for simpler inventory/floor/rack mapping | NetBox has strong APIs and models networks/DCIM; openDCIM is simpler and GPL-based. | Avoid making Rust services the manual inventory system. Sync, validate, and extend. |
 | Racks and hardware standards | 19-inch EIA, Open19, OCP Open Rack V3, OCP Open Rack Wide, OCP DC-MHS | Open19 keeps standard 19-inch fit; OCP ORV3/ORW target high-density and AI; DC-MHS improves server modularity. | ORW is very new; keep adapters and aisle/service clearances modular. |
+| Low-power SBC baseline | Radxa ROCK 5B+ / RK3588 class boards with Debian or Armbian | RK3588 gives 8 ARM cores, useful NVMe/network I/O, and a 6 TOPS NPU for edge/control tasks at low power. | Use for gateways and edge services, not memory-heavy cloud services. Mainline/community kernel readiness must be checked per board revision. |
+| Open Linux GPU baseline | AMD Radeon RX 9060 XT 16GB for default ROCm GPU lane; Intel Arc Pro B50 16GB for low-power XPU lane | Both keep the project closer to open Linux graphics/compute stacks than a CUDA-only baseline. AMD is the default for ROCm/HIP; Intel is attractive where 70 W and 16 GB VRAM matter. | ROCm and oneAPI support must be tested per kernel/runtime release. NVIDIA can be an optional compatibility pool, not the default. |
 | Bare metal lifecycle | OpenStack Ironic, Metal3, Redfish, OpenBMC where hardware supports it | Ironic manages bare-metal lifecycle; Metal3 brings bare-metal hosts into Kubernetes Cluster API; OpenBMC reduces firmware lock-in. | Hardware compatibility and firmware supply-chain support matter more than logos. |
 | Compute orchestration | Kubernetes on Talos Linux or k0s; Slurm for HPC; Kueue for Kubernetes-native queues | Kubernetes is the open baseline for container orchestration; Kueue handles batch/HPC/AI queueing; Slurm remains important for HPC/training. | Use Slurm when MPI/HPC users expect it; use Kueue for cloud-native AI/platform jobs. |
 | Networking | SONiC on compatible switches, FRRouting, Cilium, Open vSwitch/OVN | SONiC runs on multiple switch vendors/ASICs; Cilium gives eBPF networking/security/observability. | SONiC operations need strong network engineering skill and tested hardware lists. |
@@ -36,7 +38,8 @@ This document turns the project vision into a stack recommendation for datacentr
 | Physical security | Leosac for open physical access control pilots; Frigate for local NVR/object detection; Keycloak for application IAM | Leosac is open source physical access control; Frigate runs local camera inference. | Door control is safety-critical. Pilot before production and meet local codes. |
 | AI serving | vLLM and SGLang for inference; Hugging Face tooling for packaging; OCI images for reproducibility | vLLM and SGLang are high-throughput open serving engines for open models. | Model licenses, safety filters, data retention, and GPU isolation must be governed. |
 | AI queueing | Kueue for Kubernetes-native AI batch jobs; Slurm for HPC/training; optional Ray for distributed Python jobs | Kueue is explicitly for Kubernetes batch/HPC/AI/ML queueing. | Keep fair-share and priority rules visible to users. |
-| Unified interface | Rust services using axum/Tokio, PostgreSQL, OpenAPI, gRPC/tonic where needed, Leptos or a modest web UI | Rust keeps the project efficient and portable while integrating existing systems. | Avoid framework churn; API stability matters more than UI novelty. |
+| Open cloud service layer | OpenStack, Ceph, Kubernetes, Kueue, Knative, OpenBao, Harbor, OpenTofu, CloudNativePG, NATS/Kafka, OpenCost, CloudKitty | Covers the broad domains users expect from AWS-style infrastructure while staying open-source and self-hostable. | The Rust portal should orchestrate these tools, not replace them. Start with a small service catalog. |
+| Unified interface | Rust services using axum/Tokio or a lightweight Rust HTTP server, PostgreSQL, OpenAPI, gRPC/tonic where needed, Leptos or a modest web UI | Rust keeps the project efficient and portable while integrating existing systems. | Avoid framework churn; API stability matters more than UI novelty. |
 
 ## Architecture Recommendation
 
@@ -88,11 +91,14 @@ For the first public technical baseline:
 
 1. Rust workspace with typed site profile, energy/carbon/water cost calculators, and JSON/CSV import/export.
 2. NetBox-first source-of-truth integration design.
-3. Kubernetes + Kueue path for AI jobs, with Slurm as a second scheduler profile.
-4. OCP/Open19 rack metadata model that can represent non-OCP local fabrication adapters.
-5. FreeCAD 1.1 naming, BOM, and export conventions.
-6. Rack thermal-spine cooling prototype: warm-water row loop first, then two-phase thermosyphon/loop heat-pipe modules if serviceability and regulation allow.
-7. Test harness using Rust unit tests, JSON golden files, containerized integration tests, and simulation fixtures.
+3. Tenant portal and operator console over one Rust API.
+4. OpenStack/Ceph/Kubernetes service map for AWS-like user workflows.
+5. Kubernetes + Kueue path for AI jobs, with Slurm as a second scheduler profile.
+6. OCP/Open19 rack metadata model that can represent non-OCP local fabrication adapters.
+7. FreeCAD 1.1 naming, BOM, and export conventions.
+8. Rack thermal-spine cooling prototype: warm-water row loop first, then two-phase thermosyphon/loop heat-pipe modules if serviceability and regulation allow.
+9. Component simplification catalogue and 250 kW pilot BOM, with local fabrication candidates and second-source notes.
+10. Test harness using Rust unit tests, JSON golden files, containerized integration tests, and simulation fixtures.
 
 ## Source Notes
 
@@ -111,6 +117,11 @@ For the first public technical baseline:
 - NetBox docs: https://netboxlabs.com/docs/netbox/
 - openDCIM: https://opendcim.org/
 - OCP rack and power, ORV3/ORW specs, and DC-MHS: https://www.opencompute.org/community/rack-and-power, https://www.opencompute.org/wiki/Open_Rack/SpecsAndDesigns, and https://www.opencompute.org/wiki/Server/MHS
+- ETSI EN 300 132-3 400 VDC ICT power interface: https://www.etsi.org/deliver/etsi_en/300100_300199/30013203/02.03.01_60/en_30013203v020301p.pdf
+- LBNL/EMerge Alliance 380 VDC datacentre architecture work: https://datacenters.lbl.gov/sites/default/files/380VdcArchitecturesfortheModernDataCenter.pdf
+- Compute hardware baseline sources are captured in [Compute Hardware Baseline](compute-hardware-baseline-2026.md).
+- Open cloud service sources are captured in [Open Cloud Service Map](../architecture/open-cloud-service-map.md).
+- OCP Data Center Facility: https://www.opencompute.org/community/data-center-facility
 - OCP Cooling Environments: https://www.opencompute.org/community/cooling-environments
 - LBNL liquid-cooled rack specification work: https://datacenters.lbl.gov/development-liquid-cooled-rack-specification
 - Heat-driven adsorption chillers: https://heatpumpingtechnologies.org/publications/heat-driven-adsorption-chiller-systems-for-sustainable-cooling-applications/

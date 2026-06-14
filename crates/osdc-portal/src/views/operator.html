@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Operator Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Operator</strong>
+          <span>regional-pilot-01</span>
+        </div>
+        <nav class="nav-list" aria-label="Operator navigation">
+          <a class="active" href="/operator"><span class="nav-icon">P</span>Power</a>
+          <a href="/operator"><span class="nav-icon">T</span>Thermal</a>
+          <a href="/operator"><span class="nav-icon">R</span>Racks</a>
+          <a href="/operator"><span class="nav-icon">N</span>Network</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+        </nav>
+        <small>mode: island-ready</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Operator Console</h1>
+            <p>DC power, cooling, racks, Linux images, networks, quotas</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" aria-label="Refresh operator data">R</button>
+            <button class="warning">Shed deferable</button>
+            <button class="primary">Open change</button>
+          </div>
+        </header>
+        <section class="content">
+          <div class="metric-grid">
+            <div class="metric"><span>380-400 VDC bus</span><strong>392 V</strong><em>stable</em></div>
+            <div class="metric"><span>Sodium-ion BESS</span><strong>71%</strong><em>2.2 h critical</em></div>
+            <div class="metric"><span>Rack thermal spine</span><strong>214 kW</strong><em>86% captured</em></div>
+            <div class="metric"><span>PUE now</span><strong>1.22</strong><em>dry cooler active</em></div>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel media-panel">
+              <div class="panel-header"><h2>Rack Thermal Spine</h2><span class="status">Nominal</span></div>
+              <img src="/assets/rack-thermal-spine-cutaway.png" alt="Rack thermal spine cooling cutaway">
+              <div class="panel-body flow-grid">
+                <div class="flow-step"><strong>Rack heat</strong><span>250 kW</span></div>
+                <div class="flow-step"><strong>Captured</strong><span>214 kW</span></div>
+                <div class="flow-step"><strong>Hot loop</strong><span>63 C</span></div>
+                <div class="flow-step"><strong>Sorption</strong><span>38 kW</span></div>
+                <div class="flow-step"><strong>Reject</strong><span>309 kW</span></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header"><h2>Power Path</h2><button>Run test</button></div>
+              <div class="panel-body">
+                <div class="flow-grid">
+                  <div class="flow-step"><strong>PV</strong><span>186 kW</span></div>
+                  <div class="flow-step"><strong>MPPT</strong><span>98%</span></div>
+                  <div class="flow-step"><strong>BESS</strong><span>356 kWh</span></div>
+                  <div class="flow-step"><strong>DC bus</strong><span>392 V</span></div>
+                  <div class="flow-step"><strong>48 V rows</strong><span>48.4 V</span></div>
+                </div>
+                <div class="mini-chart" aria-label="Power chart">
+                  <div class="bar" style="height: 48%"></div>
+                  <div class="bar" style="height: 54%"></div>
+                  <div class="bar" style="height: 62%"></div>
+                  <div class="bar" style="height: 70%"></div>
+                  <div class="bar blue" style="height: 78%"></div>
+                  <div class="bar blue" style="height: 74%"></div>
+                  <div class="bar blue" style="height: 67%"></div>
+                  <div class="bar amber" style="height: 61%"></div>
+                  <div class="bar amber" style="height: 57%"></div>
+                  <div class="bar" style="height: 53%"></div>
+                  <div class="bar" style="height: 51%"></div>
+                  <div class="bar" style="height: 49%"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header"><h2>Hardware Pools</h2><button>Quotas</button></div>
+              <table>
+                <thead>
+                  <tr><th>Pool</th><th>Hardware</th><th>Power</th><th>Allocated</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>edge-arm</td><td>5x RK3588 SBC</td><td>112 W</td><td>3 / 5</td><td><span class="status">Ready</span></td></tr>
+                  <tr><td>gpu-open</td><td>4x RX 9060 XT 16GB</td><td>486 W</td><td>3 / 4</td><td><span class="status">Ready</span></td></tr>
+                  <tr><td>gpu-lowpower</td><td>2x Arc Pro B50 16GB</td><td>118 W</td><td>1 / 2</td><td><span class="status info">Testing</span></td></tr>
+                  <tr><td>cpu-standard</td><td>20x x86 servers</td><td>5.4 kW</td><td>61%</td><td><span class="status">Ready</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header"><h2>Open Cloud Stack</h2><button>Sync</button></div>
+              <table>
+                <thead>
+                  <tr><th>Domain</th><th>Stack</th><th>Health</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>IaaS</td><td>OpenStack Nova Neutron Cinder</td><td><span class="status">OK</span></td></tr>
+                  <tr><td>Storage</td><td>Ceph RBD RGW CephFS</td><td><span class="status">OK</span></td></tr>
+                  <tr><td>Containers</td><td>Kubernetes Cilium Kueue</td><td><span class="status warn">2 upgrades</span></td></tr>
+                  <tr><td>Identity</td><td>Keycloak OPA OpenBao</td><td><span class="status">OK</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header"><h2>Operations Queue</h2><button>Export log</button></div>
+            <table>
+              <thead>
+                <tr><th>Time</th><th>System</th><th>Action</th><th>Owner</th><th>Risk</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>09:20</td><td>DC protection</td><td>Isolation monitor calibration</td><td>electrical</td><td>low</td><td><span class="status warn">Scheduled</span></td></tr>
+                <tr><td>10:00</td><td>GPU pool</td><td>ROCm reset test</td><td>platform</td><td>medium</td><td><span class="status info">Queued</span></td></tr>
+                <tr><td>11:30</td><td>Ceph</td><td>OSD replacement drill</td><td>storage</td><td>low</td><td><span class="status">Approved</span></td></tr>
+                <tr><td>13:00</td><td>Cooling</td><td>Dry cooler fan failover</td><td>thermal</td><td>medium</td><td><span class="status warn">Pending</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

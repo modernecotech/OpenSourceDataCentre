@@ -1,0 +1,5 @@
+scenario_id,name,it_load_kw,racks,building_area_m2,core_facility_low_usd,core_facility_high_usd,starter_it_low_usd,starter_it_high_usd,dc_microgrid_included_usd,total_with_it_low_usd,total_with_it_high_usd,build_time_low_weeks,build_time_high_weeks,default_building_system,notes
+S1,Edge micro,50,4,120,340000,580000,80000,220000,included,420000,800000,8,14,insulated sandwich panel building with solar sodium-ion DC microgrid bus,excludes land major utility upgrade and fibre buildout
+S2,Regional pilot,250,10,300,1020000,1920000,180000,550000,included,1200000,2470000,14,24,insulated sandwich panel building with service trench and solar sodium-ion DC microgrid bus,includes adsorption chiller as optional pilot allowance
+S3,Regional production,1000,40,1000,3650000,6650000,900000,3200000,included,4550000,9850000,28,44,multi-zone insulated panel halls with solar sodium-ion DC microgrid bus,requires stronger local engineering and authority review
+S4,National AI-ready,5000,160,4500,18500000,36500000,5000000,30000000,included,23500000,66500000,52,90,large insulated panel campus with solar sodium-ion DC microgrid blocks,marketplace sourcing useful for commodities only

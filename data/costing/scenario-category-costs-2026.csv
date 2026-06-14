@@ -1,0 +1,25 @@
+scenario_id,category,low_usd,high_usd,notes
+S1,panel_building_civil_trench_security_shell,70000,130000,120m2 insulated panel shell with service trench and simple perimeter
+S1,dc_microgrid_solar_sodium_single_fallback_power,115000,190000,75kWp PV 150kWh sodium-ion BESS 75kW DC microgrid converters 380-400 VDC bus 48 V racks and one fallback generator/rental path
+S1,rack_thermal_spine_cooling,70000,140000,4 RDHx small pump skid dry cooler backup chiller and controls
+S1,fire_access_cctv,30000,65000,local-code approved detection suppression and basic security
+S1,racks_cabling_basic_network,35000,75000,4 racks PDUs OOB and modest switching
+S1,commissioning_spares_tools_docs,45000,90000,load testing spares and operator tools
+S2,panel_building_civil_trench_perimeter,160000,300000,300m2 panel hall electrical room thermal plant room
+S2,dc_microgrid_solar_sodium_single_fallback_power,430000,720000,300kWp PV 500kWh sodium-ion BESS 350kW DC microgrid converters protection 48 V rack power and one fallback generator path
+S2,rack_thermal_spine_and_backup_cooling,230000,470000,10 RDHx thermal spine dry cooler chiller and adsorption pilot allowance
+S2,fire_security_monitoring,70000,150000,aspirating detection fire alarm suppression access CCTV monitoring
+S2,racks_structured_cabling_network,90000,220000,10 racks 25G/100G capable network and cabling
+S2,commissioning_spares_tools_docs,90000,180000,integrated systems testing spares and local runbooks
+S3,panel_building_civil_roads_perimeter_trenches,550000,1100000,1000m2 multi-zone panel facility and plant yard
+S3,dc_microgrid_solar_sodium_single_fallback_power,1450000,2550000,1.2MWp PV 2MWh sodium-ion BESS 1.4MW DC microgrid converters HVDC distribution and single fallback plant
+S3,cooling_plant_rack_heat_capture_thermal_spine,850000,1700000,40 racks multiple dry coolers chillers thermal spine zones
+S3,fire_security_monitoring,180000,360000,multi-zone life safety and security systems
+S3,racks_cabling_network_fabric,380000,750000,40 racks redundant fabric and optics allowance
+S3,commissioning_spares_tools_docs,240000,520000,load banks spares procedures training
+S4,panel_buildings_civil_campus_security,2500000,5000000,large panel campus roads fencing plant yards
+S4,dc_microgrid_solar_sodium_single_fallback_power,7500000,14500000,5MWp PV 10MWh sodium-ion BESS 6MW DC microgrid converter blocks MV boundary gear HVDC distribution and single fallback plant
+S4,cooling_plant_thermal_spine_zones,4000000,8500000,multiple cooling zones dry coolers backup chillers liquid cooling
+S4,fire_security_monitoring,700000,1600000,campus-scale life safety and SOC-ready security
+S4,racks_cabling_network_fabric,2000000,4500000,160 racks AI-ready network and structured cabling
+S4,commissioning_spares_tools_docs,1800000,3500000,full integrated systems testing and spares

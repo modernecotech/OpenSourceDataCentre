@@ -1,0 +1,73 @@
+line_id,category,system,component,specification,unit,quantity,criticality,local_fabrication_candidate,unit_cost_usd,pricing_status,notes
+BOM-001,site,civil,geotechnical and drainage study,minimum boreholes flood level drainage and soil bearing review,lot,1,critical,no,,tbd,required before final building and ground-loop design
+BOM-002,site,civil,perimeter fence and gate,secure fence vehicle gate pedestrian gate lighting allowance,lot,1,important,yes,,tbd,local code and site risk dependent
+BOM-003,building,shell,modular IT hall,fire-rated insulated shell sized for 10 racks plus service aisle,lot,1,critical,partial,,tbd,leave space for 20-rack expansion
+BOM-004,building,shell,electrical room,dedicated ventilated electrical room with cable entry separation,lot,1,critical,yes,,tbd,no water piping through electrical room
+BOM-005,building,shell,thermal plant room,serviceable mechanical room with skid removal path,lot,1,critical,yes,,tbd,adjacent to rack thermal spine
+BOM-006,building,shell,service trench modules,underfloor or trench thermal spine sections with covers,m,30,critical,yes,,tbd,FreeCAD source part required
+BOM-007,power,utility,utility service and main disconnect,local utility intake feeding AC boundary switchboard only,lot,1,critical,no,,tbd,include utility metering before rectifier
+BOM-008,power,utility,boundary transformer and rectifier input,transformer and rectifier input gear sized for 250 kW IT plus cooling and growth,each,1,critical,no,,tbd,size per electrical engineer and keep AC outside the critical bus
+BOM-009,power,distribution,AC boundary switchboard,utility generator and maintenance input board for DC rectifier plant,each,1,critical,no,,tbd,include arc-flash labels and interlocks
+BOM-010,power,backup,single fallback generator system,generator sized for critical load and cooling fallback feeding boundary rectifier,each,1,critical,no,,tbd,one fallback path plus rental generator interface
+BOM-011,power,backup,fuel storage,48 hour fuel tank with containment,each,1,critical,no,,tbd,adjust for fuel logistics
+BOM-012,power,backup,temporary generator connection,rental generator connection and manual interlock,each,1,important,partial,,tbd,disaster recovery interface
+BOM-013,power,dc_microgrid,MPPT DC/DC and microgrid controller,350kW DC-coupled MPPT battery converter and bus controller for 380-400 VDC backbone,lot,1,critical,no,,tbd,replaces standalone UPS layer after DC ride-through validation
+BOM-014,power,dc_microgrid,sodium-ion BESS,500kWh sodium-ion battery cabinets with BMS DC contactors and fire protection,lot,1,critical,no,,tbd,stationary storage ride-through solar shifting and peak shaving
+BOM-015,power,dc_microgrid,solar PV array,300kWp solar PV panels DC combiner protection mounting and cabling,lot,1,important,partial,,tbd,core DC power input not optional add-on
+BOM-068,power,distribution,DC isolation bypass and precharge panel,manual bypass isolation metering precharge and DC protection for microgrid plant,each,1,critical,no,,tbd,lets operators service DC plant safely
+BOM-016,power,distribution,48 VDC rack power shelves,OCP-style or metered DC rack power shelves with A and B feeds,each,20,critical,no,,tbd,two per rack with documented connectors
+BOM-017,power,metering,DC branch power meters,Modbus meters for DC backbone rack rows fallback rectifier and cooling plant,each,10,important,no,,tbd,feeds observability
+BOM-069,power,distribution,380-400 VDC busway or cable bus,protected DC busway or cable bus from plant to rack rows and cooling skids,lot,1,critical,partial,,tbd,requires DC-rated protection coordination
+BOM-070,power,distribution,DC HVAC auxiliary power panel,48 VDC and 380-400 VDC protected outputs for pumps fans valves controls and backup cooling skid,each,1,critical,no,,tbd,keeps cooling auxiliaries on DC supply
+BOM-018,cooling,rack,rear door heat exchanger,rear-door heat exchanger for air-cooled racks,each,10,critical,partial,,tbd,primary rack heat capture for mixed compute
+BOM-019,cooling,rack,rack liquid manifold,hot and cold rack manifold with dry-break couplings,each,4,critical,partial,,tbd,for dense racks and future direct-to-chip
+BOM-020,cooling,rack,rack leak detection,rope leak sensor and controller per rack,each,10,critical,partial,,tbd,relay or Modbus output
+BOM-021,cooling,thermal_spine,hot thermal spine pipe,insulated warm-water/glycol hot loop pipework,m,60,critical,partial,,tbd,underfloor or service trench
+BOM-022,cooling,thermal_spine,cold thermal spine pipe,insulated supply loop pipework,m,60,critical,partial,,tbd,return path to rack capture modules
+BOM-023,cooling,thermal_spine,row isolation valve cassette,valves strainers temperature pressure ports,each,2,critical,yes,,tbd,one per rack row
+BOM-024,cooling,thermal_spine,hot buffer and air separator,small buffer tank separator drain fill and relief set,each,1,important,partial,,tbd,certified if pressure vessel
+BOM-025,cooling,plant,plate heat exchanger skid,gasketed or brazed plate HX with bypass valves,each,1,critical,partial,,tbd,couples rack loop to rejection loop
+BOM-026,cooling,plant,N+1 DC-fed pump skid,DC-fed VFD BLDC or EC pump skid with duty standby pumps,each,1,critical,partial,,tbd,locally serviceable pump brand
+BOM-027,cooling,plant,dry cooler with EC/DC fans,dry cooler with DC-fed EC fan arrays sized for critical heat rejection,each,1,critical,no,,tbd,prefer dry operation in water-stressed sites
+BOM-028,cooling,plant,DC-compatible backup electric chiller,modular DC-bus-compatible inverter chiller or isolated DX backup for safe fallback,each,1,critical,no,,tbd,covers maintenance and failed heat reuse
+BOM-029,cooling,plant,adsorption chiller pilot,heat-driven sorption chiller module,each,1,optional,no,,tbd,research and efficiency module not sole cooling path
+BOM-030,cooling,plant,ground loop manifold provision,stub-outs valves and space for future ground loop,lot,1,future,partial,,tbd,install only after geology confirms
+BOM-031,cooling,controls,thermal sensors,temperature pressure flow and differential pressure sensors,lot,1,critical,partial,,tbd,open telemetry interfaces
+BOM-032,cooling,controls,water treatment kit,filters dosing test kit and corrosion control,lot,1,critical,partial,,tbd,use locally available consumables
+BOM-033,fire,detection,aspirating smoke detection,air sampling detection for IT and electrical rooms,system,1,critical,no,,tbd,authority-approved
+BOM-034,fire,detection,addressable fire alarm,fire alarm panel detectors sounders strobes interfaces,system,1,critical,no,,tbd,local code mandatory
+BOM-035,fire,suppression,clean agent or inert gas system,locally approved electronic-room suppression system,system,1,critical,no,,tbd,only if refill and service available
+BOM-036,fire,suppression,portable extinguishers,appropriate extinguishers with signage,lot,1,critical,no,,tbd,include operator training
+BOM-037,security,physical,controlled entry doors,two-door controlled entry with door contacts,lot,1,important,partial,,tbd,fail-safe/fire-code compliant
+BOM-038,security,physical,access control controller,card or PIN access controller and readers,system,1,important,partial,,tbd,open pilot possible after review
+BOM-039,security,physical,CCTV and NVR,PoE cameras and local NVR storage,system,1,important,partial,,tbd,Frigate-compatible optional
+BOM-040,network,fabric,leaf switches,25G/100G Ethernet switches with 48 VDC PSU options where available,each,2,critical,no,,tbd,SONiC-compatible if skills exist
+BOM-041,network,fabric,core or spine switch,collapsed core switch pair with 48 VDC PSU options,each,2,critical,no,,tbd,can expand to spine-leaf
+BOM-042,network,oob,out-of-band switch,1G management switch on 48 VDC or PoE-derived power,each,2,critical,no,,tbd,separate management network
+BOM-043,network,oob,console server,serial console and remote access powered from 48 VDC rack bus,each,1,critical,no,,tbd,needed for recovery
+BOM-044,network,edge,edge router/firewall,router firewall pair with 48 VDC PSU options if budget allows,each,2,critical,no,,tbd,single acceptable for pilot but pair preferred
+BOM-045,network,cabling,fibre cabling and optics,LC fibre trunks patch panels SFPs,lot,1,critical,partial,,tbd,test reports required
+BOM-046,network,cabling,copper cabling,Cat6A management and sensor cabling,lot,1,critical,partial,,tbd,label both ends
+BOM-047,racks,structure,standard 19 inch racks,42U or 48U racks with grounding and cable managers,each,10,critical,partial,,tbd,adapter-friendly
+BOM-048,racks,structure,ladder tray and vertical managers,cable tray and rack cable management,lot,1,important,yes,,tbd,local fabrication possible
+BOM-049,racks,structure,blanking panels and airflow seals,rack airflow management kit,lot,1,important,yes,,tbd,cheap and important
+BOM-050,compute,management,management server nodes,small servers for control plane and monitoring powered from 48 VDC rack shelves where possible,each,3,critical,no,,tbd,run cluster services
+BOM-051,compute,servers,general compute servers,commodity CPU servers powered from 48 VDC rack shelves where possible,each,20,critical,no,,tbd,exact spec workload dependent
+BOM-052,compute,ai,AMD RX 9060 XT GPU pilot servers,2 GPU servers each with 2 AMD RX 9060 XT 16GB cards and documented 48 VDC or rack power adapter path,each,2,optional,no,,tbd,default open-driver GPU lane for ROCm validation
+BOM-053,storage,primary,Ceph storage nodes,storage servers with mixed SSD/HDD or all-flash and 48 VDC PSU path where possible,each,4,critical,no,,tbd,minimum 3 plus spare capacity
+BOM-054,storage,backup,offline backup system,removable disk or tape backup set,lot,1,critical,partial,,tbd,sovereign restore path
+BOM-055,software,dcim,NetBox or openDCIM deployment,open-source source-of-truth service,system,1,critical,no,0,open-source,run on management nodes
+BOM-056,software,observability,Prometheus/VictoriaMetrics and Grafana,open-source metrics dashboards and alerting,system,1,critical,no,0,open-source,include thermal metrics
+BOM-057,software,identity,Keycloak and OPA,identity policy and RBAC,system,1,critical,no,0,open-source,unified access model
+BOM-058,software,platform,Kubernetes and Kueue,bare-metal orchestration and queueing,system,1,critical,no,0,open-source,AI and service scheduling
+BOM-059,software,ai_serving,vLLM or SGLang serving,open model serving runtime,system,1,optional,no,0,open-source,license-gated models
+BOM-060,software,control_plane,Open Source Data Centre Rust control plane,calculator adapters and unified API,system,1,critical,no,0,project,repo deliverable
+BOM-061,operations,commissioning,load bank rental or purchase,IT load bank and thermal commissioning equipment,lot,1,critical,no,,tbd,rent if possible
+BOM-062,operations,tools,electrical technician tool kit,multimeter clamp meter insulated tools PPE,lot,1,critical,no,,tbd,owned locally
+BOM-063,operations,tools,network and fibre tool kit,fibre tester label printer crimpers spare optics,lot,1,important,no,,tbd,owned locally
+BOM-064,operations,tools,thermal maintenance tool kit,thermal camera pressure gauges water test kit,lot,1,important,no,,tbd,owned locally
+BOM-065,operations,spares,pump and sensor spare kit,pump seals sensor set valves filters,lot,1,critical,no,,tbd,minimum one year spares
+BOM-066,operations,spares,IT spare kit,PSUs fans disks NICs SFPs cables,lot,1,critical,no,,tbd,fit chosen hardware
+BOM-067,operations,documentation,offline runbooks and drawings,printed runbooks single-line diagrams P&IDs rack elevations,lot,1,critical,yes,,tbd,local language recommended
+BOM-071,compute,edge,RK3588 SBC gateway cluster,Radxa ROCK 5B+ class SBCs with NVMe cases cooling and 48 VDC to USB-C or PoE power,each,5,critical,partial,,tbd,facility gateways telemetry buffers and offline recovery services
+BOM-072,compute,ai,Intel Arc Pro B50 low-power GPU server,server with 2 Intel Arc Pro B50 16GB cards for 70W low-power GPU tenant lane,each,1,optional,no,,tbd,add if visualization media or low-power inference is a target

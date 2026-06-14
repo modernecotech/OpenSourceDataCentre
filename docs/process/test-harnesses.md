@@ -19,9 +19,10 @@ The project needs test harnesses for both code and real-world systems. A datacen
 
 ## Facilities Tests
 
-- Commissioning checklists for HVAC, lighting, access control, solar, batteries, metering, UPS, and generator interfaces.
+- Commissioning checklists for HVAC, lighting, access control, solar, sodium-ion batteries, metering, DC converters, DC protection, and generator boundary interfaces.
 - Sensor calibration records for temperature, humidity, flow, pressure, power, water, and door events.
-- Failover tests for cooling pumps, valves, controllers, network links, UPS, and telemetry gateways.
+- Failover tests for cooling pumps, valves, controllers, network links, 380-400 VDC backbone, 48 VDC rack bus, and telemetry gateways.
+- Solar sodium-ion DC microgrid tests for grid loss, no-break rack-bus ride-through, fallback generator start through boundary rectifier, black start, load shedding, battery-low protection, polarity, insulation resistance, isolation monitoring, ripple, and DC breaker coordination.
 - Earth-cooling tests for loop pressure, thermal response, antifreeze/corrosion chemistry, and seasonal ground recovery.
 - Thermal-load tests using staged IT load banks before production deployment.
 - Rack thermal-spine tests for capture fraction, hot-loop temperature, two-phase stability where used, sorption chiller COP, bypass behavior, and final heat-rejection capacity.

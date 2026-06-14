@@ -2,6 +2,7 @@
 members = [
     "crates/osdc-calc",
     "crates/osdc-models",
+    "crates/osdc-portal",
     "crates/osdcctl",
 ]
 resolver = "2"

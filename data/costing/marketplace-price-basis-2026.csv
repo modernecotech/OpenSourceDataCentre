@@ -1,0 +1,36 @@
+item_family,unit,low_usd,high_usd,planning_selected_usd,source_marketplace,source_note,project_use
+100mm_pu_pir_panel,m2_fob,8,18,12,Alibaba,100mm PU/PIR/PUR panels listed around single-digit to mid-teen USD per m2 at volume,fast insulated building envelope
+installed_panel_envelope,m2_installed,35,90,55,Derived,includes panel steel flashing sealing freight labour and wastage,scenario building shell
+prefab_steel_frame,m2_fob,45,100,65,Alibaba/China prefab market,pre-engineered steel frame varies with wind span corrosion and seismic requirements,fast panel building structure
+concrete_plinth_and_floor,m2_local,100,240,160,Derived,local concrete slab plinth drainage and floor finish,building foundation
+service_trench_module,m_installed,150,450,220,Derived,local fabrication with covers supports drainage and safe access,thermal spine and cable route
+42u_server_rack,each_landed,450,900,650,Alibaba,42U cabinets practical mid-tier range after freight,rack structure
+dc_rack_power_shelf_or_pdu,each_landed,300,900,450,Alibaba/OCP-style suppliers,DC rack shelves and metered DC PDUs require better connectors protection and metering than commodity AC strips,rack DC power
+rear_door_heat_exchanger,each_landed,1800,6500,2800,Alibaba,10-80kW RDHx listings exist but often quote by RFQ,rack heat capture
+rack_liquid_manifold,each_landed,500,2500,900,Derived,manifold dry-breaks valves sensors and bracketry,direct-to-chip provision
+leak_detection_rope_controller,each_landed,40,250,80,AliExpress/Alibaba,commodity leak rope and relay controllers vary widely,rack and trench leak detection
+thermal_spine_pipework,m_installed,50,180,85,Derived,insulated steel/copper/PEX-AL-PEX pipe supports fittings and labour,warm-water thermal spine
+plate_heat_exchanger_skid,each_installed,1000,8000,3500,Alibaba,small plate heat exchangers are cheap but skids need valves and labour,thermal plant
+pump_vfd_skid_small,each_installed,8000,25000,12000,Alibaba/Derived,N+1 pumps VFDs strainers controls and skid,50kW cooling loop
+pump_vfd_skid_medium,each_installed,18000,60000,30000,Alibaba/Derived,N+1 pumps VFDs strainers controls and skid,250kW cooling loop
+pump_vfd_skid_large,each_installed,70000,180000,120000,Alibaba/Derived,N+1 larger pumps VFDs controls and skid,1MW cooling loop
+dc_hvac_auxiliary_panel,each_installed,4000,18000,9000,Derived,DC breakers fuses contactors converters and metering for pumps fans valves and cooling controls,DC-fed HVAC auxiliaries
+dry_cooler_250kw,each_installed,12000,45000,35000,Alibaba,250kW data-centre dry coolers are RFQ items; smaller dry cooler listings are lower,primary heat rejection
+backup_chiller_250kw,each_installed,20000,70000,40000,Alibaba,100-500kW industrial chiller listings are low before controls install and warranty,backup cooling
+adsorption_chiller_pilot,each_installed,40000,140000,60000,RFQ/Derived,heat-driven chiller likely requires supplier engineering,heat-to-cooling pilot
+thermal_sensor_basic,each_landed,8,35,15,AliExpress,RS485 temp humidity probes in low USD range,environmental monitoring
+industrial_pressure_flow_sensor,each_landed,60,350,150,AliExpress/Alibaba,pressure and ultrasonic flow instruments vary by accuracy,thermal monitoring
+online_ups_legacy_reference,kva_equipment,120,350,250,Alibaba,100kVA online UPS listings around 7710-37128 USD,legacy comparison only not baseline
+diesel_generator,kva_equipment,30,80,60,Alibaba,500kVA generator plausible listings around 14k-26k USD plus outliers,backup power
+lv_switchgear_transformer,kva_installed,60,180,100,Alibaba/Derived,transformer switchgear ATS panels metering and local installation,electrical distribution
+sodium_ion_bess,kwh_installed,200,420,230,Alibaba/Derived,sodium-ion C&I BESS listings exist in 100kWh and 215kWh classes but supplier maturity must be validated,critical ride-through and solar shifting
+dc_microgrid_converter_controller,kw_installed,85,210,135,Alibaba/Derived,DC-coupled MPPT battery converters and microgrid controllers derived from PCS and hybrid inverter market signals,380-400 VDC bus control
+ac_boundary_rectifier_inverter,kw_installed,55,150,95,Alibaba/Derived,AC utility or generator interface is retained only at the site boundary for rectification export or service bypass,boundary adapter
+hvdc_distribution_protection,kw_installed,25,90,45,Derived,DC busway cable bus fuses breakers contactors isolation monitoring precharge and arc-fault protection add specialist cost,DC distribution safety
+solar_pv_system,w_installed,0.55,0.95,0.65,Alibaba/Derived,panels list around 0.09-0.20 USD/W but installed system costs more,core solar input
+25g_leaf_switch,each_landed,2500,9000,5500,Alibaba,48x25G plus 100G uplink switch examples around low thousands,network fabric
+100g_spine_switch,each_landed,6500,15000,9000,Alibaba/SONiC vendors,SONiC-ready 32x100G examples around 6429-7428 USD before optics,network fabric
+standard_compute_server,each_landed,1400,3500,1800,Alibaba/used market,used tested R740xd-like systems under 1400 USD; new systems higher,compute nodes
+storage_server_node,each_landed,5000,15000,8000,Alibaba,24-bay chassis cheap but complete Ceph node needs drives HBAs NICs,Ceph storage
+gpu_server_pilot,each_landed,15000,50000,20000,Alibaba,dual/GPU capable servers vary widely by accelerator generation,AI pilot
+commissioning_load_bank,lot,8000,80000,25000,Rental/Derived,rental or purchase depends on country and scale,integrated systems testing

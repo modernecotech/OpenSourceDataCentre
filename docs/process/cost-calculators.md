@@ -11,7 +11,7 @@ The calculators should help communities decide whether a design is affordable, o
    - Rack heat capture modules, underfloor/service-trench thermal spine, HVAC plant, pumps, chillers, sorption chillers, heat exchangers, water-side economizers, earth loops, Cold UTES, liquid-cooling loops, sensors, maintenance.
 
 3. Electrical CAPEX/OPEX
-   - Grid interconnect, switchgear, UPS, PDUs, busways, batteries, solar PV, inverters, metering, spares.
+   - Grid interconnect, AC boundary switchgear, rectifiers, MPPT DC/DC converters, bidirectional battery converters, sodium-ion BESS, 380-400 VDC busways, 48 VDC rack power shelves, DC protection, solar PV, metering, fallback generator, spares.
 
 4. Rack and compute CAPEX/OPEX
    - Rack standard, adapters, shelves, cabling, switches, servers, accelerators, storage, spare parts, replacement cycles.
@@ -67,6 +67,7 @@ Prefer open and auditable inputs:
 - Equipment BOMs from FreeCAD/CSV exports.
 - Telemetry from meters and monitoring systems.
 - Procurement quotes with date, vendor, country, warranty, and currency.
+- BOM rows from `data/bom/`, including whether the item is imported, locally fabricated, open-source, optional, or critical.
 
 ## First Rust Implementation
 
@@ -77,6 +78,8 @@ The initial `osdc-calc` crate implements the baseline annual site calculator. It
 - Solar and battery sizing helper.
 - AI job cost estimator.
 - CAPEX and replacement-cycle model.
+- BOM landed-cost model with shipping, import duty, local labour, commissioning, maintenance, and replacement intervals.
+- Scale scenario calculator based on `data/costing/scenario-costs-2026.csv` and `data/costing/marketplace-price-basis-2026.csv`.
 - Sensitivity-analysis output as CSV.
 
 The code should remain boring and auditable. Operators should be able to check every formula.

@@ -4,7 +4,7 @@ Open Source Data Centre is a reference architecture and implementation path for 
 
 The project combines:
 
-- Building systems for HVAC, lighting, physical security, solar power, energy storage, and earth-based cooling.
+- Building systems for DC-powered HVAC auxiliaries, lighting, physical security, solar power, sodium-ion storage, and earth-based cooling.
 - FreeCAD 1.1 design artifacts for mechanical parts, racks, adapters, cable paths, and serviceable assemblies.
 - Flexible rack patterns for 19-inch EIA, Open19, OCP Open Rack V3, and Open Rack Wide where appropriate.
 - A Rust-based unified control plane for inventory, observability, cost modelling, scheduling, workflow automation, and user/admin interfaces.
@@ -14,20 +14,30 @@ The project combines:
 ## Repository Map
 
 - [Technology Stack Research](docs/research/technology-stack-2027.md) - sourced recommendations for 2027+ builds.
+- [Compute Hardware Baseline](docs/research/compute-hardware-baseline-2026.md) - default SBC/GPU choices for open Linux, low-cost, low-power deployments.
 - [Reference Architecture](docs/architecture/reference-architecture.md) - system layers and integration boundaries.
+- [Open Cloud Service Map](docs/architecture/open-cloud-service-map.md) - AWS-like service domains mapped to open-source tools.
 - [Data Model](docs/architecture/data-model.md) - initial domain objects for Rust services and APIs.
 - [Rack Thermal Spine Cooling](docs/design/rack-thermal-spine-cooling.md) - priority design for rack heat capture, underfloor heat transport, and heat-driven cooling.
+- [Solar Sodium-Ion DC Microgrid Power](docs/design/solar-sodium-inverter-power.md) - UPS-less DC-first topology from PV and sodium-ion storage to racks, cooling auxiliaries, and single fallback boundary input.
+- [Systems and BOM Strategy](docs/design/systems-simplification-bom.md) - state-of-the-art components simplified for developing-world deployments.
 - [FreeCAD Guidelines](docs/design/freecad-1.1-guidelines.md) - mechanical and design-artifact conventions.
 - [Test Harnesses](docs/process/test-harnesses.md) - verification strategy across facilities, IT, AI, and cost tools.
 - [Cost Calculators](docs/process/cost-calculators.md) - calculator scope, formulas, and validation rules.
+- [Alibaba/AliExpress Cost Scenarios](docs/costing/alibaba-aliexpress-scenarios.md) - marketplace price basis, scale scenarios, and build-time estimates.
 - [Open AI Governance](docs/process/open-ai-governance.md) - model selection and queueing guidance.
 - [Rust Workspace](crates/) - initial calculator and model crates.
+- [BOM Data](data/bom/) - component catalogue and starter 250 kW bill of materials.
+- [Costing Data](data/costing/) - current marketplace price basis and scenario cost ranges.
+- [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
+- [Software Service Data](data/software/) - open cloud service catalogue mappings.
 
 ## Initial Technical Position
 
 The project should not try to rewrite mature infrastructure tools. The core software should be Rust, but the platform should integrate best-in-class open-source systems through typed adapters:
 
 - Rust for the unified API, policy-aware automation, calculators, adapters, and eventually the web/control interface.
+- A Rust-served tenant portal and operator console for user provisioning and datacentre operations.
 - NetBox or openDCIM as inventory/DCIM sources of truth, with Rust services adding cost, workflow, and facility-aware orchestration.
 - Kubernetes, Kueue, Slurm, and open model-serving engines for AI and batch workloads.
 - BACnet, Modbus, OPC UA, MQTT, Project Haystack, and Brick-compatible semantics for building-system integrations.
@@ -38,9 +48,15 @@ The project should not try to rewrite mature infrastructure tools. The core soft
 ```bash
 cargo test
 cargo run -p osdcctl -- examples/site-profile.json
+cargo run -p osdc-portal -- 127.0.0.1:8787
 ```
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
+
+The first portal serves two GUI surfaces:
+
+- Tenant portal: `http://127.0.0.1:8787/user`
+- Operator console: `http://127.0.0.1:8787/operator`
 
 ## License
 
