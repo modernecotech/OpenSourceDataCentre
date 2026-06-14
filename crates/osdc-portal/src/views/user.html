@@ -6,7 +6,7 @@
     <title>OSDC Tenant Portal</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
-  <body>
+  <body data-portal="tenant">
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand">
@@ -35,7 +35,7 @@
           </div>
         </header>
         <section class="content">
-          <div class="metric-grid">
+          <div class="metric-grid" id="tenant-metrics">
             <div class="metric"><span>Running instances</span><strong>28</strong><em>4 GPU attached</em></div>
             <div class="metric"><span>Object storage</span><strong>18.4 TB</strong><em>Ceph RGW</em></div>
             <div class="metric"><span>GPU queue</span><strong>11 min</strong><em>solar surplus window</em></div>
@@ -55,7 +55,7 @@
                 <form class="form-grid">
                   <label>Name<input value="clinic-model-api"></label>
                   <label>Service
-                    <select>
+                    <select id="provision-service">
                       <option>VM instance</option>
                       <option>Kubernetes cluster</option>
                       <option>AI model endpoint</option>
@@ -64,7 +64,7 @@
                     </select>
                   </label>
                   <label>Shape
-                    <select>
+                    <select id="provision-shape">
                       <option>gpu-open.1x16g - AMD RX 9060 XT</option>
                       <option>gpu-lowpower.1x16g - Intel Arc Pro B50</option>
                       <option>edge-arm.small - RK3588</option>
@@ -72,7 +72,7 @@
                     </select>
                   </label>
                   <label>Linux image
-                    <select>
+                    <select id="provision-linux">
                       <option>Debian stable</option>
                       <option>Ubuntu Server LTS</option>
                       <option>Fedora Cloud</option>
@@ -81,7 +81,7 @@
                     </select>
                   </label>
                   <label>Storage
-                    <select>
+                    <select id="provision-storage">
                       <option>Ceph RBD 250 GB</option>
                       <option>Ceph RBD 1 TB</option>
                       <option>CephFS shared dataset</option>
@@ -89,7 +89,7 @@
                     </select>
                   </label>
                   <label>Network
-                    <select>
+                    <select id="provision-network">
                       <option>research-private</option>
                       <option>public-api</option>
                       <option>training-isolated</option>
@@ -103,7 +103,7 @@
               <div class="panel-header"><h2>Site</h2><span class="status info">regional-pilot</span></div>
               <img src="/assets/prefab-panel-datacentre-exterior-02.png" alt="Prefab insulated datacentre with solar canopy">
               <div class="panel-body">
-                <div class="flow-grid">
+                <div class="flow-grid" id="tenant-site-flow">
                   <div class="flow-step"><strong>PV</strong><span>186 kW now</span></div>
                   <div class="flow-step"><strong>BESS</strong><span>71% SOC</span></div>
                   <div class="flow-step"><strong>DC bus</strong><span>392 V</span></div>
@@ -116,7 +116,7 @@
 
           <section class="panel">
             <div class="panel-header"><h2>Service Catalog</h2><button>OpenTofu export</button></div>
-            <div class="panel-body service-grid">
+            <div class="panel-body service-grid" id="tenant-services">
               <div class="service-tile"><strong>Compute</strong><span>OpenStack Nova, Ironic, Incus edge</span></div>
               <div class="service-tile"><strong>Storage</strong><span>Ceph RBD, RGW, CephFS</span></div>
               <div class="service-tile"><strong>Kubernetes</strong><span>Cluster API, Cilium, Kueue</span></div>
@@ -132,7 +132,7 @@
               <thead>
                 <tr><th>Name</th><th>Type</th><th>Backing stack</th><th>Power class</th><th>Status</th><th>Monthly estimate</th></tr>
               </thead>
-              <tbody>
+              <tbody id="tenant-resources">
                 <tr><td>clinic-model-api</td><td>AI endpoint</td><td>vLLM on Kueue</td><td>gpu-open.1x16g</td><td><span class="status">Running</span></td><td>$96</td></tr>
                 <tr><td>records-db</td><td>PostgreSQL</td><td>CloudNativePG</td><td>cpu.standard</td><td><span class="status">Running</span></td><td>$42</td></tr>
                 <tr><td>imaging-bucket</td><td>Object bucket</td><td>Ceph RGW</td><td>storage.standard</td><td><span class="status">Healthy</span></td><td>$61</td></tr>
@@ -143,5 +143,6 @@
         </section>
       </main>
     </div>
+    <script src="/portal.js"></script>
   </body>
 </html>
