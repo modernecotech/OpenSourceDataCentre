@@ -1,0 +1,14 @@
+service_id,cloudflare_equivalent,open_source_stack,radxa_role,criticality,default_port_or_protocol,operator_action,notes
+edge_dns_authoritative,Cloudflare DNS,PowerDNS Authoritative dnsdist,authoritative DNS edge and DNSSEC host,critical,DNS 53 TCP/UDP,manage zones and health-aware records,use at least two geographic secondaries
+edge_dns_recursive,1.1.1.1 Gateway DNS,Unbound or PowerDNS Recursor,secure recursive resolver for tenants and operators,important,DNS 53 DoT 853 DoH 443,configure policy and logging,keep tenant privacy defaults strict
+edge_reverse_proxy,Cloudflare CDN proxy,Caddy or Traefik,TLS termination and origin routing,critical,HTTP 80 HTTPS 443,manage routes certs and origins,Caddy is default for simple automatic HTTPS
+edge_cache,Cloudflare CDN cache,Varnish Cache or Nginx cache,static and API response cache,critical,HTTP local,manage cache rules and purges,NVMe cache on Radxa boards
+edge_waf,Cloudflare WAF,OWASP Coraza with OWASP CRS,request inspection and blocking,critical,HTTP filter,manage rule sets and exceptions,start in detection mode
+edge_rate_limit,Cloudflare rate limiting and DDoS rules,CrowdSec nftables HAProxy stick tables,abuse detection and local blocking,critical,L3 L4 L7,manage thresholds and blocklists,do not overclaim volumetric DDoS capacity
+edge_load_balance,Cloudflare Load Balancing,HAProxy Traefik Envoy dnsdist,origin failover and regional routing,critical,HTTP TCP DNS,manage origin pools and health checks,prefer simple active health checks first
+edge_tunnel,Cloudflare Tunnel,WireGuard Headscale NetBird zrok OpenZiti,private origin tunnel endpoint,important,WireGuard UDP,manage tunnels and keys,lets origins avoid public inbound ports
+edge_access,Cloudflare Access,Authelia Authentik Keycloak OPA,zero-trust app access,critical,HTTPS OIDC,manage policies and groups,protect operator and tenant admin surfaces
+edge_bot_check,Cloudflare Turnstile and bot management,Anubis mCaptcha Friendly Captcha self-hosted,bot friction for risky routes,optional,HTTPS,manage challenge policies,avoid hostile CAPTCHA defaults
+edge_functions,Cloudflare Workers,WASI Wasmtime Spin wasmCloud,small edge functions and transforms,optional,WASI HTTP,deploy signed WASM functions,keep resource limits strict on SBCs
+edge_observability,Cloudflare Analytics and logs,Prometheus OpenTelemetry Loki Grafana,node and service telemetry,critical,Prometheus 9100 OTLP,view metrics logs and traces,export to regional observability stack
+edge_config_gitops,Cloudflare dashboard/API,OSDC Rust edge agent Forgejo Ansible OpenTofu Flux,config generation audit and rollback,critical,HTTPS local API,stage validate deploy rollback,single GUI over open tools

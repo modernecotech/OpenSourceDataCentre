@@ -129,11 +129,21 @@ a {
 }
 
 .top-actions,
-.button-row {
+.button-row,
+.panel-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.panel-tools {
+  justify-content: flex-end;
+}
+
+.panel-tools input,
+.panel-tools select {
+  width: min(220px, 42vw);
 }
 
 button,
@@ -237,6 +247,20 @@ button.warning {
 
 .panel-body {
   padding: 14px;
+}
+
+.panel > .split {
+  padding: 14px;
+}
+
+.action-output {
+  margin-top: 12px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+  padding: 8px 10px;
 }
 
 .form-grid {
@@ -439,6 +463,18 @@ tr:last-child td {
 
   .content {
     padding: 14px;
+  }
+
+  .panel-header,
+  .panel-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .panel-tools input,
+  .panel-tools select,
+  .panel-tools button {
+    width: 100%;
   }
 
   .metric-grid,

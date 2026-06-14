@@ -1,0 +1,19 @@
+service_id,display_name,priority,aws_equivalent,azure_equivalent,open_source_stack,tenant_visible,operator_visible,provisionable,default_shape,notes
+identity,Identity and projects,foundation,IAM and Organizations,Microsoft Entra ID and resource groups,Keycloak OPA OpenStack Keystone,yes,yes,yes,project.small,root of tenancy quotas and API access
+compute_vm,Virtual machines,foundation,EC2,Azure Virtual Machines,OpenStack Nova KVM libvirt,yes,yes,yes,cpu.standard,baseline IaaS service
+compute_bare_metal,Bare metal and GPU nodes,foundation,EC2 bare metal and accelerated instances,Azure bare metal and GPU VM families,OpenStack Ironic Metal3 Redfish Kubernetes device plugins,yes,yes,yes,gpu-open.1x16g,dedicated hosts and accelerators
+object_storage,Object storage,foundation,S3,Blob Storage,Ceph RGW,yes,yes,yes,bucket.standard,S3-compatible object API
+block_storage,Block volumes,foundation,EBS,Managed Disks,Ceph RBD OpenStack Cinder,yes,yes,yes,volume.250gb,durable VM and Kubernetes volumes
+file_storage,Shared file storage,important,EFS FSx,Azure Files Managed Lustre,CephFS OpenStack Manila,yes,yes,yes,fileshare.standard,datasets model stores and shared research data
+networking,Private networking,foundation,VPC subnets security groups,Virtual Network NSG,OpenStack Neutron OVN FRRouting nftables,yes,yes,yes,network.private,tenant isolation and routing
+load_dns,Load balancing and DNS,foundation,ELB Route 53,Load Balancer Application Gateway Azure DNS,Octavia HAProxy Envoy PowerDNS Designate,yes,yes,yes,public-api.standard,public and internal service exposure
+kubernetes,Managed Kubernetes,foundation,EKS,AKS,Cluster API Metal3 Cilium Talos kubeadm,yes,yes,yes,k8s.standard,container platform with tested profiles
+serverless,Serverless and app hosting,important,Lambda ECS Fargate App Runner,Functions Container Apps App Service,Knative Kubernetes KEDA,yes,yes,yes,function.small,scale-to-zero apps and event handlers
+database,Managed databases,foundation,RDS DynamoDB ElastiCache,Azure SQL Cosmos DB Cache for Redis,CloudNativePG MariaDB Operator Percona Operator Valkey FerretDB,yes,yes,yes,postgres.small,operator-managed databases and cache
+messaging,Messaging and events,important,SQS SNS EventBridge MSK,Service Bus Event Grid Event Hubs,NATS Kafka Strimzi RabbitMQ,yes,yes,yes,queue.standard,queues streams and pubsub
+secrets,Secrets keys and certificates,foundation,Secrets Manager KMS ACM,Key Vault,OpenBao cert-manager Smallstep Barbican,yes,yes,yes,secrets.project,keys secrets and certificates
+observability,Observability and audit,foundation,CloudWatch CloudTrail,Azure Monitor Log Analytics,OpenTelemetry Prometheus VictoriaMetrics Grafana Loki Tempo OpenSearch,yes,yes,yes,metrics.standard,tenant and operator visibility with scoped access
+backup,Backup and disaster recovery,foundation,AWS Backup snapshots Glacier,Azure Backup Archive Storage,Velero Restic Kopia Borgmatic Ceph snapshots offline media,yes,yes,yes,backup.standard,restore testing must be visible
+devops_iac,DevOps and infrastructure as code,important,CodeBuild CodePipeline CloudFormation,Azure DevOps ARM Bicep,Forgejo Woodpecker CI Argo CD Flux OpenTofu Ansible,yes,yes,yes,repo.project,GitOps and reproducible deployments
+ai_batch,AI batch and model serving,foundation,SageMaker Bedrock Batch,Azure AI Azure ML Batch,Kueue Slurm KServe vLLM SGLang llama.cpp MLflow,yes,yes,yes,gpu-open.1x16g,open model serving and fair-share queues
+costing,Cost and sustainability,foundation,Cost Explorer Budgets,Cost Management,OpenCost CloudKitty OSDC Rust calculators,yes,yes,no,cost.view,power cooling carbon and budget reporting

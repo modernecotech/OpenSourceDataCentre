@@ -57,6 +57,8 @@ The first deployable catalog should contain:
 | Databases | CloudNativePG and Valkey | PostgreSQL small/medium, Valkey small |
 | Networks | Neutron/OVN | Private network, router, floating IP, firewall group |
 
+The broader first implementation baseline is captured in [Core Cloud Services Baseline](core-cloud-services.md) and `data/software/core-cloud-services.csv`.
+
 ## Source Notes
 
 - OpenStack describes itself as open-source cloud infrastructure with services for compute, storage, and networking managed through APIs and dashboards: https://www.openstack.org/

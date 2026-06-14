@@ -29,9 +29,9 @@
             <p>Debian, Kubernetes, Ceph, OpenStack, Kueue, vLLM</p>
           </div>
           <div class="top-actions">
-            <button class="icon-button" aria-label="Refresh tenant data">R</button>
-            <button class="icon-button" aria-label="Open API tokens">K</button>
-            <button class="primary">Provision</button>
+            <button class="icon-button" id="tenant-refresh" aria-label="Refresh tenant data">R</button>
+            <button class="icon-button" id="tenant-api-tokens" aria-label="Open API tokens">K</button>
+            <button class="primary" id="tenant-provision-focus">Provision</button>
           </div>
         </header>
         <section class="content">
@@ -47,13 +47,13 @@
               <div class="panel-header">
                 <h2>Provision Workload</h2>
                 <div class="button-row">
-                  <button class="primary">Submit</button>
-                  <button>Save template</button>
+                  <button class="primary" id="tenant-submit">Submit</button>
+                  <button id="tenant-save-template">Save template</button>
                 </div>
               </div>
               <div class="panel-body">
                 <form class="form-grid">
-                  <label>Name<input value="clinic-model-api"></label>
+                  <label>Name<input id="provision-name" value="clinic-model-api"></label>
                   <label>Service
                     <select id="provision-service">
                       <option>VM instance</option>
@@ -96,6 +96,7 @@
                     </select>
                   </label>
                 </form>
+                <div class="action-output" id="tenant-action-output">Preview ready for review.</div>
               </div>
             </section>
 
@@ -127,7 +128,65 @@
           </section>
 
           <section class="panel">
-            <div class="panel-header"><h2>Tenant Resources</h2><button>Download CSV</button></div>
+            <div class="panel-header">
+              <h2>Core Cloud Services</h2>
+              <div class="panel-tools">
+                <input id="tenant-service-filter" type="search" placeholder="Filter services">
+                <select id="tenant-status-filter" aria-label="Service status filter">
+                  <option value="">All status</option>
+                  <option value="implemented">implemented</option>
+                  <option value="preview">preview</option>
+                </select>
+                <button id="tenant-api-schema">API schema</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>AWS equivalent</th><th>Azure equivalent</th><th>OSDC backend</th><th>Status</th></tr>
+              </thead>
+              <tbody id="tenant-core-services">
+                <tr><td>Virtual machines</td><td>EC2</td><td>Azure Virtual Machines</td><td>OpenStack Nova</td><td><span class="status">implemented</span></td></tr>
+                <tr><td>Object storage</td><td>S3</td><td>Blob Storage</td><td>Ceph RGW</td><td><span class="status">implemented</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Provisioning Blueprints</h2>
+                <div class="panel-tools">
+                  <input id="tenant-blueprint-filter" type="search" placeholder="Filter blueprints">
+                  <button id="tenant-opentofu">OpenTofu</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Blueprint</th><th>Service</th><th>Shape</th><th>Backend</th><th>Checks</th></tr>
+                </thead>
+                <tbody id="tenant-blueprints">
+                  <tr><td>GPU model endpoint</td><td>ai_batch</td><td>gpu-open.1x16g</td><td>Kueue + vLLM</td><td>quota, license, thermal</td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header"><h2>Provisioning Preview</h2><button id="tenant-preview-refresh">Refresh</button></div>
+              <div class="panel-body flow-grid" id="tenant-provision-preview">
+                <div class="flow-step"><strong>Request</strong><span>preview-0001</span></div>
+                <div class="flow-step"><strong>Backend</strong><span>Kueue + KServe</span></div>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Tenant Resources</h2>
+              <div class="panel-tools">
+                <input id="tenant-resource-filter" type="search" placeholder="Filter resources">
+                <button id="tenant-download-csv">Download CSV</button>
+              </div>
+            </div>
             <table>
               <thead>
                 <tr><th>Name</th><th>Type</th><th>Backing stack</th><th>Power class</th><th>Status</th><th>Monthly estimate</th></tr>

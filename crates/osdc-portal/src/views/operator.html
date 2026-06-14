@@ -29,9 +29,9 @@
             <p>DC power, cooling, racks, Linux images, networks, quotas</p>
           </div>
           <div class="top-actions">
-            <button class="icon-button" aria-label="Refresh operator data">R</button>
-            <button class="warning">Shed deferable</button>
-            <button class="primary">Open change</button>
+            <button class="icon-button" id="operator-refresh" aria-label="Refresh operator data">R</button>
+            <button class="warning" id="operator-shed">Shed deferrable</button>
+            <button class="primary" id="operator-open-change">Open change</button>
           </div>
         </header>
         <section class="content">
@@ -85,7 +85,13 @@
 
           <div class="split">
             <section class="panel">
-              <div class="panel-header"><h2>Hardware Pools</h2><button>Quotas</button></div>
+              <div class="panel-header">
+                <h2>Hardware Pools</h2>
+                <div class="panel-tools">
+                  <input id="operator-hardware-filter" type="search" placeholder="Filter hardware">
+                  <button id="operator-quotas">Quotas</button>
+                </div>
+              </div>
               <table>
                 <thead>
                   <tr><th>Pool</th><th>Hardware</th><th>Power</th><th>Allocated</th><th>Status</th></tr>
@@ -100,7 +106,13 @@
             </section>
 
             <section class="panel">
-              <div class="panel-header"><h2>Open Cloud Stack</h2><button>Sync</button></div>
+              <div class="panel-header">
+                <h2>Open Cloud Stack</h2>
+                <div class="panel-tools">
+                  <input id="operator-stack-filter" type="search" placeholder="Filter stack">
+                  <button id="operator-sync">Sync</button>
+                </div>
+              </div>
               <table>
                 <thead>
                   <tr><th>Domain</th><th>Stack</th><th>Health</th></tr>
@@ -116,7 +128,37 @@
           </div>
 
           <section class="panel">
-            <div class="panel-header"><h2>Operations Queue</h2><button>Export log</button></div>
+            <div class="panel-header">
+              <h2>Core Service Implementation</h2>
+              <div class="panel-tools">
+                <input id="operator-service-filter" type="search" placeholder="Filter services">
+                <select id="operator-status-filter" aria-label="Implementation status filter">
+                  <option value="">All status</option>
+                  <option value="implemented">implemented</option>
+                  <option value="preview">preview</option>
+                </select>
+                <button id="operator-audit">Audit</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Open-source stack</th><th>Default shape</th><th>Provisionable</th><th>Status</th></tr>
+              </thead>
+              <tbody id="operator-core-services">
+                <tr><td>Virtual machines</td><td>OpenStack Nova</td><td>cpu.standard</td><td>yes</td><td><span class="status">implemented</span></td></tr>
+                <tr><td>Managed Kubernetes</td><td>Cluster API</td><td>k8s.standard</td><td>yes</td><td><span class="status">implemented</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Operations Queue</h2>
+              <div class="panel-tools">
+                <input id="operator-operation-filter" type="search" placeholder="Filter operations">
+                <button id="operator-export-log">Export log</button>
+              </div>
+            </div>
             <table>
               <thead>
                 <tr><th>Time</th><th>System</th><th>Action</th><th>Owner</th><th>Risk</th><th>Status</th></tr>

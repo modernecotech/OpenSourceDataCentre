@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Edge Shield</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="edge">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Edge</strong>
+          <span>open Cloudflare alternative</span>
+        </div>
+        <nav class="nav-list" aria-label="Edge navigation">
+          <a class="active" href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+        </nav>
+        <small>hardware: Radxa ROCK 5B+</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Edge Shield</h1>
+            <p>DNS, TLS proxy, cache, WAF, rate limiting, tunnels, access, observability</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="edge-refresh" aria-label="Refresh edge data">R</button>
+            <button class="warning" id="edge-detection-mode">Detection mode</button>
+            <button class="primary" id="edge-stage-rollout">Stage rollout</button>
+          </div>
+        </header>
+        <section class="content">
+          <div class="metric-grid" id="edge-metrics">
+            <div class="metric"><span>Radxa nodes</span><strong>3</strong><em>edge-a/b/c</em></div>
+            <div class="metric"><span>Cache hit</span><strong>74%</strong><em>Varnish/Nginx</em></div>
+            <div class="metric"><span>Blocked today</span><strong>128</strong><em>CrowdSec + WAF</em></div>
+            <div class="metric"><span>Power draw</span><strong>54 W</strong><em>3 boards</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Cloudflare-Equivalent Services</h2>
+              <div class="panel-tools">
+                <input id="edge-service-filter" type="search" placeholder="Filter edge services">
+                <select id="edge-status-filter" aria-label="Edge service status filter">
+                  <option value="">All status</option>
+                  <option value="ready">ready</option>
+                  <option value="detection">detection</option>
+                  <option value="preview">preview</option>
+                </select>
+                <button id="edge-generate-configs">Generate configs</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Function</th><th>Cloudflare equivalent</th><th>Open-source stack</th><th>Radxa role</th><th>Status</th></tr>
+              </thead>
+              <tbody id="edge-services">
+                <tr><td>DNS</td><td>Cloudflare DNS</td><td>PowerDNS</td><td>authoritative DNS</td><td><span class="status">ready</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Generated Config Preview</h2>
+              <span class="status info" id="edge-config-role">radxa-edge-gateway</span>
+            </div>
+            <div class="split">
+              <table>
+                <thead>
+                  <tr><th>File</th><th>Owner</th><th>Purpose</th></tr>
+                </thead>
+                <tbody id="edge-config-preview">
+                  <tr><td>/etc/caddy/Caddyfile</td><td>caddy</td><td>TLS proxy routes</td></tr>
+                </tbody>
+              </table>
+              <div class="panel-body flow-grid" id="edge-config-checks">
+                <div class="flow-step"><strong>Check</strong><span>validate generated configs</span></div>
+              </div>
+            </div>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Radxa Nodes</h2>
+                <div class="panel-tools">
+                  <input id="edge-node-filter" type="search" placeholder="Filter nodes">
+                  <button id="edge-ssh-policy">SSH policy</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Name</th><th>Board</th><th>Role</th><th>Power</th><th>Status</th></tr>
+                </thead>
+                <tbody id="edge-nodes">
+                  <tr><td>edge-a</td><td>Radxa ROCK 5B+</td><td>primary DNS/cache/proxy</td><td>18 W</td><td><span class="status">ready</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Rollout Queue</h2>
+                <div class="panel-tools">
+                  <input id="edge-rollout-filter" type="search" placeholder="Filter rollout">
+                  <button id="edge-audit">Audit</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Time</th><th>System</th><th>Action</th><th>Owner</th><th>Risk</th><th>Status</th></tr>
+                </thead>
+                <tbody id="edge-rollout">
+                  <tr><td>09:10</td><td>WAF</td><td>Coraza CRS update</td><td>security</td><td>medium</td><td><span class="status info">testing</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>
