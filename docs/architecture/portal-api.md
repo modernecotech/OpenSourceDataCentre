@@ -7,6 +7,7 @@ Last reviewed: 2026-06-14.
 - Tenant portal: `/user`
 - Operator console: `/operator`
 - Edge Shield console: `/edge`
+- Cost planner: `/planner`
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, NetBox, Ceph, Kubernetes, Kueue, OpenBao, and the facility gateways.
 
@@ -27,6 +28,10 @@ It deliberately starts as a small standard-library HTTP server. That keeps the f
 | `/api/provisioning/preview` | JSON | Sample provisioning plan with backend stack, power estimate, monthly estimate, and operator checks. |
 | `/api/tenant/summary` | JSON | Tenant metrics, service tiles, site-flow status, and resources. |
 | `/api/operator/status` | JSON | DC power/cooling metrics, hardware pools, open cloud stack health, and operations queue. |
+| `/api/cost/planning` | JSON | Combined cost metrics, scale scenarios, category costs, and marketplace price basis. |
+| `/api/cost/scenarios` | JSON | Four datacentre build scenarios from 50 kW edge micro to 5 MW national AI-ready. |
+| `/api/cost/categories` | JSON | Category-level cost ranges for each scenario. |
+| `/api/cost/price-basis` | JSON | Marketplace and derived unit-cost planning basis. |
 | `/health` | text | Readiness check. |
 
 ## Data Direction
@@ -55,8 +60,9 @@ Open:
 - `http://127.0.0.1:8787/user`
 - `http://127.0.0.1:8787/operator`
 - `http://127.0.0.1:8787/edge`
+- `http://127.0.0.1:8787/planner`
 
-The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant resources, and visible action feedback for staged operator and edge workflows.
+The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant/planner tables, and visible action feedback for staged operator and edge workflows.
 
 The Radxa-local edge service can be run separately:
 

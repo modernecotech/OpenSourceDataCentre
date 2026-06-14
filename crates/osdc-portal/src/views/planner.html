@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Cost Planner</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="planner">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Planner</strong>
+          <span>scale and procurement</span>
+        </div>
+        <nav class="nav-list" aria-label="Planner navigation">
+          <a class="active" href="/planner"><span class="nav-icon">P</span>Planner</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+        </nav>
+        <small>basis: Alibaba/AliExpress planning ranges</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Cost Planner</h1>
+            <p>Scenario ranges for fast panel buildings, DC microgrid power, sodium-ion storage, cooling, racks, network, and starter IT</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="planner-refresh" aria-label="Refresh planner data">R</button>
+            <button id="planner-export">Export visible CSV</button>
+          </div>
+        </header>
+        <section class="content">
+          <div class="metric-grid" id="planner-metrics">
+            <div class="metric"><span>Scale scenarios</span><strong>4</strong><em>50 kW to 5 MW IT</em></div>
+            <div class="metric"><span>Total range</span><strong>$420k-$66.5M</strong><em>facility plus starter IT</em></div>
+            <div class="metric"><span>Fastest build</span><strong>8-14 wk</strong><em>edge micro</em></div>
+            <div class="metric"><span>Power baseline</span><strong>DC</strong><em>solar sodium-ion microgrid</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Scale Scenarios</h2>
+              <div class="panel-tools">
+                <input id="planner-scenario-filter" type="search" placeholder="Filter scenarios">
+                <button id="planner-select-pilot">Select pilot</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Scenario</th><th>IT load</th><th>Racks</th><th>Area</th><th>Facility</th><th>Starter IT</th><th>Total</th><th>Build</th></tr>
+              </thead>
+              <tbody id="planner-scenarios">
+                <tr><td>Regional pilot</td><td>250 kW</td><td>10</td><td>300 m2</td><td>$1.02M-$1.92M</td><td>$180k-$550k</td><td>$1.20M-$2.47M</td><td>14-24 weeks</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Selected Scenario</h2>
+                <span class="status info" id="planner-selected-id">S2</span>
+              </div>
+              <div class="panel-body">
+                <div class="flow-grid" id="planner-selected-summary">
+                  <div class="flow-step"><strong>Total</strong><span>$1.20M-$2.47M</span></div>
+                  <div class="flow-step"><strong>Build</strong><span>14-24 weeks</span></div>
+                </div>
+                <div class="action-output" id="planner-action-output">Select any scenario row to inspect its category breakdown.</div>
+              </div>
+            </section>
+
+            <section class="panel media-panel">
+              <div class="panel-header"><h2>Building System</h2><span class="status">fast panel</span></div>
+              <img src="/assets/prefab-panel-datacentre-exterior-02.png" alt="Prefab insulated datacentre with solar canopy">
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Category Breakdown</h2>
+              <div class="panel-tools">
+                <input id="planner-category-filter" type="search" placeholder="Filter categories">
+                <button id="planner-category-export">Export categories</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Category</th><th>Low</th><th>High</th><th>Notes</th></tr>
+              </thead>
+              <tbody id="planner-categories">
+                <tr><td>dc_microgrid_solar_sodium_single_fallback_power</td><td>$430k</td><td>$720k</td><td>300 kWp PV and 500 kWh sodium-ion BESS</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Marketplace Price Basis</h2>
+              <div class="panel-tools">
+                <input id="planner-price-filter" type="search" placeholder="Filter price basis">
+                <button id="planner-price-export">Export price basis</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Item family</th><th>Unit</th><th>Low</th><th>High</th><th>Selected</th><th>Source</th><th>Use</th></tr>
+              </thead>
+              <tbody id="planner-price-basis">
+                <tr><td>sodium_ion_bess</td><td>kwh_installed</td><td>$200</td><td>$420</td><td>$230</td><td>Alibaba/Derived</td><td>critical ride-through</td></tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

@@ -53,6 +53,7 @@ The project should not try to rewrite mature infrastructure tools. The core soft
 ```bash
 cargo fmt --check
 cargo test
+scripts/verify.sh
 cargo run -p osdcctl -- examples/site-profile.json
 cargo run -p osdc-portal -- 127.0.0.1:8787
 cargo run -p osdc-edge -- 127.0.0.1:8790
@@ -65,8 +66,9 @@ The first portal serves three GUI surfaces:
 - Tenant portal: `http://127.0.0.1:8787/user`
 - Operator console: `http://127.0.0.1:8787/operator`
 - Edge Shield console: `http://127.0.0.1:8787/edge`
+- Cost planner: `http://127.0.0.1:8787/planner`
 
-The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, and Edge Shield service/config rollout previews. The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
+The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, and scale/cost planning from the marketplace scenario data. The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
 
 For CSV fixture checks:
 

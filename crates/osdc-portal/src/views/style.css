@@ -312,6 +312,11 @@ tr:last-child td {
   border-bottom: 0;
 }
 
+tr.selected-row td {
+  background: #eefdf8;
+  box-shadow: inset 3px 0 0 var(--teal);
+}
+
 .status {
   display: inline-flex;
   align-items: center;

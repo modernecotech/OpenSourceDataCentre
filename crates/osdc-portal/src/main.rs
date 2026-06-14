@@ -11,6 +11,7 @@ const PORTAL_JS: &str = include_str!("views/portal.js");
 const USER_HTML: &str = include_str!("views/user.html");
 const OPERATOR_HTML: &str = include_str!("views/operator.html");
 const EDGE_HTML: &str = include_str!("views/edge.html");
+const PLANNER_HTML: &str = include_str!("views/planner.html");
 const RACK_IMAGE: &[u8] = include_bytes!("../../../docs/assets/rack-thermal-spine-cutaway.png");
 const EXTERIOR_IMAGE: &[u8] =
     include_bytes!("../../../docs/assets/prefab-panel-datacentre-exterior-02.png");
@@ -25,6 +26,7 @@ fn main() -> std::io::Result<()> {
     println!("tenant portal: http://{addr}/user");
     println!("operator console: http://{addr}/operator");
     println!("edge shield console: http://{addr}/edge");
+    println!("planning console: http://{addr}/planner");
     println!("catalog API: http://{addr}/api/catalog/hardware");
 
     for stream in listener.incoming() {
@@ -70,6 +72,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/user") => html(USER_HTML),
         ("GET", "/operator") => html(OPERATOR_HTML),
         ("GET", "/edge") => html(EDGE_HTML),
+        ("GET", "/planner") => html(PLANNER_HTML),
         ("GET", "/styles.css") => bytes("200 OK", "text/css; charset=utf-8", STYLE_CSS.as_bytes()),
         ("GET", "/portal.js") => bytes(
             "200 OK",
@@ -87,6 +90,10 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/provisioning/preview") => json(&provisioning_preview()),
         ("GET", "/api/tenant/summary") => json(&tenant_summary()),
         ("GET", "/api/operator/status") => json(&operator_status()),
+        ("GET", "/api/cost/planning") => json(&cost_planning()),
+        ("GET", "/api/cost/scenarios") => json(&cost_scenarios()),
+        ("GET", "/api/cost/categories") => json(&cost_categories()),
+        ("GET", "/api/cost/price-basis") => json(&price_basis()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -318,6 +325,53 @@ struct EdgeNode {
     power: &'static str,
     status: &'static str,
     status_kind: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct CostPlanning {
+    metrics: Vec<Metric>,
+    scenarios: Vec<CostScenario>,
+    categories: Vec<CostCategory>,
+    price_basis: Vec<PriceBasis>,
+}
+
+#[derive(Debug, Serialize)]
+struct CostScenario {
+    id: &'static str,
+    name: &'static str,
+    it_load_kw: u32,
+    racks: u16,
+    building_area_m2: u32,
+    core_facility_low_usd: u32,
+    core_facility_high_usd: u32,
+    starter_it_low_usd: u32,
+    starter_it_high_usd: u32,
+    total_with_it_low_usd: u32,
+    total_with_it_high_usd: u32,
+    build_time_low_weeks: u16,
+    build_time_high_weeks: u16,
+    default_building_system: &'static str,
+    notes: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct CostCategory {
+    scenario_id: &'static str,
+    category: &'static str,
+    low_usd: u32,
+    high_usd: u32,
+    notes: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct PriceBasis {
+    item_family: &'static str,
+    unit: &'static str,
+    low_usd: f64,
+    high_usd: f64,
+    planning_selected_usd: f64,
+    source_marketplace: &'static str,
+    project_use: &'static str,
 }
 
 #[derive(Debug, Serialize)]
@@ -665,6 +719,493 @@ fn edge_config_preview() -> EdgeConfigPreview {
             "record rollback file hashes",
         ],
     }
+}
+
+fn cost_planning() -> CostPlanning {
+    CostPlanning {
+        metrics: vec![
+            Metric {
+                label: "Scale scenarios",
+                value: "4",
+                detail: "50 kW to 5 MW IT",
+                kind: "normal",
+            },
+            Metric {
+                label: "Total range",
+                value: "$420k-$66.5M",
+                detail: "facility plus starter IT",
+                kind: "normal",
+            },
+            Metric {
+                label: "Fastest build",
+                value: "8-14 wk",
+                detail: "edge micro",
+                kind: "normal",
+            },
+            Metric {
+                label: "Power baseline",
+                value: "DC",
+                detail: "solar sodium-ion microgrid",
+                kind: "info",
+            },
+        ],
+        scenarios: cost_scenarios(),
+        categories: cost_categories(),
+        price_basis: price_basis(),
+    }
+}
+
+fn cost_scenarios() -> Vec<CostScenario> {
+    vec![
+        CostScenario {
+            id: "S1",
+            name: "Edge micro",
+            it_load_kw: 50,
+            racks: 4,
+            building_area_m2: 120,
+            core_facility_low_usd: 340_000,
+            core_facility_high_usd: 580_000,
+            starter_it_low_usd: 80_000,
+            starter_it_high_usd: 220_000,
+            total_with_it_low_usd: 420_000,
+            total_with_it_high_usd: 800_000,
+            build_time_low_weeks: 8,
+            build_time_high_weeks: 14,
+            default_building_system:
+                "insulated sandwich panel building with solar sodium-ion DC microgrid bus",
+            notes: "excludes land, major utility upgrade, and fibre buildout",
+        },
+        CostScenario {
+            id: "S2",
+            name: "Regional pilot",
+            it_load_kw: 250,
+            racks: 10,
+            building_area_m2: 300,
+            core_facility_low_usd: 1_020_000,
+            core_facility_high_usd: 1_920_000,
+            starter_it_low_usd: 180_000,
+            starter_it_high_usd: 550_000,
+            total_with_it_low_usd: 1_200_000,
+            total_with_it_high_usd: 2_470_000,
+            build_time_low_weeks: 14,
+            build_time_high_weeks: 24,
+            default_building_system:
+                "insulated panel hall with service trench and solar sodium-ion DC microgrid bus",
+            notes: "includes adsorption chiller as optional pilot allowance",
+        },
+        CostScenario {
+            id: "S3",
+            name: "Regional production",
+            it_load_kw: 1_000,
+            racks: 40,
+            building_area_m2: 1_000,
+            core_facility_low_usd: 3_650_000,
+            core_facility_high_usd: 6_650_000,
+            starter_it_low_usd: 900_000,
+            starter_it_high_usd: 3_200_000,
+            total_with_it_low_usd: 4_550_000,
+            total_with_it_high_usd: 9_850_000,
+            build_time_low_weeks: 28,
+            build_time_high_weeks: 44,
+            default_building_system:
+                "multi-zone insulated panel halls with solar sodium-ion DC microgrid bus",
+            notes: "requires stronger local engineering and authority review",
+        },
+        CostScenario {
+            id: "S4",
+            name: "National AI-ready",
+            it_load_kw: 5_000,
+            racks: 160,
+            building_area_m2: 4_500,
+            core_facility_low_usd: 18_500_000,
+            core_facility_high_usd: 36_500_000,
+            starter_it_low_usd: 5_000_000,
+            starter_it_high_usd: 30_000_000,
+            total_with_it_low_usd: 23_500_000,
+            total_with_it_high_usd: 66_500_000,
+            build_time_low_weeks: 52,
+            build_time_high_weeks: 90,
+            default_building_system:
+                "large insulated panel campus with solar sodium-ion DC microgrid blocks",
+            notes: "marketplace sourcing is useful for commodities only at this scale",
+        },
+    ]
+}
+
+fn cost_categories() -> Vec<CostCategory> {
+    vec![
+        CostCategory {
+            scenario_id: "S1",
+            category: "panel_building_civil_trench_security_shell",
+            low_usd: 70_000,
+            high_usd: 130_000,
+            notes: "120 m2 insulated panel shell with service trench and simple perimeter",
+        },
+        CostCategory {
+            scenario_id: "S1",
+            category: "dc_microgrid_solar_sodium_single_fallback_power",
+            low_usd: 115_000,
+            high_usd: 190_000,
+            notes: "75 kWp PV, 150 kWh sodium-ion BESS, 75 kW DC microgrid converters, 380-400 VDC bus, 48 V racks, and one fallback generator path",
+        },
+        CostCategory {
+            scenario_id: "S1",
+            category: "rack_thermal_spine_cooling",
+            low_usd: 70_000,
+            high_usd: 140_000,
+            notes: "4 rear-door heat exchangers, small pump skid, dry cooler, backup chiller, and controls",
+        },
+        CostCategory {
+            scenario_id: "S1",
+            category: "fire_access_cctv",
+            low_usd: 30_000,
+            high_usd: 65_000,
+            notes: "local-code approved detection, suppression, and basic security",
+        },
+        CostCategory {
+            scenario_id: "S1",
+            category: "racks_cabling_basic_network",
+            low_usd: 35_000,
+            high_usd: 75_000,
+            notes: "4 racks, DC rack power, OOB, and modest switching",
+        },
+        CostCategory {
+            scenario_id: "S1",
+            category: "commissioning_spares_tools_docs",
+            low_usd: 45_000,
+            high_usd: 90_000,
+            notes: "load testing, spares, operator tools, and runbooks",
+        },
+        CostCategory {
+            scenario_id: "S2",
+            category: "panel_building_civil_trench_perimeter",
+            low_usd: 160_000,
+            high_usd: 300_000,
+            notes: "300 m2 panel hall with electrical room and thermal plant room",
+        },
+        CostCategory {
+            scenario_id: "S2",
+            category: "dc_microgrid_solar_sodium_single_fallback_power",
+            low_usd: 430_000,
+            high_usd: 720_000,
+            notes: "300 kWp PV, 500 kWh sodium-ion BESS, 350 kW DC converters, 380-400 VDC bus, 48 V racks, and one fallback generator path",
+        },
+        CostCategory {
+            scenario_id: "S2",
+            category: "rack_thermal_spine_and_backup_cooling",
+            low_usd: 230_000,
+            high_usd: 470_000,
+            notes: "10 rear-door heat exchangers, thermal spine, dry cooler, chiller, and adsorption pilot allowance",
+        },
+        CostCategory {
+            scenario_id: "S2",
+            category: "fire_security_monitoring",
+            low_usd: 70_000,
+            high_usd: 150_000,
+            notes: "aspirating detection, fire alarm, suppression, access, CCTV, and monitoring",
+        },
+        CostCategory {
+            scenario_id: "S2",
+            category: "racks_structured_cabling_network",
+            low_usd: 90_000,
+            high_usd: 220_000,
+            notes: "10 racks with 25G/100G-capable network and cabling",
+        },
+        CostCategory {
+            scenario_id: "S2",
+            category: "commissioning_spares_tools_docs",
+            low_usd: 90_000,
+            high_usd: 180_000,
+            notes: "integrated systems testing, spares, local runbooks, and training",
+        },
+        CostCategory {
+            scenario_id: "S3",
+            category: "panel_building_civil_roads_perimeter_trenches",
+            low_usd: 550_000,
+            high_usd: 1_100_000,
+            notes: "1000 m2 multi-zone panel facility and plant yard",
+        },
+        CostCategory {
+            scenario_id: "S3",
+            category: "dc_microgrid_solar_sodium_single_fallback_power",
+            low_usd: 1_450_000,
+            high_usd: 2_550_000,
+            notes: "1.2 MWp PV, 2 MWh sodium-ion BESS, 1.4 MW DC converters, HVDC distribution, and single fallback plant",
+        },
+        CostCategory {
+            scenario_id: "S3",
+            category: "cooling_plant_rack_heat_capture_thermal_spine",
+            low_usd: 850_000,
+            high_usd: 1_700_000,
+            notes: "40 racks, multiple dry coolers, chillers, thermal spine zones, and pump skids",
+        },
+        CostCategory {
+            scenario_id: "S3",
+            category: "fire_security_monitoring",
+            low_usd: 180_000,
+            high_usd: 360_000,
+            notes: "multi-zone life safety and security systems",
+        },
+        CostCategory {
+            scenario_id: "S3",
+            category: "racks_cabling_network_fabric",
+            low_usd: 380_000,
+            high_usd: 750_000,
+            notes: "40 racks, redundant fabric, optics allowance, and structured cabling",
+        },
+        CostCategory {
+            scenario_id: "S3",
+            category: "commissioning_spares_tools_docs",
+            low_usd: 240_000,
+            high_usd: 520_000,
+            notes: "load banks, spares, procedures, and training",
+        },
+        CostCategory {
+            scenario_id: "S4",
+            category: "panel_buildings_civil_campus_security",
+            low_usd: 2_500_000,
+            high_usd: 5_000_000,
+            notes: "large panel campus with roads, fencing, plant yards, and security perimeter",
+        },
+        CostCategory {
+            scenario_id: "S4",
+            category: "dc_microgrid_solar_sodium_single_fallback_power",
+            low_usd: 7_500_000,
+            high_usd: 14_500_000,
+            notes: "5 MWp PV, 10 MWh sodium-ion BESS, 6 MW DC converter blocks, MV boundary gear, HVDC distribution, and single fallback plant",
+        },
+        CostCategory {
+            scenario_id: "S4",
+            category: "cooling_plant_thermal_spine_zones",
+            low_usd: 4_000_000,
+            high_usd: 8_500_000,
+            notes: "multiple cooling zones, dry coolers, backup chillers, liquid cooling, and thermal spine plant",
+        },
+        CostCategory {
+            scenario_id: "S4",
+            category: "fire_security_monitoring",
+            low_usd: 700_000,
+            high_usd: 1_600_000,
+            notes: "campus-scale life safety and security systems",
+        },
+        CostCategory {
+            scenario_id: "S4",
+            category: "racks_cabling_network_fabric",
+            low_usd: 2_000_000,
+            high_usd: 4_500_000,
+            notes: "160 racks, AI-ready network, optics, and structured cabling",
+        },
+        CostCategory {
+            scenario_id: "S4",
+            category: "commissioning_spares_tools_docs",
+            low_usd: 1_800_000,
+            high_usd: 3_500_000,
+            notes: "full integrated systems testing, spares, documentation, and training",
+        },
+    ]
+}
+
+fn price_basis() -> Vec<PriceBasis> {
+    vec![
+        PriceBasis {
+            item_family: "100mm_pu_pir_panel",
+            unit: "m2_fob",
+            low_usd: 8.0,
+            high_usd: 18.0,
+            planning_selected_usd: 12.0,
+            source_marketplace: "Alibaba",
+            project_use: "fast insulated building envelope",
+        },
+        PriceBasis {
+            item_family: "installed_panel_envelope",
+            unit: "m2_installed",
+            low_usd: 35.0,
+            high_usd: 90.0,
+            planning_selected_usd: 55.0,
+            source_marketplace: "Derived",
+            project_use: "scenario building shell",
+        },
+        PriceBasis {
+            item_family: "prefab_steel_frame",
+            unit: "m2_fob",
+            low_usd: 45.0,
+            high_usd: 100.0,
+            planning_selected_usd: 65.0,
+            source_marketplace: "Alibaba/China prefab market",
+            project_use: "fast panel building structure",
+        },
+        PriceBasis {
+            item_family: "concrete_plinth_and_floor",
+            unit: "m2_local",
+            low_usd: 100.0,
+            high_usd: 240.0,
+            planning_selected_usd: 160.0,
+            source_marketplace: "Derived",
+            project_use: "building foundation",
+        },
+        PriceBasis {
+            item_family: "42u_server_rack",
+            unit: "each_landed",
+            low_usd: 450.0,
+            high_usd: 900.0,
+            planning_selected_usd: 650.0,
+            source_marketplace: "Alibaba",
+            project_use: "rack structure",
+        },
+        PriceBasis {
+            item_family: "dc_rack_power_shelf_or_pdu",
+            unit: "each_landed",
+            low_usd: 300.0,
+            high_usd: 900.0,
+            planning_selected_usd: 450.0,
+            source_marketplace: "Alibaba/OCP-style suppliers",
+            project_use: "rack DC power",
+        },
+        PriceBasis {
+            item_family: "rear_door_heat_exchanger",
+            unit: "each_landed",
+            low_usd: 1800.0,
+            high_usd: 6500.0,
+            planning_selected_usd: 2800.0,
+            source_marketplace: "Alibaba",
+            project_use: "rack heat capture",
+        },
+        PriceBasis {
+            item_family: "thermal_spine_pipework",
+            unit: "m_installed",
+            low_usd: 50.0,
+            high_usd: 180.0,
+            planning_selected_usd: 85.0,
+            source_marketplace: "Derived",
+            project_use: "warm-water thermal spine",
+        },
+        PriceBasis {
+            item_family: "dry_cooler_250kw",
+            unit: "each_installed",
+            low_usd: 12_000.0,
+            high_usd: 45_000.0,
+            planning_selected_usd: 35_000.0,
+            source_marketplace: "Alibaba",
+            project_use: "primary heat rejection",
+        },
+        PriceBasis {
+            item_family: "backup_chiller_250kw",
+            unit: "each_installed",
+            low_usd: 20_000.0,
+            high_usd: 70_000.0,
+            planning_selected_usd: 40_000.0,
+            source_marketplace: "Alibaba",
+            project_use: "backup cooling",
+        },
+        PriceBasis {
+            item_family: "adsorption_chiller_pilot",
+            unit: "each_installed",
+            low_usd: 40_000.0,
+            high_usd: 140_000.0,
+            planning_selected_usd: 60_000.0,
+            source_marketplace: "RFQ/Derived",
+            project_use: "heat-to-cooling pilot",
+        },
+        PriceBasis {
+            item_family: "sodium_ion_bess",
+            unit: "kwh_installed",
+            low_usd: 200.0,
+            high_usd: 420.0,
+            planning_selected_usd: 230.0,
+            source_marketplace: "Alibaba/Derived",
+            project_use: "critical ride-through and solar shifting",
+        },
+        PriceBasis {
+            item_family: "dc_microgrid_converter_controller",
+            unit: "kw_installed",
+            low_usd: 85.0,
+            high_usd: 210.0,
+            planning_selected_usd: 135.0,
+            source_marketplace: "Alibaba/Derived",
+            project_use: "380-400 VDC bus control",
+        },
+        PriceBasis {
+            item_family: "ac_boundary_rectifier_inverter",
+            unit: "kw_installed",
+            low_usd: 55.0,
+            high_usd: 150.0,
+            planning_selected_usd: 95.0,
+            source_marketplace: "Alibaba/Derived",
+            project_use: "boundary adapter",
+        },
+        PriceBasis {
+            item_family: "hvdc_distribution_protection",
+            unit: "kw_installed",
+            low_usd: 25.0,
+            high_usd: 90.0,
+            planning_selected_usd: 45.0,
+            source_marketplace: "Derived",
+            project_use: "DC distribution safety",
+        },
+        PriceBasis {
+            item_family: "solar_pv_system",
+            unit: "w_installed",
+            low_usd: 0.55,
+            high_usd: 0.95,
+            planning_selected_usd: 0.65,
+            source_marketplace: "Alibaba/Derived",
+            project_use: "core solar input",
+        },
+        PriceBasis {
+            item_family: "25g_leaf_switch",
+            unit: "each_landed",
+            low_usd: 2500.0,
+            high_usd: 9000.0,
+            planning_selected_usd: 5500.0,
+            source_marketplace: "Alibaba",
+            project_use: "network fabric",
+        },
+        PriceBasis {
+            item_family: "100g_spine_switch",
+            unit: "each_landed",
+            low_usd: 6500.0,
+            high_usd: 15_000.0,
+            planning_selected_usd: 9000.0,
+            source_marketplace: "Alibaba/SONiC vendors",
+            project_use: "network fabric",
+        },
+        PriceBasis {
+            item_family: "standard_compute_server",
+            unit: "each_landed",
+            low_usd: 1400.0,
+            high_usd: 3500.0,
+            planning_selected_usd: 1800.0,
+            source_marketplace: "Alibaba/used market",
+            project_use: "compute nodes",
+        },
+        PriceBasis {
+            item_family: "storage_server_node",
+            unit: "each_landed",
+            low_usd: 5000.0,
+            high_usd: 15_000.0,
+            planning_selected_usd: 8000.0,
+            source_marketplace: "Alibaba",
+            project_use: "Ceph storage",
+        },
+        PriceBasis {
+            item_family: "gpu_server_pilot",
+            unit: "each_landed",
+            low_usd: 15_000.0,
+            high_usd: 50_000.0,
+            planning_selected_usd: 20_000.0,
+            source_marketplace: "Alibaba",
+            project_use: "AI pilot",
+        },
+        PriceBasis {
+            item_family: "commissioning_load_bank",
+            unit: "lot",
+            low_usd: 8000.0,
+            high_usd: 80_000.0,
+            planning_selected_usd: 25_000.0,
+            source_marketplace: "Rental/Derived",
+            project_use: "integrated systems testing",
+        },
+    ]
 }
 
 fn core_cloud_services() -> Vec<CoreCloudService> {
@@ -1391,6 +1932,7 @@ mod tests {
         let user = body(&route_response("GET", "/user"));
         let operator = body(&route_response("GET", "/operator"));
         let edge = body(&route_response("GET", "/edge"));
+        let planner = body(&route_response("GET", "/planner"));
 
         assert!(user.contains("Tenant Cloud"));
         assert!(user.contains("tenant-service-filter"));
@@ -1400,6 +1942,9 @@ mod tests {
         assert!(edge.contains("Edge Shield"));
         assert!(edge.contains("edge-service-filter"));
         assert!(edge.contains("edge-config-preview"));
+        assert!(planner.contains("Cost Planner"));
+        assert!(planner.contains("planner-scenarios"));
+        assert!(planner.contains("planner-price-basis"));
     }
 
     #[test]
@@ -1495,6 +2040,35 @@ mod tests {
             .unwrap()
             .iter()
             .any(|service| service["id"] == "networking"));
+    }
+
+    #[test]
+    fn exposes_cost_planning_scenarios_categories_and_price_basis() {
+        let planning = json_body("/api/cost/planning");
+        let scenarios = json_body("/api/cost/scenarios");
+        let categories = json_body("/api/cost/categories");
+        let price_basis = json_body("/api/cost/price-basis");
+
+        assert_eq!(planning["metrics"].as_array().unwrap().len(), 4);
+        assert!(scenarios.as_array().unwrap().iter().any(|scenario| {
+            scenario["id"] == "S2"
+                && scenario["it_load_kw"] == 250
+                && scenario["total_with_it_low_usd"] == 1_200_000
+                && scenario["total_with_it_high_usd"] == 2_470_000
+        }));
+        assert!(categories.as_array().unwrap().iter().any(|category| {
+            category["scenario_id"] == "S2"
+                && category["category"] == "dc_microgrid_solar_sodium_single_fallback_power"
+                && category["notes"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("sodium-ion BESS")
+        }));
+        assert!(price_basis.as_array().unwrap().iter().any(|item| {
+            item["item_family"] == "solar_pv_system"
+                && item["unit"] == "w_installed"
+                && item["source_marketplace"] == "Alibaba/Derived"
+        }));
     }
 
     #[test]
