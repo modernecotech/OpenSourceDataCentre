@@ -24,6 +24,7 @@ The project needs test harnesses for both code and real-world systems. A datacen
 - Failover tests for cooling pumps, valves, controllers, network links, UPS, and telemetry gateways.
 - Earth-cooling tests for loop pressure, thermal response, antifreeze/corrosion chemistry, and seasonal ground recovery.
 - Thermal-load tests using staged IT load banks before production deployment.
+- Rack thermal-spine tests for capture fraction, hot-loop temperature, two-phase stability where used, sorption chiller COP, bypass behavior, and final heat-rejection capacity.
 
 ## Rack and Mechanical Tests
 
@@ -31,6 +32,7 @@ The project needs test harnesses for both code and real-world systems. A datacen
 - Cable-management and service-removal tests.
 - Airflow obstruction checks.
 - Liquid pressure/leak tests for cooling manifolds.
+- Thermal-spine module tests for isolation-valve access, leak-channel drainage, sensor replacement, insulation integrity, and safe walking/floor loading.
 - Seismic or transport tests where relevant.
 
 ## AI and Queue Tests

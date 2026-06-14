@@ -57,6 +57,31 @@ Represents a facility cooling boundary.
 - `ground_loop_enabled`
 - `liquid_cooling_enabled`
 
+## Rack Heat Recovery
+
+Represents the cooling concept where rack heat is captured, collated in an underfloor or service-trench thermal spine, then reused or rejected.
+
+- `rack_heat_kw`
+- `capture_fraction`
+- `drive_temp_c`
+- `sink_temp_c`
+- `thermal_cop`
+- `auxiliary_cooling_load_kw`
+- `displaced_electric_chiller_cop`
+- `pump_and_controls_kw`
+
+Outputs:
+
+- `captured_heat_kw`
+- `recovered_cooling_kw`
+- `cooling_offset_kw`
+- `unmet_auxiliary_cooling_kw`
+- `equivalent_compressor_power_avoided_kw`
+- `net_electric_power_savings_kw`
+- `heat_rejection_kw`
+
+The model must not imply perpetual cooling. Heat-driven cooling offsets compressor work, but drive heat plus lifted heat still need final rejection.
+
 ## Workload
 
 Represents a scheduled compute or AI job.

@@ -16,6 +16,7 @@ The project combines:
 - [Technology Stack Research](docs/research/technology-stack-2027.md) - sourced recommendations for 2027+ builds.
 - [Reference Architecture](docs/architecture/reference-architecture.md) - system layers and integration boundaries.
 - [Data Model](docs/architecture/data-model.md) - initial domain objects for Rust services and APIs.
+- [Rack Thermal Spine Cooling](docs/design/rack-thermal-spine-cooling.md) - priority design for rack heat capture, underfloor heat transport, and heat-driven cooling.
 - [FreeCAD Guidelines](docs/design/freecad-1.1-guidelines.md) - mechanical and design-artifact conventions.
 - [Test Harnesses](docs/process/test-harnesses.md) - verification strategy across facilities, IT, AI, and cost tools.
 - [Cost Calculators](docs/process/cost-calculators.md) - calculator scope, formulas, and validation rules.

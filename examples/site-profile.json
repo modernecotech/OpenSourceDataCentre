@@ -12,5 +12,15 @@
     "grid_carbon_kg_per_kwh": 0.38,
     "water_liters_per_facility_kwh": 0.25,
     "onsite_renewable_kwh": 650000.0
+  },
+  "cooling": {
+    "rack_heat_kw": 250.0,
+    "capture_fraction": 0.85,
+    "drive_temp_c": 68.0,
+    "sink_temp_c": 32.0,
+    "thermal_cop": 0.45,
+    "auxiliary_cooling_load_kw": 80.0,
+    "displaced_electric_chiller_cop": 4.0,
+    "pump_and_controls_kw": 4.0
   }
 }

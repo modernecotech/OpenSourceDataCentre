@@ -33,7 +33,7 @@ flowchart TB
 ## Layer 1: Physical Facility
 
 - Building envelope, structure, earthing, fire zones, cable pathways, service access, and site drainage.
-- HVAC, liquid cooling, heat rejection, water-side economizers, ground-source cooling, and optional Cold UTES.
+- Rack thermal spine cooling: rack-level heat capture, underfloor/service-trench heat transport, heat-driven sorption cooling, heat rejection, water-side economizers, ground-source cooling, and optional Cold UTES.
 - Solar PV, battery storage, switchgear, UPS, metering, and grid/islanded modes.
 - Lighting, access control, CCTV/NVR, intrusion detection, and environmental safety.
 - FreeCAD 1.1 source models for parts and assemblies, plus IFC/STEP/STL/PDF exports.
@@ -95,6 +95,7 @@ The first workflows should be intentionally mundane:
 
 - Register a site, rack, PDU, compute node, cooling zone, and meter.
 - Estimate rack power and cooling demand.
+- Size rack heat capture, thermal-spine capacity, sorption chiller offset, and backup cooling.
 - Import telemetry and compare measured versus design PUE/WUE/CUE.
 - Submit AI inference/training jobs to an open queue.
 - Show fair-share queue position, estimated start time, energy cost, and carbon estimate.

@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use osdc_calc::annual_site_summary;
+use osdc_calc::{annual_site_summary, cooling_recovery_summary};
 use osdc_models::SiteProfile;
 
 #[derive(Debug, Parser)]
@@ -39,6 +39,29 @@ fn main() -> Result<()> {
         summary.wue_liters_per_it_kwh
     );
     println!("cue_kg_per_it_kwh: {:.3}", summary.cue_kg_per_it_kwh);
+
+    if let Some(cooling) = profile.cooling {
+        let cooling = cooling_recovery_summary(cooling)?;
+
+        println!("cooling_captured_heat_kw: {:.2}", cooling.captured_heat_kw);
+        println!(
+            "cooling_recovered_cooling_kw: {:.2}",
+            cooling.recovered_cooling_kw
+        );
+        println!("cooling_offset_kw: {:.2}", cooling.cooling_offset_kw);
+        println!(
+            "cooling_unmet_auxiliary_kw: {:.2}",
+            cooling.unmet_auxiliary_cooling_kw
+        );
+        println!(
+            "cooling_net_electric_savings_kw: {:.2}",
+            cooling.net_electric_power_savings_kw
+        );
+        println!(
+            "cooling_heat_rejection_kw: {:.2}",
+            cooling.heat_rejection_kw
+        );
+    }
 
     Ok(())
 }

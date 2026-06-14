@@ -34,6 +34,8 @@ Examples:
 
 - `rack-eia19-pdu-bracket-r01.FCStd`
 - `cooling-groundloop-manifold-r01.FCStd`
+- `cooling-thermalspine-row-segment-r01.FCStd`
+- `cooling-rack-reardoor-hx-r01.FCStd`
 - `security-door-controller-enclosure-r01.FCStd`
 
 ## Required Metadata
@@ -65,6 +67,7 @@ Each part should include:
 - Include leak detection, drip paths, isolation valves, strain relief, and service loops in the mechanical envelope.
 - Mark all liquid paths with material, working pressure, test pressure, and compatible coolant.
 - For earth-based cooling, separate underground loops, surface plant, manifolds, filtration, and heat exchangers.
+- For rack thermal-spine cooling, separate rack capture modules, row manifolds, underfloor/service-trench segments, sensor cassettes, heat-exchanger skids, sorption chiller envelopes, and bypass paths.
 
 ## Export Rules
 

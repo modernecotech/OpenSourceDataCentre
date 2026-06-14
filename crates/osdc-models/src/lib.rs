@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct SiteProfile {
     pub site: SiteIdentity,
     pub energy: EnergyProfile,
+    #[serde(default)]
+    pub cooling: Option<CoolingRecoveryProfile>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -38,6 +40,30 @@ pub struct CostSummary {
     pub pue: f64,
     pub wue_liters_per_it_kwh: f64,
     pub cue_kg_per_it_kwh: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct CoolingRecoveryProfile {
+    pub rack_heat_kw: f64,
+    pub capture_fraction: f64,
+    pub drive_temp_c: f64,
+    pub sink_temp_c: f64,
+    pub thermal_cop: f64,
+    pub auxiliary_cooling_load_kw: f64,
+    pub displaced_electric_chiller_cop: f64,
+    pub pump_and_controls_kw: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct CoolingRecoverySummary {
+    pub captured_heat_kw: f64,
+    pub recovered_cooling_kw: f64,
+    pub cooling_offset_kw: f64,
+    pub unmet_auxiliary_cooling_kw: f64,
+    pub surplus_recovered_cooling_kw: f64,
+    pub equivalent_compressor_power_avoided_kw: f64,
+    pub net_electric_power_savings_kw: f64,
+    pub heat_rejection_kw: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -19,6 +19,7 @@ This document turns the project vision into a stack recommendation for datacentr
 | Mechanical design | FreeCAD 1.1, IFC, STEP, CSV BOM exports | FreeCAD 1.1 is current and suitable for open mechanical artifacts. IFC keeps building design exchangeable. | Treat FreeCAD files as source; export neutral formats for review and manufacturing. |
 | Building energy modelling | EnergyPlus + OpenStudio | OpenStudio is an open-source SDK for building energy modelling with EnergyPlus. | Datacentre loads require careful schedules and heat-rejection modelling. |
 | CFD and airflow | OpenFOAM | OpenFOAM is mature open-source CFD with heat-transfer capability. | Requires validated boundary conditions and mesh QA; do not use CFD results without commissioning data. |
+| Primary cooling architecture | Rack thermal spine: rack heat capture, underfloor/service-trench heat bus, ground/free rejection, sorption cooling, backup CDU/chiller | Captures heat close to source, keeps vendors interchangeable, and creates a path to recycle waste heat into chilled water where temperature allows. | Must not assume heat can cool itself fully; final heat rejection and backup cooling remain mandatory. |
 | Earth-based cooling | Ground-source heat pumps, closed-loop ground heat exchangers, Cold UTES where geology allows | DOE notes geothermal/Cold UTES can reduce peak datacentre cooling demand and energy cost. | Site geology, groundwater law, water rights, corrosion, and maintenance drive feasibility. |
 | Free cooling | Water-side economizers; air-side only where filtration/humidity and pollution are acceptable | ENERGY STAR notes water-side economizers can bypass chillers when conditions allow. | Requires climate analysis and redundancy for liquid-cooled AI loads. |
 | Building integration | BACnet/IP, Modbus TCP, OPC UA, MQTT, Project Haystack, Brick | BACnet is the building automation norm; OPC UA provides secure industrial data modelling; MQTT is useful for telemetry; Haystack/Brick provide semantics. | Protocol gateways should be isolated from IT networks and authenticated. |
@@ -44,6 +45,7 @@ The core implementation should be an `osdc-control-plane` composed of Rust servi
 - `inventory-adapter`: reads NetBox/openDCIM, exposes normalized facility/IT inventory.
 - `telemetry-ingest`: subscribes to Prometheus remote read, MQTT, OPC UA, BACnet gateways, and logs.
 - `calculator`: computes CAPEX/OPEX, PUE, WUE, CUE, carbon, cooling capacity, rack power, and AI job cost.
+- `cooling-design`: sizes rack heat capture, thermal-spine transport, sorption cooling offset, and heat-rejection load.
 - `scheduler-adapter`: integrates Kueue, Slurm, Kubernetes, and AI serving endpoints.
 - `policy`: calls OPA and enforces safety, queue, tenancy, and energy policies.
 - `portal-api`: one Rust API for admins, operators, and users.
@@ -89,7 +91,8 @@ For the first public technical baseline:
 3. Kubernetes + Kueue path for AI jobs, with Slurm as a second scheduler profile.
 4. OCP/Open19 rack metadata model that can represent non-OCP local fabrication adapters.
 5. FreeCAD 1.1 naming, BOM, and export conventions.
-6. Test harness using Rust unit tests, JSON golden files, containerized integration tests, and simulation fixtures.
+6. Rack thermal-spine cooling prototype: warm-water row loop first, then two-phase thermosyphon/loop heat-pipe modules if serviceability and regulation allow.
+7. Test harness using Rust unit tests, JSON golden files, containerized integration tests, and simulation fixtures.
 
 ## Source Notes
 
@@ -108,6 +111,12 @@ For the first public technical baseline:
 - NetBox docs: https://netboxlabs.com/docs/netbox/
 - openDCIM: https://opendcim.org/
 - OCP rack and power, ORV3/ORW specs, and DC-MHS: https://www.opencompute.org/community/rack-and-power, https://www.opencompute.org/wiki/Open_Rack/SpecsAndDesigns, and https://www.opencompute.org/wiki/Server/MHS
+- OCP Cooling Environments: https://www.opencompute.org/community/cooling-environments
+- LBNL liquid-cooled rack specification work: https://datacenters.lbl.gov/development-liquid-cooled-rack-specification
+- Heat-driven adsorption chillers: https://heatpumpingtechnologies.org/publications/heat-driven-adsorption-chiller-systems-for-sustainable-cooling-applications/
+- Datacentre waste heat and sorption cooling review: https://www.mdpi.com/2071-1050/17/22/10101
+- Two-phase thermosyphon datacentre cooling review: https://link.springer.com/article/10.1186/s44147-025-00833-3
+- Heat-driven Stirling refrigerator research: https://pubs.aip.org/aip/apl/article/124/12/123905/3278014/Experimental-and-numerical-study-on-a-heat-driven
 - Open19 overview: https://www.linuxfoundation.org/press/press-release/the-linux-foundation-hosts-open19-to-acceleratedata-center-and-edge-hardware-innovation
 - Ironic and Metal3: https://ironicbaremetal.org/ and https://metal3.io/
 - SONiC and OpenBMC: https://sonicfoundation.dev/ and https://openbmc.org/
