@@ -1,0 +1,8 @@
+product_id,product_type,unit,default_commitment,required_controls,demarcation,notes
+COLO_RU_001,rack-unit,1U,monthly,access-approval asset-label cage-or-rack-lock,customer-device-front-and-rear-ports,for low-density shared cabinet pilots
+COLO_HALF_RACK,half-rack,20U,monthly,A/B-feed rack-lock access-list,customer-equipment-inside-assigned-space,requires power cap and airflow review
+COLO_FULL_CAB,full-cabinet,42U,monthly,A/B-feed lockable-cabinet camera-coverage,customer-cabinet-patch-panel-or-PDU,baseline commercial colo product
+COLO_PRIVATE_CAGE,private-cage,cage,annual,mantrap-or-controlled-access CCTV escort-policy,customer-cage-demarc-and-patch-panel,requires cage access review
+COLO_POWER_KW,contracted-power,kw,monthly,A/B-feed metering breaker-capacity-review,facility-PDU-output,burst power needs approval
+COLO_BADGE,access-badge,user,monthly,identity-proofing access-review escort-rules,person-at-security-boundary,public-sector tenants need named approvers
+COLO_REMOTE_HANDS,remote-hands,hour,per-ticket,approved-ticket safe-method asset-record,task-scope-in-ticket,standard task only unless smart-hands approved

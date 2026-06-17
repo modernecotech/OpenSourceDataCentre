@@ -73,6 +73,13 @@ for path in repo_files("*.json"):
 
 unique_columns = {
     Path("data/bom/bom-250kw-open-regional.csv"): "line_id",
+    Path("data/commercial/audit-evidence.csv"): "evidence_id",
+    Path("data/commercial/colocation-products.csv"): "product_id",
+    Path("data/commercial/commercial-gap-register.csv"): "gap_id",
+    Path("data/commercial/cross-connect-products.csv"): "product_id",
+    Path("data/commercial/remote-hands-products.csv"): "product_id",
+    Path("data/commercial/sla-classes.csv"): "sla_class_id",
+    Path("data/commercial/standards-control-matrix.csv"): "requirement_id",
     Path("data/costing/marketplace-price-basis-2026.csv"): "item_family",
     Path("data/costing/scenario-costs-2026.csv"): "scenario_id",
     Path("data/hardware/compute-baseline-2026.csv"): "profile_id",
@@ -173,6 +180,38 @@ if config_catalog.exists():
             expected = expected_config_examples.get(script_id)
             if expected and not expected.exists():
                 fail(f"{config_catalog}:{number} points at missing example {expected}")
+
+commercial_gap_register = ROOT / "data/commercial/commercial-gap-register.csv"
+allowed_gap_priorities = {"critical", "high", "medium", "low"}
+allowed_gap_status = {"open", "in-progress", "blocked", "review", "closed"}
+if commercial_gap_register.exists():
+    with commercial_gap_register.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            if row.get("priority") not in allowed_gap_priorities:
+                fail(
+                    f"{commercial_gap_register}:{number} has unsupported priority {row.get('priority')!r}"
+                )
+            if row.get("status") not in allowed_gap_status:
+                fail(
+                    f"{commercial_gap_register}:{number} has unsupported status {row.get('status')!r}"
+                )
+            artifact = row.get("next_artifact", "")
+            if artifact and not (ROOT / artifact).exists():
+                fail(f"{commercial_gap_register}:{number} points at missing artifact {artifact}")
+
+for relative in [
+    Path("data/commercial/standards-control-matrix.csv"),
+    Path("data/commercial/audit-evidence.csv"),
+]:
+    path = ROOT / relative
+    if not path.exists():
+        continue
+    evidence_column = "evidence_file" if relative.name == "standards-control-matrix.csv" else "evidence_path"
+    with path.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            evidence = row.get(evidence_column, "")
+            if evidence and not (ROOT / evidence).exists():
+                fail(f"{path}:{number} points at missing evidence path {evidence}")
 
 link_pattern = re.compile(r"!?\[[^\]]*]\(([^)]+)\)")
 for path in repo_files("*.md"):

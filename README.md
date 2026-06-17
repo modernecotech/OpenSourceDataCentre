@@ -28,6 +28,7 @@ The project combines:
 | FreeCAD / IFC / STEP design system | Buildable structures, racks, adapters, service trenches, thermal spines, cable trays, and serviceable parts. |
 | Commissioning and reliability pack | L1-L5 commissioning, grid-loss, DC-bus ride-through, cooling failover, generator-start, and backup-restore tests. |
 | Operator training pack | Local skills, runbooks, spares lists, maintenance schedules, emergency procedures, staffing, and escalation paths. |
+| Commercial readiness pack | Gap register, standards matrix, SLA model, colocation products, cross-connect workflows, audit evidence, and customer responsibility boundaries. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
 | Edge Shield security fabric | Sovereign DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, zero-trust access, logs, metrics, secrets, policy, and audit. |
 | Prototype browser config management | Web-based editing of sample tool config scripts, with the production path defined as validation, GitOps review, staged rollout, rollback checks, and audit. |
@@ -99,6 +100,8 @@ The current portal is a small standard-library Rust HTTP server with in-process 
 
 The next engineering phase is to continue replacing hardcoded samples with CSV-backed catalogue loading, then add adapter stubs for real infrastructure systems.
 
+Commercial readiness is also early. The repository now tracks the gap between the OSDC blueprint and a commercial colocation or hyperscale-grade datacentre through a gap register, standards/control matrix, SLA model, commercial product catalogue, MEP evidence targets, operations templates, and audit-evidence register. These artifacts are templates and planning controls, not certification evidence until project-specific professionals review and sign them off.
+
 ## Local Maintainability Doctrine
 
 A sovereign datacentre is not sovereign if it cannot be repaired locally.
@@ -113,6 +116,21 @@ Every critical component must have:
 - failure symptom list;
 - safe replacement procedure;
 - commissioning or post-replacement test.
+
+## Commercial Readiness
+
+Commercial datacentres are judged by evidence as much as by architecture. OSDC therefore tracks:
+
+- certification and standards boundaries;
+- MEP drawings, calculations, and commissioning evidence;
+- fire/life-safety and battery safety strategy;
+- meet-me room, cross-connect, carrier, IXP, and cloud-on-ramp products;
+- customer onboarding, SLAs, service credits, and responsibility boundaries;
+- MOP/SOP/EOP discipline, shift handover, permit-to-work, and incident command;
+- ISO 27001/SOC 2-style audit evidence and supplier-risk management;
+- BMS/EPMS/DCIM integration and OT cybersecurity zones.
+
+Machine-readable commercial data lives in [data/commercial](data/commercial/). The main entry point is [Commercial Readiness](docs/commercial-readiness/README.md).
 
 ## Software Position
 
@@ -314,6 +332,10 @@ Work outside that scope should remain documented but not block the first real co
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
 - [Developer Platform](docs/software/developer-platform.md) and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage.
+- [Commercial Readiness](docs/commercial-readiness/README.md) - gap register, standards matrix, SLA model, commercial service catalogue, audit evidence, and customer responsibility matrix.
+- [Engineering Evidence](docs/engineering/electrical-single-line-250kw.md) - first MEP evidence targets for electrical single-line, DC protection, cooling P&ID, sequence of operations, fire strategy, and EPMS/BMS architecture.
+- [Network Commercial Products](docs/network-commercial/meet-me-room-design.md) - meet-me room, cross-connect, carrier onboarding, IXP readiness, and cloud-on-ramp equivalent.
+- [Compliance Pack](docs/compliance/iso27001-isms-outline.md) - ISMS, SOC 2 readiness, statement of applicability, internal audit, and supplier risk templates.
 - [Country Site Profile Guide](docs/deployment/country-site-profile-guide.md) - country-pack schema, planning fields, and profile examples.
 - [50 kW Edge Micro](docs/deployment/50kw-edge-micro.md), [250 kW Regional Pilot](docs/deployment/250kw-regional-pilot.md), [1 MW Regional Production](docs/deployment/1mw-regional-production.md), and [5 MW National AI-Ready](docs/deployment/5mw-national-ai-ready.md) - staged reference deployment patterns.
 - [Commissioning Overview](docs/commissioning/commissioning-overview.md) - L1-L5 commissioning model and critical integrated tests.
@@ -344,6 +366,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Costing Data](data/costing/) - current marketplace price basis and scenario cost ranges.
 - [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
 - [Software Service Data](data/software/) - open cloud service catalogue mappings.
+- [Commercial Readiness Data](data/commercial/) - gap register, standards matrix, SLA classes, colocation products, cross-connects, remote hands, and audit evidence.
 - [Country Profiles](data/country-profiles/) - example country-planning packs for grid, climate, energy, procurement, and sovereignty assumptions.
 - [Service Catalogue Examples](examples/service-catalogue/) - scale-specific service bundle selections.
 - [Config Script Examples](examples/config-scripts/) - sample tool configuration artifacts for browser-based editing.
@@ -392,6 +415,13 @@ Useful portal APIs:
 - `/api/edge/status`
 - `/api/edge/config-preview`
 - `/api/cost/planning`
+- `/api/commercial/gaps`
+- `/api/commercial/standards`
+- `/api/commercial/sla-classes`
+- `/api/commercial/colocation-products`
+- `/api/commercial/cross-connect-products`
+- `/api/commercial/remote-hands-products`
+- `/api/commercial/audit-evidence`
 
 The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
 

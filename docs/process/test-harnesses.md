@@ -18,6 +18,7 @@ The project needs test harnesses for both code and real-world systems. A datacen
 - JSON fixture parsing.
 - CSV rectangularity and primary-ID uniqueness for key catalogues.
 - service-catalogue maturity values and service example cross-references.
+- commercial-readiness gap priorities, statuses, primary IDs, and evidence-file references.
 - local Markdown link validity.
 - portal route documentation against the Rust route table.
 - config-script catalogue risk, validation command, and sample artifact presence.

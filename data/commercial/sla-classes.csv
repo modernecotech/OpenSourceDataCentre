@@ -1,0 +1,6 @@
+sla_class_id,service_scope,target,measurement_window,credit_model,exclusions,owner,status
+SLA_POWER_A,power A/B feed,facility-backed power to contracted rack feeds,monthly,service-credit-after-approved-root-cause,customer-equipment-failure planned-maintenance force-majeure,facilities,template
+SLA_COOLING_A,cooling,temperature and humidity within approved operating envelope,monthly,service-credit-after-sustained-breach,customer-overload blocked-airflow planned-maintenance,facilities,template
+SLA_NETWORK_A,network,meet-me-room cross-connect availability and managed IP transit,monthly,service-credit-after-carrier-demarcation,carrier-outage customer-router-maintenance force-majeure,network,template
+SLA_REMOTE_A,remote hands,standard task response within purchased support window,per-ticket,fee-credit-for-missed-response,unsafe-task missing-authorization unavailable-spares,operations,template
+SLA_CLOUD_A,sovereign cloud platform,portal and provisioned platform service availability,monthly,service-credit-after-platform-root-cause,tenant-workload-failure upstream-carrier-outage planned-maintenance,platform,template

@@ -4,7 +4,7 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 const STYLE_CSS: &str = include_str!("views/style.css");
 const PORTAL_JS: &str = include_str!("views/portal.js");
@@ -26,6 +26,18 @@ const EDGE_WIREGUARD_CONF: &str =
     include_str!("../../../examples/config-scripts/edge/wireguard-osdc-edge.conf");
 const SOVEREIGN_SERVICE_CATALOGUE_CSV: &str =
     include_str!("../../../data/software/service-catalogue-v1.csv");
+const COMMERCIAL_GAP_REGISTER_CSV: &str =
+    include_str!("../../../data/commercial/commercial-gap-register.csv");
+const STANDARDS_CONTROL_MATRIX_CSV: &str =
+    include_str!("../../../data/commercial/standards-control-matrix.csv");
+const SLA_CLASSES_CSV: &str = include_str!("../../../data/commercial/sla-classes.csv");
+const COLOCATION_PRODUCTS_CSV: &str =
+    include_str!("../../../data/commercial/colocation-products.csv");
+const CROSS_CONNECT_PRODUCTS_CSV: &str =
+    include_str!("../../../data/commercial/cross-connect-products.csv");
+const REMOTE_HANDS_PRODUCTS_CSV: &str =
+    include_str!("../../../data/commercial/remote-hands-products.csv");
+const AUDIT_EVIDENCE_CSV: &str = include_str!("../../../data/commercial/audit-evidence.csv");
 
 fn main() -> std::io::Result<()> {
     let addr = env::args()
@@ -108,6 +120,13 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/cost/scenarios") => json(&cost_scenarios()),
         ("GET", "/api/cost/categories") => json(&cost_categories()),
         ("GET", "/api/cost/price-basis") => json(&price_basis()),
+        ("GET", "/api/commercial/gaps") => json(&commercial_gaps()),
+        ("GET", "/api/commercial/standards") => json(&commercial_standards()),
+        ("GET", "/api/commercial/sla-classes") => json(&sla_classes()),
+        ("GET", "/api/commercial/colocation-products") => json(&colocation_products()),
+        ("GET", "/api/commercial/cross-connect-products") => json(&cross_connect_products()),
+        ("GET", "/api/commercial/remote-hands-products") => json(&remote_hands_products()),
+        ("GET", "/api/commercial/audit-evidence") => json(&audit_evidence()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -132,6 +151,15 @@ fn json<T: Serialize>(body: &T) -> Vec<u8> {
             format!("failed to serialize response: {err}\n").as_bytes(),
         ),
     }
+}
+
+fn csv_rows<T: DeserializeOwned>(raw: &str, source: &str) -> Vec<T> {
+    csv::Reader::from_reader(raw.as_bytes())
+        .deserialize::<T>()
+        .map(|row| {
+            row.unwrap_or_else(|err| panic!("embedded CSV {source} must deserialize: {err}"))
+        })
+        .collect()
 }
 
 fn redirect(location: &str) -> Vec<u8> {
@@ -218,6 +246,85 @@ struct SovereignCloudServiceRow {
     security_controls: String,
     workflow: String,
     maturity: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CommercialGap {
+    gap_id: String,
+    domain: String,
+    commercial_expectation: String,
+    current_repo_state: String,
+    priority: String,
+    next_artifact: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct StandardsControl {
+    requirement_id: String,
+    standard_family: String,
+    control_area: String,
+    applies: String,
+    osdc_design_response: String,
+    evidence_file: String,
+    responsible_party: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SlaClass {
+    sla_class_id: String,
+    service_scope: String,
+    target: String,
+    measurement_window: String,
+    credit_model: String,
+    exclusions: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ColocationProduct {
+    product_id: String,
+    product_type: String,
+    unit: String,
+    default_commitment: String,
+    required_controls: String,
+    demarcation: String,
+    notes: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CrossConnectProduct {
+    product_id: String,
+    product_type: String,
+    media: String,
+    demarcation: String,
+    workflow: String,
+    required_evidence: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RemoteHandsProduct {
+    product_id: String,
+    task_class: String,
+    response_target: String,
+    requires_approval: String,
+    scope_boundary: String,
+    required_evidence: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AuditEvidence {
+    evidence_id: String,
+    domain: String,
+    evidence_name: String,
+    evidence_path: String,
+    owner: String,
+    cadence: String,
+    status: String,
 }
 
 impl From<SovereignCloudServiceRow> for SovereignCloudService {
@@ -1539,13 +1646,56 @@ fn core_cloud_services() -> Vec<CoreCloudService> {
 }
 
 fn sovereign_cloud_services() -> Vec<SovereignCloudService> {
-    csv::Reader::from_reader(SOVEREIGN_SERVICE_CATALOGUE_CSV.as_bytes())
-        .deserialize::<SovereignCloudServiceRow>()
-        .map(|row| {
-            row.expect("embedded sovereign service catalogue must deserialize")
-                .into()
-        })
-        .collect()
+    csv_rows::<SovereignCloudServiceRow>(
+        SOVEREIGN_SERVICE_CATALOGUE_CSV,
+        "data/software/service-catalogue-v1.csv",
+    )
+    .into_iter()
+    .map(Into::into)
+    .collect()
+}
+
+fn commercial_gaps() -> Vec<CommercialGap> {
+    csv_rows(
+        COMMERCIAL_GAP_REGISTER_CSV,
+        "data/commercial/commercial-gap-register.csv",
+    )
+}
+
+fn commercial_standards() -> Vec<StandardsControl> {
+    csv_rows(
+        STANDARDS_CONTROL_MATRIX_CSV,
+        "data/commercial/standards-control-matrix.csv",
+    )
+}
+
+fn sla_classes() -> Vec<SlaClass> {
+    csv_rows(SLA_CLASSES_CSV, "data/commercial/sla-classes.csv")
+}
+
+fn colocation_products() -> Vec<ColocationProduct> {
+    csv_rows(
+        COLOCATION_PRODUCTS_CSV,
+        "data/commercial/colocation-products.csv",
+    )
+}
+
+fn cross_connect_products() -> Vec<CrossConnectProduct> {
+    csv_rows(
+        CROSS_CONNECT_PRODUCTS_CSV,
+        "data/commercial/cross-connect-products.csv",
+    )
+}
+
+fn remote_hands_products() -> Vec<RemoteHandsProduct> {
+    csv_rows(
+        REMOTE_HANDS_PRODUCTS_CSV,
+        "data/commercial/remote-hands-products.csv",
+    )
+}
+
+fn audit_evidence() -> Vec<AuditEvidence> {
+    csv_rows(AUDIT_EVIDENCE_CSV, "data/commercial/audit-evidence.csv")
 }
 
 fn upgrade_policy() -> Vec<UpgradePolicy> {
@@ -2360,6 +2510,53 @@ mod tests {
                 && item["unit"] == "w_installed"
                 && item["source_marketplace"] == "Alibaba/Derived"
         }));
+    }
+
+    #[test]
+    fn exposes_commercial_readiness_catalogues() {
+        let gaps = json_body("/api/commercial/gaps");
+        let standards = json_body("/api/commercial/standards");
+        let slas = json_body("/api/commercial/sla-classes");
+        let colocation = json_body("/api/commercial/colocation-products");
+        let cross_connects = json_body("/api/commercial/cross-connect-products");
+        let remote_hands = json_body("/api/commercial/remote-hands-products");
+        let evidence = json_body("/api/commercial/audit-evidence");
+
+        assert!(gaps.as_array().unwrap().iter().any(|gap| {
+            gap["gap_id"] == "G002"
+                && gap["next_artifact"] == "docs/engineering/electrical-single-line-250kw.md"
+        }));
+        assert!(standards
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|control| control["requirement_id"] == "STD006"
+                && control["standard_family"] == "IEC62443"));
+        assert!(slas
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|sla| sla["sla_class_id"] == "SLA_POWER_A"));
+        assert!(colocation
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|product| product["product_id"] == "COLO_FULL_CAB"));
+        assert!(cross_connects
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|product| product["product_id"] == "XC_IXP"));
+        assert!(remote_hands
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|product| product["product_id"] == "RH_SMART_HANDS"));
+        assert!(evidence
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["evidence_id"] == "EV007"));
     }
 
     #[test]

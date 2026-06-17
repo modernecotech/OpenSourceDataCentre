@@ -1,0 +1,7 @@
+product_id,product_type,media,demarcation,workflow,required_evidence,status
+XC_MM_FIBER_SINGLE,single-mode-fiber,OS2,customer-panel-to-carrier-panel,LOA-CFA install test label closeout,light-level-test patch-record,template
+XC_MM_FIBER_MULTI,multimode-fiber,OM4,customer-panel-to-carrier-panel,LOA-CFA install test label closeout,light-level-test patch-record,template
+XC_CAT6,copper-ethernet,CAT6A,customer-cabinet-to-meet-me-panel,work-order install certify label closeout,cable-certification patch-record,template
+XC_IP_TRANSIT,managed-ip-transit,ethernet,OSDC-router-port-to-customer-port,order BGP policy security review turn-up,route-policy-test acceptance-record,template
+XC_IXP,ixp-port,ethernet,IXP-switch-port-to-customer-router,member approval route-server config turn-up,peering-policy route-test,template
+XC_CLOUD_ONRAMP,cloud-on-ramp-equivalent,ethernet,sovereign-cloud-edge-to-customer-router,approval routing firewall and billing setup,route-test firewall-review,template

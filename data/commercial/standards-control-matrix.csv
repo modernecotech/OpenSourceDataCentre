@@ -1,0 +1,9 @@
+requirement_id,standard_family,control_area,applies,osdc_design_response,evidence_file,responsible_party,status
+STD001,Uptime/Tier,reliability topology,yes,Do not claim certification; map Tier-like design intent to power cooling maintenance and fault evidence,docs/commercial-readiness/uptime-tier-gap-analysis.md,owner-engineer,open
+STD002,TIA-942,telecom and site infrastructure,yes,Track site telecom electrical architectural and security evidence before commercial onboarding,docs/commercial-readiness/tia-942-gap-analysis.md,owner-engineer,open
+STD003,EN50600/ISO22237,datacentre facilities classification,yes,Map availability protection energy efficiency and operations evidence to a standards matrix,docs/commercial-readiness/standards-compliance-matrix.md,owner-engineer,open
+STD004,ISO27001,information security management,yes,Maintain ISMS scope risk treatment SoA internal audit and management review pack,docs/compliance/iso27001-isms-outline.md,security-owner,open
+STD005,SOC2,trust services controls,conditional,Prepare evidence for security availability confidentiality and privacy control objectives,docs/compliance/soc2-readiness.md,security-owner,open
+STD006,IEC62443,OT cybersecurity,yes,Define facility zones conduits remote access patching backup and controller hardening,docs/security/ot-security-zones-and-conduits.md,ot-owner,open
+STD007,ISO30134/PUE,sustainability metrics,yes,Define metering boundary and separate design estimate commissioning measurement monthly measurement and annual report,docs/commercial-readiness/audit-evidence-register.md,sustainability-owner,open
+STD008,Local fire code,life safety,yes,Require authority review fire detection suppression egress BESS emergency response and post-fire recovery,docs/engineering/fire-strategy.md,life-safety-engineer,open

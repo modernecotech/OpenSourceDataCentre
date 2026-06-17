@@ -1,0 +1,7 @@
+product_id,task_class,response_target,requires_approval,scope_boundary,required_evidence,status
+RH_VISUAL,visual-inspection,4-business-hours,tenant-owner,observe indicators labels cabling and damage only,photo-or-ticket-note,template
+RH_POWER_CYCLE,power-cycle,4-business-hours,tenant-owner,controlled power cycle of approved device or outlet,precheck-ticket-postcheck,template
+RH_CABLE_PATCH,cable-patch,next-business-day,tenant-owner,patch approved port pairs using labelled cabling,patch-record-and-photo,template
+RH_MEDIA_SWAP,media-swap,next-business-day,tenant-owner,swap labelled disk tape or removable media,chain-of-custody-record,template
+RH_SMART_HANDS,smart-hands,scheduled,service-owner,complex work under approved MOP only,approved-MOP-and-closeout,template
+RH_EMERGENCY,emergency-hands,as-available,incident-commander,safety-limited emergency intervention only,incident-record-and-approval,template

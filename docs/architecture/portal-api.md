@@ -11,7 +11,7 @@ Last reviewed: 2026-06-17.
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, NetBox, Ceph, Kubernetes, Kueue, OpenBao, and the facility gateways.
 
-Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is already loaded from `data/software/service-catalogue-v1.csv`.
+Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is loaded from `data/software/service-catalogue-v1.csv`, and the commercial-readiness routes are loaded from `data/commercial/`.
 
 ## Current Routes
 
@@ -39,6 +39,13 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/api/cost/scenarios` | JSON | Four datacentre build scenarios from 50 kW edge micro to 5 MW national AI-ready. |
 | `/api/cost/categories` | JSON | Category-level cost ranges for each scenario. |
 | `/api/cost/price-basis` | JSON | Marketplace and derived unit-cost planning basis. |
+| `/api/commercial/gaps` | JSON | Commercial-readiness gap register for certification, MEP, operations, compliance, and interconnection gaps. |
+| `/api/commercial/standards` | JSON | Standards/control matrix mapping candidate standards to evidence files and owners. |
+| `/api/commercial/sla-classes` | JSON | Power, cooling, network, remote-hands, and cloud-platform SLA class templates. |
+| `/api/commercial/colocation-products` | JSON | Rack, cage, suite, power, access, and remote-hands product templates. |
+| `/api/commercial/cross-connect-products` | JSON | Meet-me-room, IP transit, IXP, and cloud-on-ramp-equivalent product templates. |
+| `/api/commercial/remote-hands-products` | JSON | Remote/smart-hands task classes and evidence requirements. |
+| `/api/commercial/audit-evidence` | JSON | Audit-evidence register with owners, cadence, and evidence paths. |
 | `/health` | text | Readiness check. |
 
 ## Data Direction
@@ -62,6 +69,7 @@ The next production step is to replace the in-process sample data with adapters:
 - Kubernetes and queue state from Kubernetes, Kueue, and Slurm.
 - Facility status from Modbus/BACnet/OPC UA gateways.
 - Cost and carbon estimates from the Rust calculator crate.
+- Commercial readiness data from `data/commercial/` is already wired into `/api/commercial/*`.
 
 ## Run
 

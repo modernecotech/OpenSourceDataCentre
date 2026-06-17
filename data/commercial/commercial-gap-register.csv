@@ -1,0 +1,13 @@
+gap_id,domain,commercial_expectation,current_repo_state,priority,next_artifact,status
+G001,certification,Tier/TIA/EN/ISO standards mapped to evidence,scope guardrails only,critical,docs/commercial-readiness/standards-compliance-matrix.md,open
+G002,electrical,SLD protection arc-flash selectivity and emergency isolation,conceptual DC-first topology,critical,docs/engineering/electrical-single-line-250kw.md,open
+G003,cooling,ASHRAE envelope P&ID failure modes and thermal runaway tests,thermal-spine concept,critical,docs/engineering/cooling-piping-and-instrumentation.md,open
+G004,interconnection,MMR cross-connect carriers IXPs and route diversity,software networking only,high,docs/network-commercial/meet-me-room-design.md,open
+G005,operations,MOP SOP EOP shift handover and permit-to-work discipline,operator training outline,critical,docs/operations/mop-template.md,open
+G006,compliance,ISO27001 SOC2 risk register audit evidence and management review,security controls CSV only,high,docs/compliance/soc2-readiness.md,open
+G007,commercial,SLA price book onboarding and responsibility matrix,tenant portal concept,high,docs/commercial-readiness/sla-model.md,open
+G008,life-safety,Fire strategy BESS safety egress detection and recovery,high-level safety notes,critical,docs/engineering/fire-strategy.md,open
+G009,physical-security,Security zones visitor access CCTV retention and cage access,basic perimeter concept,high,docs/commercial-readiness/customer-responsibility-matrix.md,open
+G010,sustainability,Metered PUE WUE CUE carbon water and audited reporting,calculator estimates,medium,docs/commercial-readiness/audit-evidence-register.md,open
+G011,bms-epms-dcim,BMS EPMS DCIM alarm philosophy telemetry and capacity model,named integrations only,high,docs/engineering/epms-bms-architecture.md,open
+G012,ot-security,IEC-62443-style zones conduits patch backup and remote access,policy direction only,high,docs/security/ot-security-zones-and-conduits.md,open

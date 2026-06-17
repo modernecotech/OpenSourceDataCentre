@@ -1,0 +1,13 @@
+evidence_id,domain,evidence_name,evidence_path,owner,cadence,status
+EV001,certification,standards compliance matrix,docs/commercial-readiness/standards-compliance-matrix.md,owner-engineer,quarterly,template
+EV002,certification,Uptime/Tier gap analysis,docs/commercial-readiness/uptime-tier-gap-analysis.md,owner-engineer,quarterly,template
+EV003,commercial,SLA model,docs/commercial-readiness/sla-model.md,commercial-owner,quarterly,template
+EV004,commercial,customer responsibility matrix,docs/commercial-readiness/customer-responsibility-matrix.md,commercial-owner,quarterly,template
+EV005,operations,MOP template,docs/operations/mop-template.md,operations-owner,quarterly,template
+EV006,operations,EOP template,docs/operations/eop-template.md,operations-owner,quarterly,template
+EV007,compliance,ISO27001 ISMS outline,docs/compliance/iso27001-isms-outline.md,security-owner,quarterly,template
+EV008,compliance,SOC2 readiness plan,docs/compliance/soc2-readiness.md,security-owner,quarterly,template
+EV009,engineering,electrical single-line design basis,docs/engineering/electrical-single-line-250kw.md,electrical-engineer,design-stage,template
+EV010,engineering,cooling P&ID design basis,docs/engineering/cooling-piping-and-instrumentation.md,mechanical-engineer,design-stage,template
+EV011,network,meet-me-room design,docs/network-commercial/meet-me-room-design.md,network-owner,design-stage,template
+EV012,life-safety,fire strategy,docs/engineering/fire-strategy.md,life-safety-engineer,design-stage,template
