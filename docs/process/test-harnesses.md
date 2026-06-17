@@ -10,6 +10,23 @@ The project needs test harnesses for both code and real-world systems. A datacen
 - Integration tests against containerized PostgreSQL, mock NetBox, mock Prometheus, and mock scheduler APIs.
 - Contract tests for OpenAPI/gRPC endpoints.
 
+## Repository Verification
+
+`scripts/verify.sh` is the first repository-wide gate. It currently checks:
+
+- Rust formatting and tests.
+- JSON fixture parsing.
+- CSV rectangularity and primary-ID uniqueness for key catalogues.
+- service-catalogue maturity values and service example cross-references.
+- local Markdown link validity.
+- portal route documentation against the Rust route table.
+- config-script catalogue risk, validation command, and sample artifact presence.
+- licence metadata.
+
+`scripts/verify.sh --security` additionally requires `cargo-audit` and `syft`, then runs a dependency vulnerability audit and writes an SPDX SBOM to `target/osdc-sbom.spdx.json`.
+
+GitHub Actions should run the default verifier on every push and pull request.
+
 ## Cost Calculator Tests
 
 - Golden examples for small edge site, regional datacentre, AI training cluster, and islanded solar-plus-storage site.

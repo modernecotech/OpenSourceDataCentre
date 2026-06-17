@@ -1,6 +1,6 @@
 # Portal API Prototype
 
-Last reviewed: 2026-06-14.
+Last reviewed: 2026-06-17.
 
 `osdc-portal` is the first Rust-served prototype for the three OSDC GUI surfaces:
 
@@ -11,12 +11,16 @@ Last reviewed: 2026-06-14.
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, NetBox, Ceph, Kubernetes, Kueue, OpenBao, and the facility gateways.
 
+Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is already loaded from `data/software/service-catalogue-v1.csv`.
+
 ## Current Routes
 
 | Route | Type | Purpose |
 | --- | --- | --- |
 | `/user` | HTML | Tenant provisioning and resource-management GUI. |
 | `/operator` | HTML | Datacentre operator GUI for power, cooling, hardware, cloud stack health, and operations. |
+| `/edge` | HTML | Edge Shield GUI for DNS, proxy, cache, WAF, tunnels, config scripts, and rollout previews. |
+| `/planner` | HTML | Cost and scale planning GUI for 50 kW to 5 MW scenarios. |
 | `/api/catalog/hardware` | JSON | Chosen SBC/GPU hardware baseline. |
 | `/api/catalog/services` | JSON | Open cloud service map. |
 | `/api/catalog/core-services` | JSON | Chosen AWS/Azure-like core services and their open-source OSDC implementation. |
@@ -48,7 +52,7 @@ The next production step is to replace the in-process sample data with adapters:
 - Edge Shield deployment catalog from `data/software/edge-shield-service-map.csv`.
 - Security control catalog from `data/software/security-control-map.csv`.
 - Proprietary-to-open-source replacement catalog from `data/software/proprietary-to-open-source-map.csv`.
-- Sovereign cloud service catalogue from `data/software/service-catalogue-v1.csv`.
+- Sovereign cloud service catalogue from `data/software/service-catalogue-v1.csv` is already wired into `/api/catalog/sovereign-services`.
 - Upgrade policy from `data/software/upgrade-policy.csv`.
 - Software security controls from `data/software/security-controls.csv`.
 - Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.

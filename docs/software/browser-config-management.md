@@ -26,6 +26,22 @@ audit record
 
 The browser should edit source-controlled config artifacts. It should not SSH into machines and rewrite live files directly.
 
+## Current Prototype Boundary
+
+The current `osdc-portal` implementation exposes sample Edge Shield configuration files through `/api/config/scripts` and lets the browser load, edit, validate, and stage them as a UI workflow preview.
+
+The validate and stage buttons do not yet run real validators or create a pull request/change request. They show the intended command path and review requirement.
+
+A production implementation must create a typed change object with:
+
+- `ChangeRequest`
+- `ValidationResult`
+- `RolloutPlan`
+- `RollbackPlan`
+- `AuditEvent`
+
+Those objects should then map to a GitOps pull request or change record, service-owner approval, staging rollout, health verification, rollback evidence, and immutable audit logging.
+
 ## Why This Beats Giant Forms
 
 - Caddy, PowerDNS, Coraza, CrowdSec, WireGuard, OpenBao, Keycloak, Argo CD, Flux, Prometheus, and many other tools already have expressive config formats.

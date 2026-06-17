@@ -30,7 +30,7 @@ The project combines:
 | Operator training pack | Local skills, runbooks, spares lists, maintenance schedules, emergency procedures, staffing, and escalation paths. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
 | Edge Shield security fabric | Sovereign DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, zero-trust access, logs, metrics, secrets, policy, and audit. |
-| Browser config management | Web-based editing of real tool config scripts with validation, GitOps review, staged rollout, rollback checks, and audit. |
+| Prototype browser config management | Web-based editing of sample tool config scripts, with the production path defined as validation, GitOps review, staged rollout, rollback checks, and audit. |
 
 ## What This Project Is
 
@@ -90,6 +90,14 @@ Argo/Flux       Cilium              Suricata/Zeek
 ```
 
 The Rust layer does not replace mature infrastructure systems. It provides the unified portal/API, policy checks, cost and sustainability calculations, approval flows, config generation, health checks, audit events, and GitOps rollout orchestration.
+
+## Current Maturity
+
+This repository is currently a strong architecture, planning framework, and working Rust prototype. It is not yet a deployable national cloud platform.
+
+The current portal is a small standard-library Rust HTTP server with in-process sample data. It demonstrates the intended tenant, operator, Edge Shield, config-editor, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, or Flux installations.
+
+The next engineering phase is to continue replacing hardcoded samples with CSV-backed catalogue loading, then add adapter stubs for real infrastructure systems.
 
 ## Local Maintainability Doctrine
 
@@ -155,13 +163,15 @@ The catalogue is built as bundles:
 - **Bundle C - Developer Platform:** Forgejo/Gitea, Woodpecker/Tekton, Harbor, Backstage option, Argo CD/Flux, Renovate, OpenTofu, Ansible/AWX, Trivy, Grype, Syft, and cosign.
 - **Bundle D - Data and AI Platform:** CloudNativePG, Valkey, NATS, Kafka, Trino, Iceberg, ClickHouse, Superset, Airflow/Argo Workflows, MLflow, KServe, vLLM/SGLang, JupyterHub, and vector stores.
 
+`service-catalogue-v1.csv` is the main source of truth for sovereign services. It includes service ID, proprietary equivalent, open-source implementation, bundle, priority, UI surface, upgrade method, controls, workflow, and maturity (`experimental`, `pilot`, `production-baseline`, `optional`, or `deprecated`).
+
 Machine-readable catalogue data lives in:
 
-- [service-catalogue-v1.csv](data/software/service-catalogue-v1.csv)
-- [proprietary-open-source-equivalents.csv](data/software/proprietary-open-source-equivalents.csv)
-- [security-controls.csv](data/software/security-controls.csv)
-- [upgrade-policy.csv](data/software/upgrade-policy.csv)
-- [config-script-catalogue.csv](data/software/config-script-catalogue.csv)
+- [service-catalogue-v1.csv](data/software/service-catalogue-v1.csv) - source-of-truth sovereign service catalogue.
+- [proprietary-open-source-equivalents.csv](data/software/proprietary-open-source-equivalents.csv) - user-facing comparison view for commercial cloud/vendor services.
+- [security-controls.csv](data/software/security-controls.csv) - compliance/control catalogue and evidence requirements.
+- [upgrade-policy.csv](data/software/upgrade-policy.csv) - update classes, cadence, gates, owners, and rollback requirements.
+- [config-script-catalogue.csv](data/software/config-script-catalogue.csv) - browser-editable config-script catalogue.
 - [service catalogue examples](examples/service-catalogue/)
 
 ## Sovereign Edge and Security Fabric
@@ -224,6 +234,8 @@ The current prototype exposes editable sample configs for:
 - CrowdSec: `/etc/crowdsec/acquis.yaml`
 - WireGuard: `/etc/wireguard/osdc-edge.conf`
 
+Today, the browser editor is a UI/API prototype: validate and stage actions update local UI state and show the intended command/change path. A production implementation must create a typed `ChangeRequest`, run real validators, open a GitOps pull request or change record, collect approvals, roll through staging, verify health, and store an `AuditEvent`.
+
 Safety rules:
 
 - Browser edits stage GitOps changes; they do not rewrite live files directly.
@@ -269,6 +281,25 @@ Audit record stored
 
 The unified portal should show current version, available version, risk, staging result, backup status, rollback status, approval owner, scheduled window, and audit record. It should trigger GitOps; it should not SSH into machines randomly.
 
+## Next Executable Milestone
+
+The next milestone should be deliberately narrow:
+
+**250 kW Regional Pilot: software-only sovereign cloud prototype**
+
+Scope:
+
+- CSV-driven sovereign service catalogue in the portal.
+- Typed GitOps objects: `ChangeRequest`, `ValidationResult`, `RolloutPlan`, `RollbackPlan`, and `AuditEvent`.
+- Adapter stubs for Keycloak, PowerDNS, NetBox, OpenBao, and Argo CD or Flux.
+- Edge Shield profile validator and policy checks.
+- Config-script editor that opens a real GitOps change object instead of only updating UI messages.
+- Country-profile calculator extension for resilience, procurement, sovereignty, and operations fields.
+- GitHub Actions CI for formatting, tests, repository metadata checks, and dependency audit.
+- Security verification path for licence metadata, SBOM generation, and dependency vulnerability checks.
+
+Work outside that scope should remain documented but not block the first real control-plane slice.
+
 ## Repository Map
 
 - [Sovereign Datacentre Mission](docs/strategy/sovereign-datacentre-mission.md) - mission, audience, and national implementation outputs.
@@ -305,7 +336,8 @@ The unified portal should show current version, available version, risk, staging
 - [Cost Calculators](docs/process/cost-calculators.md) - calculator scope, formulas, and validation rules.
 - [Alibaba/AliExpress Cost Scenarios](docs/costing/alibaba-aliexpress-scenarios.md) - marketplace price basis, scale scenarios, and build-time estimates.
 - [Open AI Governance](docs/process/open-ai-governance.md) - model selection and queueing guidance.
-- [Rust Workspace](crates/) - calculator, model, CLI, portal, Edge Shield, Edge config, and Edge policy crates.
+- [Rust Workspace](crates/) - calculator, model, adapter, CLI, portal, Edge Shield, Edge config, and Edge policy crates.
+- [Adapter Crate](crates/osdc-adapters/) - trait skeletons for Keycloak, PowerDNS, NetBox, OpenBao, and Argo CD or Flux integrations.
 - [Portal Crate](crates/osdc-portal/) - Rust-served tenant, operator, and Edge Shield GUI/API prototype.
 - [Edge Crate](crates/osdc-edge/) - Radxa-local Edge Shield status and config-preview service.
 - [BOM Data](data/bom/) - component catalogue and starter 250 kW bill of materials.
@@ -371,4 +403,10 @@ find data -name '*.csv' -print0 | xargs -0 -n1 sh -c 'awk -F, "NR == 1 { cols = 
 
 ## License
 
-No project license has been selected yet. The recommended default for this repository is Apache-2.0 or MIT for Rust code and CC-BY-4.0 for documentation/design material, unless the project wants stronger copyleft guarantees.
+This repository now uses a split open-source/open-design licence policy:
+
+- Rust crates, scripts, tests, and prototype application code: Apache-2.0.
+- Documentation, CSV/JSON planning data, examples, diagrams, and training material: CC-BY-4.0.
+- Future hardware and mechanical design source files: CERN-OHL-S-2.0.
+
+See [LICENSE.md](LICENSE.md).

@@ -21,6 +21,21 @@ The 250 kW regional pilot is the flagship developing-world reference design. It 
 - Whether cooling failover and pump/control redundancy work under load.
 - Whether BOM landed cost, lead time, spares, and second-source assumptions are realistic.
 
+## Software-Only Prototype Milestone
+
+Before claiming a deployable 250 kW pilot, the repository should first deliver a software-only control-plane slice:
+
+- Rust portal reading the sovereign service catalogue from CSV.
+- Keycloak, PowerDNS, NetBox, OpenBao, and Argo CD or Flux adapter stubs.
+- Harbor registry and image-scanning catalogue workflow.
+- OpenBao policy model for secrets, transit keys, and break-glass handling.
+- GitOps workflow objects for change request, validation result, rollout plan, rollback plan, and audit event.
+- Edge Shield profile validator and policy checks.
+- Country-profile calculator extension for resilience, procurement, sovereignty, and operator maturity.
+- GitHub Actions CI for formatting, tests, repository metadata, and dependency audit.
+
+This keeps the first executable milestone focused on the sovereign cloud control plane rather than trying to implement every datacentre subsystem at once.
+
 ## Commissioning Must Include
 
 - L1 component inspection.

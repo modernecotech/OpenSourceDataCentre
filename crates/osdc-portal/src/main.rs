@@ -4,7 +4,7 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 const STYLE_CSS: &str = include_str!("views/style.css");
 const PORTAL_JS: &str = include_str!("views/portal.js");
@@ -24,6 +24,8 @@ const EDGE_CROWDSEC_ACQUIS: &str =
     include_str!("../../../examples/config-scripts/edge/crowdsec-acquis.yaml");
 const EDGE_WIREGUARD_CONF: &str =
     include_str!("../../../examples/config-scripts/edge/wireguard-osdc-edge.conf");
+const SOVEREIGN_SERVICE_CATALOGUE_CSV: &str =
+    include_str!("../../../data/software/service-catalogue-v1.csv");
 
 fn main() -> std::io::Result<()> {
     let addr = env::args()
@@ -190,16 +192,50 @@ struct CoreCloudService {
 
 #[derive(Debug, Serialize)]
 struct SovereignCloudService {
-    id: &'static str,
-    proprietary_service: &'static str,
-    open_equivalent: &'static str,
-    category: &'static str,
-    bundle: &'static str,
-    priority: &'static str,
-    ui_surface: &'static str,
-    upgrade_method: &'static str,
-    security_controls: &'static str,
-    workflow: &'static str,
+    id: String,
+    proprietary_service: String,
+    open_equivalent: String,
+    category: String,
+    bundle: String,
+    priority: String,
+    maturity: String,
+    ui_surface: String,
+    upgrade_method: String,
+    security_controls: String,
+    workflow: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct SovereignCloudServiceRow {
+    service_id: String,
+    proprietary_service: String,
+    open_equivalent: String,
+    category: String,
+    bundle: String,
+    priority: String,
+    ui_surface: String,
+    upgrade_method: String,
+    security_controls: String,
+    workflow: String,
+    maturity: String,
+}
+
+impl From<SovereignCloudServiceRow> for SovereignCloudService {
+    fn from(row: SovereignCloudServiceRow) -> Self {
+        Self {
+            id: row.service_id,
+            proprietary_service: row.proprietary_service,
+            open_equivalent: row.open_equivalent,
+            category: row.category,
+            bundle: row.bundle,
+            priority: row.priority,
+            maturity: row.maturity,
+            ui_surface: row.ui_surface,
+            upgrade_method: row.upgrade_method,
+            security_controls: row.security_controls,
+            workflow: row.workflow,
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -1503,200 +1539,13 @@ fn core_cloud_services() -> Vec<CoreCloudService> {
 }
 
 fn sovereign_cloud_services() -> Vec<SovereignCloudService> {
-    vec![
-        SovereignCloudService {
-            id: "identity",
-            proprietary_service: "AWS IAM / Azure Entra / Google IAM",
-            open_equivalent: "Keycloak + OPA + OSDC tenancy",
-            category: "identity",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "tenant-admin",
-            upgrade_method: "helm+gitops",
-            security_controls: "MFA+OIDC+audit",
-            workflow: "create tenant and assign roles",
-        },
-        SovereignCloudService {
-            id: "secrets",
-            proprietary_service: "AWS Secrets Manager / Azure Key Vault",
-            open_equivalent: "OpenBao",
-            category: "secrets",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "security-admin",
-            upgrade_method: "helm+gitops",
-            security_controls: "sealed-init+audit+rotation",
-            workflow: "create secret and rotate credentials",
-        },
-        SovereignCloudService {
-            id: "compute_vm",
-            proprietary_service: "EC2 / Azure VM / Compute Engine",
-            open_equivalent: "OpenStack Nova + KVM",
-            category: "compute",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "tenant",
-            upgrade_method: "openstack-release-train",
-            security_controls: "image-signature+quota+audit",
-            workflow: "create VM instance",
-        },
-        SovereignCloudService {
-            id: "kubernetes",
-            proprietary_service: "EKS / AKS / GKE",
-            open_equivalent: "Kubernetes + Cluster API + Cilium",
-            category: "containers",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "tenant",
-            upgrade_method: "planned-release-train",
-            security_controls: "network-policy+image-policy+audit",
-            workflow: "create managed cluster",
-        },
-        SovereignCloudService {
-            id: "object_storage",
-            proprietary_service: "S3 / Blob Storage / Cloud Storage",
-            open_equivalent: "Ceph RGW",
-            category: "storage",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "tenant",
-            upgrade_method: "ceph-release-train",
-            security_controls: "policy+encryption+audit",
-            workflow: "create object bucket",
-        },
-        SovereignCloudService {
-            id: "backup",
-            proprietary_service: "AWS Backup / Azure Backup",
-            open_equivalent: "Velero + Restic + Kopia + Ceph snapshots",
-            category: "backup",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "operator",
-            upgrade_method: "helm+gitops",
-            security_controls: "restore-test+retention+audit",
-            workflow: "restore backup",
-        },
-        SovereignCloudService {
-            id: "edge",
-            proprietary_service: "Cloud CDN / Cloudflare / Front Door",
-            open_equivalent: "OSDC Edge Shield",
-            category: "edge",
-            bundle: "B",
-            priority: "core",
-            ui_surface: "security",
-            upgrade_method: "gitops",
-            security_controls: "WAF+rate-limit+tunnel+audit",
-            workflow: "issue secure endpoint",
-        },
-        SovereignCloudService {
-            id: "soc",
-            proprietary_service: "Security Hub / Sentinel / Defender",
-            open_equivalent: "Wazuh + OpenSearch + Falco + Kyverno",
-            category: "security",
-            bundle: "B",
-            priority: "core",
-            ui_surface: "security",
-            upgrade_method: "helm+gitops",
-            security_controls: "findings+incident+audit",
-            workflow: "triage security finding",
-        },
-        SovereignCloudService {
-            id: "gitops",
-            proprietary_service: "CodePipeline / Deployments",
-            open_equivalent: "Argo CD + Flux",
-            category: "developer",
-            bundle: "C",
-            priority: "core",
-            ui_surface: "operator",
-            upgrade_method: "helm+gitops",
-            security_controls: "approval+sync-window+audit",
-            workflow: "promote deployment",
-        },
-        SovereignCloudService {
-            id: "registry",
-            proprietary_service: "ECR / ACR / Artifact Registry",
-            open_equivalent: "Harbor + cosign + Syft + Grype",
-            category: "registry",
-            bundle: "C",
-            priority: "core",
-            ui_surface: "developer",
-            upgrade_method: "helm+gitops",
-            security_controls: "scan+sign+sbom",
-            workflow: "publish image",
-        },
-        SovereignCloudService {
-            id: "iac",
-            proprietary_service: "Terraform Cloud / ARM / Deployment Manager",
-            open_equivalent: "OpenTofu + Ansible + Crossplane",
-            category: "iac",
-            bundle: "C",
-            priority: "core",
-            ui_surface: "developer",
-            upgrade_method: "gitops",
-            security_controls: "plan-approval+drift+audit",
-            workflow: "approve infrastructure plan",
-        },
-        SovereignCloudService {
-            id: "observability",
-            proprietary_service: "CloudWatch / Azure Monitor",
-            open_equivalent: "OpenTelemetry + Prometheus + Grafana",
-            category: "observability",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "operator",
-            upgrade_method: "helm+gitops",
-            security_controls: "retention+rbac+audit",
-            workflow: "view service health",
-        },
-        SovereignCloudService {
-            id: "postgres",
-            proprietary_service: "RDS / Cloud SQL",
-            open_equivalent: "CloudNativePG",
-            category: "database",
-            bundle: "D",
-            priority: "core",
-            ui_surface: "tenant",
-            upgrade_method: "operator-release-train",
-            security_controls: "backup+secret+audit",
-            workflow: "create PostgreSQL database",
-        },
-        SovereignCloudService {
-            id: "messaging",
-            proprietary_service: "SQS / PubSub / Event Grid",
-            open_equivalent: "NATS + RabbitMQ + Knative Eventing",
-            category: "messaging",
-            bundle: "D",
-            priority: "important",
-            ui_surface: "tenant",
-            upgrade_method: "operator-release-train",
-            security_controls: "retention+quota+audit",
-            workflow: "create queue",
-        },
-        SovereignCloudService {
-            id: "model_endpoint",
-            proprietary_service: "Bedrock / Azure AI Foundry",
-            open_equivalent: "vLLM + SGLang + llama.cpp + Ollama",
-            category: "ai",
-            bundle: "D",
-            priority: "core",
-            ui_surface: "tenant",
-            upgrade_method: "helm+gitops",
-            security_controls: "model-license+quota+audit",
-            workflow: "deploy model endpoint",
-        },
-        SovereignCloudService {
-            id: "asset_inventory",
-            proprietary_service: "Cloud asset inventory",
-            open_equivalent: "NetBox + openDCIM",
-            category: "operations",
-            bundle: "A",
-            priority: "core",
-            ui_surface: "operator",
-            upgrade_method: "operator-release-train",
-            security_controls: "inventory+change+audit",
-            workflow: "view asset",
-        },
-    ]
+    csv::Reader::from_reader(SOVEREIGN_SERVICE_CATALOGUE_CSV.as_bytes())
+        .deserialize::<SovereignCloudServiceRow>()
+        .map(|row| {
+            row.expect("embedded sovereign service catalogue must deserialize")
+                .into()
+        })
+        .collect()
 }
 
 fn upgrade_policy() -> Vec<UpgradePolicy> {
@@ -2361,7 +2210,7 @@ mod tests {
             .as_array()
             .expect("upgrade policy should be array");
 
-        assert!(services.len() >= 16);
+        assert!(services.len() >= 50);
         assert!(services.iter().any(|service| service["id"] == "identity"
             && service["open_equivalent"]
                 .as_str()
@@ -2372,7 +2221,11 @@ mod tests {
             && service["security_controls"]
                 .as_str()
                 .unwrap_or_default()
-                .contains("sbom")));
+                .contains("sbom")
+            && service["maturity"] == "production-baseline"));
+        assert!(services
+            .iter()
+            .any(|service| service["id"] == "fleet_os" && service["maturity"] == "pilot"));
         assert!(upgrade_policy
             .iter()
             .any(|policy| policy["update_class"] == "critical_cve"

@@ -1,54 +1,54 @@
-service_id,proprietary_service,open_equivalent,category,bundle,priority,ui_surface,upgrade_method,security_controls,workflow
-identity,AWS IAM / Azure Entra / Google IAM,Keycloak + OPA + OSDC tenancy,identity,A,core,tenant-admin,helm+gitops,MFA+OIDC+audit,create tenant and assign roles
-organizations,AWS Organizations / Azure Management Groups,Keycloak groups + OPA policy,identity,A,core,tenant-admin,gitops,approval+quota+audit,create national entity hierarchy
-workload_identity,IAM Roles for Service Accounts / Managed Identity,SPIFFE + SPIRE + OPA,identity,A,important,security-admin,helm+gitops,mtls+attestation+audit,issue workload identity
-secrets,AWS Secrets Manager / Azure Key Vault,OpenBao,secrets,A,core,security-admin,helm+gitops,sealed-init+audit+rotation,create secret and rotate credentials
-kms,AWS KMS / Azure Key Vault HSM,OpenBao Transit + Barbican + HSM,key-management,A,core,security-admin,helm+gitops,key-custody+rotation+audit,manage key lifecycle
-compute_vm,EC2 / Azure VM / Compute Engine,OpenStack Nova + KVM,compute,A,core,tenant,openstack-release-train,image-signature+quota+audit,create VM instance
-bare_metal,EC2 Bare Metal / Azure BareMetal,OpenStack Ironic + Metal3 + Redfish,bare-metal,A,core,operator,openstack-release-train,hardware-approval+firmware+audit,reserve dedicated node
-kubernetes,EKS / AKS / GKE,Kubernetes + Cluster API + Cilium,containers,A,core,tenant,planned-release-train,network-policy+image-policy+audit,create managed cluster
-serverless,Lambda / Cloud Functions,Knative + OpenFaaS,serverless,D,important,tenant,helm+gitops,quota+network-policy+audit,deploy serverless function
-batch,AWS Batch / Azure Batch,Kueue + Slurm + Volcano,batch,D,core,tenant,helm+gitops,quota+fair-share+audit,submit batch job
-object_storage,S3 / Blob Storage / Cloud Storage,Ceph RGW,storage,A,core,tenant,ceph-release-train,policy+encryption+audit,create object bucket
-block_storage,EBS / Managed Disk,Ceph RBD + Cinder,storage,A,core,tenant,ceph-release-train,encryption+snapshot+audit,create block volume
-file_storage,EFS / Azure Files,CephFS + Manila,storage,A,important,tenant,ceph-release-train,acl+backup+audit,create shared file system
-backup,AWS Backup / Azure Backup,Velero + Restic + Kopia + Ceph snapshots,backup,A,core,operator,helm+gitops,restore-test+retention+audit,restore backup
-networking,VPC / VNet / Google VPC,OpenStack Neutron + OVN + FRRouting,network,A,core,tenant,openstack-release-train,security-groups+policy+audit,create network
-load_balancing,ELB / Azure Load Balancer,Octavia + HAProxy + Envoy,network,A,core,tenant,helm+gitops,health-check+tls+audit,create load balancer
-dns,Route 53 / Azure DNS / Cloud DNS,PowerDNS + dnsdist,dns,B,core,tenant-admin,gitops,DNSSEC+approval+audit,create DNS zone
-edge,Cloud CDN / Cloudflare / Front Door,OSDC Edge Shield,edge,B,core,security,gitops,WAF+rate-limit+tunnel+audit,issue secure endpoint
-api_gateway,API Gateway / API Management,Kong + APISIX + Envoy Gateway,api,B,important,tenant,helm+gitops,quota+auth+audit,publish API
-git_repos,GitHub Enterprise / Azure DevOps,Forgejo + Gitea + GitLab CE,developer,C,important,developer,helm+gitops,branch-protection+review+audit,request repository
-ci,CodeBuild / Azure Pipelines,Woodpecker CI + Tekton + Jenkins,developer,C,important,developer,helm+gitops,secret-scope+sbom+audit,run build pipeline
-gitops,CodePipeline / Deployments,Argo CD + Flux,developer,C,core,operator,helm+gitops,approval+sync-window+audit,promote deployment
-registry,ECR / ACR / Artifact Registry,Harbor + cosign + Syft + Grype,registry,C,core,developer,helm+gitops,scan+sign+sbom,publish image
-iac,Terraform Cloud / ARM / Deployment Manager,OpenTofu + Ansible + Crossplane,iac,C,core,developer,gitops,plan-approval+drift+audit,approve infrastructure plan
-developer_portal,Developer Portal,Backstage optional + OSDC plugin model,developer,C,optional,developer,helm+gitops,rbac+ownership+audit,create service template
-observability,CloudWatch / Azure Monitor,OpenTelemetry + Prometheus + VictoriaMetrics + Grafana,observability,A,core,operator,helm+gitops,retention+rbac+audit,view service health
-logging,Cloud Logging / Log Analytics,Loki + OpenSearch + ClickHouse logs,observability,A,core,operator,helm+gitops,retention+privacy+audit,search logs
-tracing,X-Ray / Cloud Trace,OpenTelemetry + Tempo + Jaeger,observability,A,important,operator,helm+gitops,retention+rbac+audit,view distributed trace
-audit,CloudTrail / Activity Log,Loki + OpenSearch + Wazuh + immutable audit log,audit,A,core,security,helm+gitops,immutability+retention+audit,view admin audit trail
-soc,Security Hub / Sentinel / Defender,Wazuh + OpenSearch + Sigma,security,B,core,security,helm+gitops,findings+incident+audit,triage security finding
-runtime_security,Runtime protection,Falco + Wazuh + osquery,security,B,important,security,helm+gitops,runtime-alert+exception+audit,view runtime alert
-ids,GuardDuty / NDR,Zeek + Suricata,security,B,important,security,helm+gitops,packet-evidence+retention+audit,review network detection
-vulnerability,Inspector / Defender Vulnerability Mgmt,Trivy + Grype + OpenVAS,security,C,core,security,helm+gitops,scan+exception+audit,review vulnerabilities
-postgres,RDS / Cloud SQL,CloudNativePG,database,D,core,tenant,operator-release-train,backup+secret+audit,create PostgreSQL database
-nosql,DynamoDB / Cosmos DB,ScyllaDB + Cassandra + FoundationDB + FerretDB,database,D,optional,tenant,operator-release-train,backup+quota+audit,create NoSQL store
-cache,ElastiCache / Memorystore,Valkey,database,D,important,tenant,operator-release-train,quota+network+audit,create cache
-messaging,SQS / PubSub / Event Grid,NATS + RabbitMQ + Knative Eventing,messaging,D,important,tenant,operator-release-train,retention+quota+audit,create queue
-streaming,Kinesis / Event Hubs,Kafka + Redpanda + Pulsar,messaging,D,optional,tenant,operator-release-train,retention+acl+audit,create topic
-analytics,BigQuery / Athena / Synapse,Trino + Iceberg + Ceph + Superset,analytics,D,optional,tenant,operator-release-train,dataset-policy+audit,query data lake
-warehouse,Data warehouse,ClickHouse + Apache Doris + PostgreSQL,analytics,D,optional,tenant,operator-release-train,retention+rbac+audit,create warehouse
-catalogue,Data catalogue,OpenMetadata + DataHub + Apache Atlas,analytics,D,optional,tenant,operator-release-train,lineage+ownership+audit,register dataset
-pipelines,Workflow orchestration,Airflow + Argo Workflows + Dagster,analytics,D,important,tenant,helm+gitops,secret-scope+audit,run data pipeline
-ml_workspace,SageMaker / Vertex AI / Azure ML,Kubeflow + MLflow + Ray + KServe,ai,D,important,tenant,helm+gitops,data-policy+audit,create ML workspace
-model_endpoint,Bedrock / Azure AI Foundry,vLLM + SGLang + llama.cpp + Ollama,ai,D,core,tenant,helm+gitops,model-license+quota+audit,deploy model endpoint
-gpu_queue,GPU queues,Kueue + Slurm,ai,D,core,tenant,helm+gitops,fair-share+energy+audit,request GPU job
-model_registry,Model registry,MLflow + Harbor OCI artifacts,ai,D,important,tenant,helm+gitops,license+signature+audit,approve model
-vector_search,Vector search,Qdrant + Milvus + Weaviate + pgvector,ai,D,optional,tenant,operator-release-train,data-policy+audit,create vector index
-notebooks,Notebook service,JupyterHub,ai,D,optional,tenant,helm+gitops,quota+data-policy+audit,open research notebook
-asset_inventory,Cloud asset inventory,NetBox + openDCIM,operations,A,core,operator,operator-release-train,inventory+change+audit,view asset
-itsm,ServiceNow-like service catalogue,GLPI + Zammad + OTOBO,operations,A,important,operator,operator-release-train,ticket+approval+audit,open service request
-runbooks,Knowledge base,BookStack + Wiki.js + HedgeDoc,operations,A,important,operator,operator-release-train,review+version+audit,view runbook
-remote_admin,Remote management,MeshCentral + Guacamole + Cockpit,operations,A,important,operator,operator-release-train,zero-trust+session-audit,open remote console
-fleet_os,Systems Manager / Azure Arc,Ansible/AWX + Uyuni + Foreman,fleet,A,important,operator,operator-release-train,patch+inventory+audit,run patch playbook
+service_id,proprietary_service,open_equivalent,category,bundle,priority,ui_surface,upgrade_method,security_controls,workflow,maturity
+identity,AWS IAM / Azure Entra / Google IAM,Keycloak + OPA + OSDC tenancy,identity,A,core,tenant-admin,helm+gitops,MFA+OIDC+audit,create tenant and assign roles,production-baseline
+organizations,AWS Organizations / Azure Management Groups,Keycloak groups + OPA policy,identity,A,core,tenant-admin,gitops,approval+quota+audit,create national entity hierarchy,production-baseline
+workload_identity,IAM Roles for Service Accounts / Managed Identity,SPIFFE + SPIRE + OPA,identity,A,important,security-admin,helm+gitops,mtls+attestation+audit,issue workload identity,pilot
+secrets,AWS Secrets Manager / Azure Key Vault,OpenBao,secrets,A,core,security-admin,helm+gitops,sealed-init+audit+rotation,create secret and rotate credentials,production-baseline
+kms,AWS KMS / Azure Key Vault HSM,OpenBao Transit + Barbican + HSM,key-management,A,core,security-admin,helm+gitops,key-custody+rotation+audit,manage key lifecycle,production-baseline
+compute_vm,EC2 / Azure VM / Compute Engine,OpenStack Nova + KVM,compute,A,core,tenant,openstack-release-train,image-signature+quota+audit,create VM instance,production-baseline
+bare_metal,EC2 Bare Metal / Azure BareMetal,OpenStack Ironic + Metal3 + Redfish,bare-metal,A,core,operator,openstack-release-train,hardware-approval+firmware+audit,reserve dedicated node,production-baseline
+kubernetes,EKS / AKS / GKE,Kubernetes + Cluster API + Cilium,containers,A,core,tenant,planned-release-train,network-policy+image-policy+audit,create managed cluster,production-baseline
+serverless,Lambda / Cloud Functions,Knative + OpenFaaS,serverless,D,important,tenant,helm+gitops,quota+network-policy+audit,deploy serverless function,experimental
+batch,AWS Batch / Azure Batch,Kueue + Slurm + Volcano,batch,D,core,tenant,helm+gitops,quota+fair-share+audit,submit batch job,production-baseline
+object_storage,S3 / Blob Storage / Cloud Storage,Ceph RGW,storage,A,core,tenant,ceph-release-train,policy+encryption+audit,create object bucket,production-baseline
+block_storage,EBS / Managed Disk,Ceph RBD + Cinder,storage,A,core,tenant,ceph-release-train,encryption+snapshot+audit,create block volume,production-baseline
+file_storage,EFS / Azure Files,CephFS + Manila,storage,A,important,tenant,ceph-release-train,acl+backup+audit,create shared file system,pilot
+backup,AWS Backup / Azure Backup,Velero + Restic + Kopia + Ceph snapshots,backup,A,core,operator,helm+gitops,restore-test+retention+audit,restore backup,production-baseline
+networking,VPC / VNet / Google VPC,OpenStack Neutron + OVN + FRRouting,network,A,core,tenant,openstack-release-train,security-groups+policy+audit,create network,production-baseline
+load_balancing,ELB / Azure Load Balancer,Octavia + HAProxy + Envoy,network,A,core,tenant,helm+gitops,health-check+tls+audit,create load balancer,production-baseline
+dns,Route 53 / Azure DNS / Cloud DNS,PowerDNS + dnsdist,dns,B,core,tenant-admin,gitops,DNSSEC+approval+audit,create DNS zone,production-baseline
+edge,Cloud CDN / Cloudflare / Front Door,OSDC Edge Shield,edge,B,core,security,gitops,WAF+rate-limit+tunnel+audit,issue secure endpoint,production-baseline
+api_gateway,API Gateway / API Management,Kong + APISIX + Envoy Gateway,api,B,important,tenant,helm+gitops,quota+auth+audit,publish API,pilot
+git_repos,GitHub Enterprise / Azure DevOps,Forgejo + Gitea + GitLab CE,developer,C,important,developer,helm+gitops,branch-protection+review+audit,request repository,pilot
+ci,CodeBuild / Azure Pipelines,Woodpecker CI + Tekton + Jenkins,developer,C,important,developer,helm+gitops,secret-scope+sbom+audit,run build pipeline,pilot
+gitops,CodePipeline / Deployments,Argo CD + Flux,developer,C,core,operator,helm+gitops,approval+sync-window+audit,promote deployment,production-baseline
+registry,ECR / ACR / Artifact Registry,Harbor + cosign + Syft + Grype,registry,C,core,developer,helm+gitops,scan+sign+sbom,publish image,production-baseline
+iac,Terraform Cloud / ARM / Deployment Manager,OpenTofu + Ansible + Crossplane,iac,C,core,developer,gitops,plan-approval+drift+audit,approve infrastructure plan,production-baseline
+developer_portal,Developer Portal,Backstage optional + OSDC plugin model,developer,C,optional,developer,helm+gitops,rbac+ownership+audit,create service template,experimental
+observability,CloudWatch / Azure Monitor,OpenTelemetry + Prometheus + VictoriaMetrics + Grafana,observability,A,core,operator,helm+gitops,retention+rbac+audit,view service health,production-baseline
+logging,Cloud Logging / Log Analytics,Loki + OpenSearch + ClickHouse logs,observability,A,core,operator,helm+gitops,retention+privacy+audit,search logs,production-baseline
+tracing,X-Ray / Cloud Trace,OpenTelemetry + Tempo + Jaeger,observability,A,important,operator,helm+gitops,retention+rbac+audit,view distributed trace,pilot
+audit,CloudTrail / Activity Log,Loki + OpenSearch + Wazuh + immutable audit log,audit,A,core,security,helm+gitops,immutability+retention+audit,view admin audit trail,production-baseline
+soc,Security Hub / Sentinel / Defender,Wazuh + OpenSearch + Sigma,security,B,core,security,helm+gitops,findings+incident+audit,triage security finding,production-baseline
+runtime_security,Runtime protection,Falco + Wazuh + osquery,security,B,important,security,helm+gitops,runtime-alert+exception+audit,view runtime alert,pilot
+ids,GuardDuty / NDR,Zeek + Suricata,security,B,important,security,helm+gitops,packet-evidence+retention+audit,review network detection,pilot
+vulnerability,Inspector / Defender Vulnerability Mgmt,Trivy + Grype + OpenVAS,security,C,core,security,helm+gitops,scan+exception+audit,review vulnerabilities,production-baseline
+postgres,RDS / Cloud SQL,CloudNativePG,database,D,core,tenant,operator-release-train,backup+secret+audit,create PostgreSQL database,production-baseline
+nosql,DynamoDB / Cosmos DB,ScyllaDB + Cassandra + FoundationDB + FerretDB,database,D,optional,tenant,operator-release-train,backup+quota+audit,create NoSQL store,optional
+cache,ElastiCache / Memorystore,Valkey,database,D,important,tenant,operator-release-train,quota+network+audit,create cache,pilot
+messaging,SQS / PubSub / Event Grid,NATS + RabbitMQ + Knative Eventing,messaging,D,important,tenant,operator-release-train,retention+quota+audit,create queue,pilot
+streaming,Kinesis / Event Hubs,Kafka + Redpanda + Pulsar,messaging,D,optional,tenant,operator-release-train,retention+acl+audit,create topic,optional
+analytics,BigQuery / Athena / Synapse,Trino + Iceberg + Ceph + Superset,analytics,D,optional,tenant,operator-release-train,dataset-policy+audit,query data lake,optional
+warehouse,Data warehouse,ClickHouse + Apache Doris + PostgreSQL,analytics,D,optional,tenant,operator-release-train,retention+rbac+audit,create warehouse,optional
+catalogue,Data catalogue,OpenMetadata + DataHub + Apache Atlas,analytics,D,optional,tenant,operator-release-train,lineage+ownership+audit,register dataset,optional
+pipelines,Workflow orchestration,Airflow + Argo Workflows + Dagster,analytics,D,important,tenant,helm+gitops,secret-scope+audit,run data pipeline,pilot
+ml_workspace,SageMaker / Vertex AI / Azure ML,Kubeflow + MLflow + Ray + KServe,ai,D,important,tenant,helm+gitops,data-policy+audit,create ML workspace,pilot
+model_endpoint,Bedrock / Azure AI Foundry,vLLM + SGLang + llama.cpp + Ollama,ai,D,core,tenant,helm+gitops,model-license+quota+audit,deploy model endpoint,production-baseline
+gpu_queue,GPU queues,Kueue + Slurm,ai,D,core,tenant,helm+gitops,fair-share+energy+audit,request GPU job,production-baseline
+model_registry,Model registry,MLflow + Harbor OCI artifacts,ai,D,important,tenant,helm+gitops,license+signature+audit,approve model,pilot
+vector_search,Vector search,Qdrant + Milvus + Weaviate + pgvector,ai,D,optional,tenant,operator-release-train,data-policy+audit,create vector index,optional
+notebooks,Notebook service,JupyterHub,ai,D,optional,tenant,helm+gitops,quota+data-policy+audit,open research notebook,optional
+asset_inventory,Cloud asset inventory,NetBox + openDCIM,operations,A,core,operator,operator-release-train,inventory+change+audit,view asset,production-baseline
+itsm,ServiceNow-like service catalogue,GLPI + Zammad + OTOBO,operations,A,important,operator,operator-release-train,ticket+approval+audit,open service request,pilot
+runbooks,Knowledge base,BookStack + Wiki.js + HedgeDoc,operations,A,important,operator,operator-release-train,review+version+audit,view runbook,pilot
+remote_admin,Remote management,MeshCentral + Guacamole + Cockpit,operations,A,important,operator,operator-release-train,zero-trust+session-audit,open remote console,pilot
+fleet_os,Systems Manager / Azure Arc,Ansible/AWX + Uyuni + Foreman,fleet,A,important,operator,operator-release-train,patch+inventory+audit,run patch playbook,pilot

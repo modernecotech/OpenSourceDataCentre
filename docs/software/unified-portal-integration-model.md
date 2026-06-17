@@ -49,6 +49,20 @@ Current and planned catalogue APIs:
 - `/api/config/scripts`
 - `/api/operator/status`
 
+## Adapter Contracts
+
+The first adapter skeletons live in `crates/osdc-adapters/`.
+
+They define contracts for:
+
+- Keycloak-style identity and tenant setup.
+- PowerDNS-style DNS zone creation.
+- NetBox-style inventory registration.
+- OpenBao-style secret policy application.
+- Argo CD or Flux-style GitOps change submission.
+
+These traits are deliberately small. They let the portal model real integrations without pretending that a live production adapter exists before credentials, staging clusters, failure modes, and audit requirements are known.
+
 ## Config Script Editing
 
 The portal should expose the actual config scripts for tools such as Caddy, PowerDNS, Coraza, CrowdSec, WireGuard, OpenBao, OPA, Kyverno, Prometheus, Argo CD, Flux, and OpenTofu. The browser editor should validate and stage GitOps changes rather than directly rewriting live service files.

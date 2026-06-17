@@ -432,7 +432,7 @@ function renderConfigScriptEditor(scripts) {
     for (const row of tbody.querySelectorAll("tr")) {
       row.classList.toggle("selected-row", row.dataset.scriptId === selectedId);
     }
-    if (output) output.textContent = `${script.tool} loaded. Changes will be staged as a GitOps review.`;
+    if (output) output.textContent = `${script.tool} loaded. Prototype edits model a GitOps review; no live service is changed.`;
   };
 
   clear(tbody);
@@ -461,7 +461,7 @@ function renderConfigScriptEditor(scripts) {
     event.preventDefault();
     const script = scripts.find((item) => item.id === selectedId);
     if (output && script) {
-      output.textContent = `Validation queued: ${script.validation_command}`;
+      output.textContent = `Prototype validation queued: ${script.validation_command}`;
     }
   });
 
@@ -469,7 +469,7 @@ function renderConfigScriptEditor(scripts) {
     event.preventDefault();
     const script = scripts.find((item) => item.id === selectedId);
     if (output && script) {
-      output.textContent = `GitOps change staged for ${script.path}; review, staging rollout, and rollback checks required.`;
+      output.textContent = `Prototype GitOps change staged for ${script.path}; production flow must open a reviewed change request before rollout.`;
     }
   });
 }

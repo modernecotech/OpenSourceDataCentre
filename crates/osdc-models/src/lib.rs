@@ -131,6 +131,109 @@ pub struct ServiceUpgradePolicy {
     pub required_gates: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ChangeRequest {
+    pub id: String,
+    pub title: String,
+    pub requester: String,
+    pub target_system: String,
+    pub target_environment: String,
+    pub change_type: ChangeType,
+    pub risk: ChangeRisk,
+    pub files: Vec<ConfigArtifact>,
+    pub validations: Vec<ValidationResult>,
+    pub rollout_plan: RolloutPlan,
+    pub rollback_plan: RollbackPlan,
+    pub audit_events: Vec<AuditEvent>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ChangeType {
+    ConfigScript,
+    ServiceUpgrade,
+    InfrastructurePlan,
+    AccessPolicy,
+    EmergencyPatch,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ChangeRisk {
+    Low,
+    Medium,
+    High,
+    Critical,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ConfigArtifact {
+    pub path: String,
+    pub owner: String,
+    pub language: String,
+    pub secret_policy: SecretPolicy,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SecretPolicy {
+    NoSecretsAllowed,
+    ReferencesOnly,
+    EncryptedValuesAllowed,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ValidationResult {
+    pub check_id: String,
+    pub command: String,
+    pub status: ValidationStatus,
+    pub summary: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ValidationStatus {
+    Pending,
+    Passed,
+    Failed,
+    Waived,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RolloutPlan {
+    pub strategy: RolloutStrategy,
+    pub stages: Vec<RolloutStage>,
+    pub required_approvers: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RolloutStrategy {
+    GitOpsPullRequest,
+    StagedCanary,
+    RackByRack,
+    MaintenanceWindow,
+    EmergencyFastTrack,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RolloutStage {
+    pub name: String,
+    pub target: String,
+    pub health_checks: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RollbackPlan {
+    pub trigger_conditions: Vec<String>,
+    pub restore_actions: Vec<String>,
+    pub evidence_required: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AuditEvent {
+    pub event_id: String,
+    pub actor: String,
+    pub action: String,
+    pub timestamp_utc: String,
+    pub evidence_ref: String,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct CostSummary {
     pub it_energy_kwh: f64,
@@ -250,5 +353,62 @@ mod tests {
             assert!(!profile.upgrade_policy.blind_upgrades_allowed);
             assert!(!profile.upgrade_policy.required_gates.is_empty());
         }
+    }
+
+    #[test]
+    fn serializes_gitops_change_request_model() {
+        let request = ChangeRequest {
+            id: "cr-edge-waf-0001".to_string(),
+            title: "Enable Coraza blocking mode for public API".to_string(),
+            requester: "security-admin".to_string(),
+            target_system: "edge-shield".to_string(),
+            target_environment: "staging".to_string(),
+            change_type: ChangeType::ConfigScript,
+            risk: ChangeRisk::High,
+            files: vec![ConfigArtifact {
+                path: "/etc/coraza/osdc-crs.conf".to_string(),
+                owner: "root".to_string(),
+                language: "modsecurity".to_string(),
+                secret_policy: SecretPolicy::NoSecretsAllowed,
+            }],
+            validations: vec![ValidationResult {
+                check_id: "coraza-config".to_string(),
+                command: "coraza --validate /etc/coraza/osdc-crs.conf".to_string(),
+                status: ValidationStatus::Pending,
+                summary: "queued".to_string(),
+            }],
+            rollout_plan: RolloutPlan {
+                strategy: RolloutStrategy::StagedCanary,
+                stages: vec![RolloutStage {
+                    name: "edge-a staging".to_string(),
+                    target: "edge-a".to_string(),
+                    health_checks: vec!["waf detection logs clean".to_string()],
+                }],
+                required_approvers: vec!["security-owner".to_string()],
+            },
+            rollback_plan: RollbackPlan {
+                trigger_conditions: vec!["5xx rate exceeds baseline".to_string()],
+                restore_actions: vec!["restore previous Git commit".to_string()],
+                evidence_required: vec!["rollback hash recorded".to_string()],
+            },
+            audit_events: vec![AuditEvent {
+                event_id: "audit-0001".to_string(),
+                actor: "security-admin".to_string(),
+                action: "created".to_string(),
+                timestamp_utc: "2026-06-17T00:00:00Z".to_string(),
+                evidence_ref: "git:cr-edge-waf-0001".to_string(),
+            }],
+        };
+
+        let raw = serde_json::to_string(&request).unwrap();
+        let decoded: ChangeRequest = serde_json::from_str(&raw).unwrap();
+
+        assert_eq!(decoded.id, request.id);
+        assert_eq!(
+            decoded.files[0].secret_policy,
+            SecretPolicy::NoSecretsAllowed
+        );
+        assert_eq!(decoded.rollout_plan.strategy, RolloutStrategy::StagedCanary);
+        assert_eq!(decoded.validations[0].status, ValidationStatus::Pending);
     }
 }

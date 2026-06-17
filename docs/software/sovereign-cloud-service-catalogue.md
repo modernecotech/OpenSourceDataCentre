@@ -41,10 +41,21 @@ OpenStack is the default IaaS substrate for compute, storage, and networking. Ku
 
 ## Data Files
 
-- `data/software/service-catalogue-v1.csv` is the main catalogue.
-- `data/software/proprietary-open-source-equivalents.csv` maps commercial services to open alternatives.
-- `data/software/security-controls.csv` maps controls to tools and evidence.
+- `data/software/service-catalogue-v1.csv` is the main source-of-truth catalogue. It carries service ID, proprietary equivalent, open equivalent, category, bundle, priority, UI surface, upgrade method, controls, workflow, and maturity.
+- `data/software/proprietary-open-source-equivalents.csv` is the user-facing commercial-service comparison view.
+- `data/software/proprietary-to-open-source-map.csv` is the older security/edge-specific comparison view and should eventually become a generated view.
+- `data/software/security-controls.csv` is the compliance/control catalogue for managed security controls and evidence.
+- `data/software/security-control-map.csv` is the older control-map view and should remain aligned until it is retired or generated.
 - `data/software/upgrade-policy.csv` defines patch and upgrade classes.
+- `data/software/config-script-catalogue.csv` defines browser-editable configuration artifacts.
+
+Maturity values in the service catalogue are:
+
+- `experimental`
+- `pilot`
+- `production-baseline`
+- `optional`
+- `deprecated`
 
 ## Examples
 

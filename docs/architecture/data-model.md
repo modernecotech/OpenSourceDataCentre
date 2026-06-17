@@ -165,6 +165,26 @@ Represents a scheduled compute or AI job.
 - `carbon_policy`
 - `scheduler_backend`
 
+## GitOps Change Workflow
+
+Represents browser or API changes that must be validated, reviewed, rolled out, and audited before touching production infrastructure.
+
+- `ChangeRequest`
+- `ConfigArtifact`
+- `ValidationResult`
+- `RolloutPlan`
+- `RolloutStage`
+- `RollbackPlan`
+- `AuditEvent`
+
+Core enums:
+
+- `ChangeType`: config script, service upgrade, infrastructure plan, access policy, emergency patch.
+- `ChangeRisk`: low, medium, high, critical.
+- `ValidationStatus`: pending, passed, failed, waived.
+- `RolloutStrategy`: GitOps pull request, staged canary, rack-by-rack, maintenance window, emergency fast track.
+- `SecretPolicy`: no secrets allowed, references only, encrypted values allowed.
+
 ## Model Artifact
 
 Represents an AI model or derived model.
