@@ -1,6 +1,7 @@
-use std::{error::Error, fmt};
+use std::{collections::BTreeMap, error::Error, fmt, time::Duration};
 
 use osdc_models::ChangeRequest;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AdapterTarget {
@@ -194,11 +195,20 @@ pub struct FindingIngestRequest {
     pub owner: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DnsZoneSummary {
     pub zone_name: String,
     pub owner_tenant: String,
     pub dnssec_enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct DnsRecordSummary {
+    pub zone_name: String,
+    pub record_name: String,
+    pub record_type: String,
+    pub ttl: u32,
+    pub records: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -210,11 +220,82 @@ pub struct InventorySummary {
     pub ip_address_count: u16,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NetBoxSiteSummary {
+    pub id: u64,
+    pub name: String,
+    pub slug: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NetBoxRackSummary {
+    pub id: u64,
+    pub name: String,
+    pub site: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NetBoxDeviceSummary {
+    pub id: u64,
+    pub name: String,
+    pub role: String,
+    pub site: String,
+    pub rack: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NetBoxIpAddressSummary {
+    pub id: u64,
+    pub address: String,
+    pub status: String,
+    pub assigned_object: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NetBoxInventorySnapshot {
+    pub sites: Vec<NetBoxSiteSummary>,
+    pub racks: Vec<NetBoxRackSummary>,
+    pub devices: Vec<NetBoxDeviceSummary>,
+    pub ip_addresses: Vec<NetBoxIpAddressSummary>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IdentitySummary {
     pub realm: String,
     pub group_count: u16,
     pub role_count: u16,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct KeycloakRealmSummary {
+    pub realm: String,
+    pub enabled: bool,
+    pub display_name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct KeycloakGroupSummary {
+    pub id: String,
+    pub name: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct KeycloakRoleSummary {
+    pub id: String,
+    pub name: String,
+    pub composite: bool,
+    pub client_role: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct KeycloakIdentitySnapshot {
+    pub realms: Vec<KeycloakRealmSummary>,
+    pub groups: Vec<KeycloakGroupSummary>,
+    pub roles: Vec<KeycloakRoleSummary>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -224,12 +305,44 @@ pub struct SecretMountSummary {
     pub transit_enabled: bool,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct OpenBaoMountSummary {
+    pub path: String,
+    pub engine_type: String,
+    pub description: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct OpenBaoPolicySummary {
+    pub name: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct OpenBaoSecretSnapshot {
+    pub mounts: Vec<OpenBaoMountSummary>,
+    pub policies: Vec<OpenBaoPolicySummary>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GitOpsChangePreview {
     pub change_id: String,
     pub target_branch: String,
     pub files_changed: u16,
     pub requires_approval: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct GitOpsApplicationSummary {
+    pub name: String,
+    pub namespace: String,
+    pub sync_status: String,
+    pub health_status: String,
+    pub revision: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct GitOpsSyncSnapshot {
+    pub applications: Vec<GitOpsApplicationSummary>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -325,22 +438,39 @@ pub struct InvoiceGenerationRequest {
 
 pub trait DnsReadAdapter {
     fn list_zones(&self) -> AdapterResult<Vec<DnsZoneSummary>>;
+    fn list_records(&self, zone_name: &str) -> AdapterResult<Vec<DnsRecordSummary>>;
 }
 
 pub trait InventoryReadAdapter {
     fn inventory_summary(&self) -> AdapterResult<InventorySummary>;
 }
 
+pub trait NetBoxReadAdapter {
+    fn inventory_snapshot(&self) -> AdapterResult<NetBoxInventorySnapshot>;
+}
+
 pub trait IdentityReadAdapter {
     fn identity_summary(&self) -> AdapterResult<IdentitySummary>;
+}
+
+pub trait KeycloakReadAdapter {
+    fn identity_snapshot(&self, realm: &str) -> AdapterResult<KeycloakIdentitySnapshot>;
 }
 
 pub trait SecretsReadAdapter {
     fn secret_mounts(&self) -> AdapterResult<Vec<SecretMountSummary>>;
 }
 
+pub trait OpenBaoReadAdapter {
+    fn secret_snapshot(&self) -> AdapterResult<OpenBaoSecretSnapshot>;
+}
+
 pub trait GitOpsReadAdapter {
     fn preview_change(&self, request: &ChangeRequest) -> AdapterResult<GitOpsChangePreview>;
+}
+
+pub trait ArgoCdReadAdapter {
+    fn sync_snapshot(&self) -> AdapterResult<GitOpsSyncSnapshot>;
 }
 
 pub trait VirtualizationReadAdapter {
@@ -454,6 +584,900 @@ pub trait SecurityFindingAdapter {
     fn ingest_findings(&self, request: &FindingIngestRequest) -> AdapterResult<AdapterReceipt>;
 }
 
+#[derive(Debug, Clone)]
+pub struct PowerDnsHttpAdapter {
+    base_url: String,
+    api_key: String,
+    server_id: String,
+    timeout: Duration,
+}
+
+impl PowerDnsHttpAdapter {
+    pub fn new(
+        base_url: impl Into<String>,
+        api_key: impl Into<String>,
+        server_id: impl Into<String>,
+    ) -> Self {
+        Self {
+            base_url: base_url.into().trim_end_matches('/').to_string(),
+            api_key: api_key.into(),
+            server_id: server_id.into(),
+            timeout: Duration::from_secs(10),
+        }
+    }
+
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn api_url(&self, path: &str) -> String {
+        format!("{}/{}", self.base_url, path.trim_start_matches('/'))
+    }
+
+    fn get_json<T>(&self, path: &str) -> AdapterResult<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let url = self.api_url(path);
+        let response = ureq::AgentBuilder::new()
+            .timeout(self.timeout)
+            .build()
+            .get(&url)
+            .set("X-API-Key", &self.api_key)
+            .set("Accept", "application/json")
+            .call()
+            .map_err(|err| AdapterError {
+                target: AdapterTarget::PowerDns,
+                message: format!("GET {url} failed: {err}"),
+            })?;
+
+        response.into_json::<T>().map_err(|err| AdapterError {
+            target: AdapterTarget::PowerDns,
+            message: format!("GET {url} returned invalid JSON: {err}"),
+        })
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct PowerDnsZone {
+    name: String,
+    #[serde(default)]
+    account: Option<String>,
+    #[serde(default)]
+    dnssec: bool,
+}
+
+#[derive(Debug, Deserialize)]
+struct PowerDnsZoneDetail {
+    #[serde(default)]
+    rrsets: Vec<PowerDnsRrset>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PowerDnsRrset {
+    name: String,
+    #[serde(rename = "type")]
+    record_type: String,
+    ttl: u32,
+    #[serde(default)]
+    records: Vec<PowerDnsRecord>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PowerDnsRecord {
+    content: String,
+    #[serde(default)]
+    disabled: bool,
+}
+
+impl DnsReadAdapter for PowerDnsHttpAdapter {
+    fn list_zones(&self) -> AdapterResult<Vec<DnsZoneSummary>> {
+        let path = format!("/api/v1/servers/{}/zones", self.server_id);
+        self.get_json::<Vec<PowerDnsZone>>(&path).map(|zones| {
+            zones
+                .into_iter()
+                .map(|zone| DnsZoneSummary {
+                    owner_tenant: zone.account.unwrap_or_else(|| "unassigned".to_string()),
+                    zone_name: zone.name,
+                    dnssec_enabled: zone.dnssec,
+                })
+                .collect()
+        })
+    }
+
+    fn list_records(&self, zone_name: &str) -> AdapterResult<Vec<DnsRecordSummary>> {
+        let zone_id = powerdns_zone_id(zone_name);
+        let path = format!("/api/v1/servers/{}/zones/{zone_id}", self.server_id);
+        self.get_json::<PowerDnsZoneDetail>(&path).map(|detail| {
+            detail
+                .rrsets
+                .into_iter()
+                .map(|rrset| DnsRecordSummary {
+                    zone_name: zone_name.to_string(),
+                    record_name: rrset.name,
+                    record_type: rrset.record_type,
+                    ttl: rrset.ttl,
+                    records: rrset
+                        .records
+                        .into_iter()
+                        .filter(|record| !record.disabled)
+                        .map(|record| record.content)
+                        .collect(),
+                })
+                .collect()
+        })
+    }
+}
+
+fn powerdns_zone_id(zone_name: &str) -> String {
+    zone_name.replace('/', "%2F")
+}
+
+#[derive(Debug, Clone)]
+pub struct NetBoxHttpAdapter {
+    base_url: String,
+    token: String,
+    timeout: Duration,
+}
+
+impl NetBoxHttpAdapter {
+    pub fn new(base_url: impl Into<String>, token: impl Into<String>) -> Self {
+        Self {
+            base_url: base_url.into().trim_end_matches('/').to_string(),
+            token: token.into(),
+            timeout: Duration::from_secs(10),
+        }
+    }
+
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn api_url(&self, path: &str) -> String {
+        if path.starts_with("http://") || path.starts_with("https://") {
+            path.to_string()
+        } else {
+            format!("{}/{}", self.base_url, path.trim_start_matches('/'))
+        }
+    }
+
+    fn get_json_url<T>(&self, url: &str) -> AdapterResult<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let authorization = format!("Token {}", self.token);
+        let response = ureq::AgentBuilder::new()
+            .timeout(self.timeout)
+            .build()
+            .get(url)
+            .set("Authorization", &authorization)
+            .set("Accept", "application/json")
+            .call()
+            .map_err(|err| AdapterError {
+                target: AdapterTarget::NetBox,
+                message: format!("GET {url} failed: {err}"),
+            })?;
+
+        response.into_json::<T>().map_err(|err| AdapterError {
+            target: AdapterTarget::NetBox,
+            message: format!("GET {url} returned invalid JSON: {err}"),
+        })
+    }
+
+    fn get_paginated<T>(&self, path: &str) -> AdapterResult<Vec<T>>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let mut url = self.api_url(path);
+        let mut results = Vec::new();
+
+        for _ in 0..1000 {
+            let page = self.get_json_url::<NetBoxPage<T>>(&url)?;
+            results.extend(page.results);
+
+            match page.next.filter(|next| !next.trim().is_empty()) {
+                Some(next) => url = self.api_url(&next),
+                None => return Ok(results),
+            }
+        }
+
+        Err(AdapterError {
+            target: AdapterTarget::NetBox,
+            message: format!("GET {path} exceeded pagination safety limit"),
+        })
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxPage<T> {
+    #[serde(default)]
+    next: Option<String>,
+    results: Vec<T>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum NetBoxBrief {
+    Object(NetBoxBriefObject),
+    Text(String),
+    Number(u64),
+}
+
+impl NetBoxBrief {
+    fn name(&self) -> String {
+        match self {
+            NetBoxBrief::Object(object) => object
+                .name
+                .as_ref()
+                .or(object.display.as_ref())
+                .or(object.label.as_ref())
+                .or(object.value.as_ref())
+                .or(object.slug.as_ref())
+                .cloned()
+                .unwrap_or_else(|| "unknown".to_string()),
+            NetBoxBrief::Text(value) => value.clone(),
+            NetBoxBrief::Number(value) => value.to_string(),
+        }
+    }
+
+    fn status(&self) -> String {
+        match self {
+            NetBoxBrief::Object(object) => object
+                .value
+                .as_ref()
+                .or(object.label.as_ref())
+                .or(object.name.as_ref())
+                .or(object.display.as_ref())
+                .cloned()
+                .unwrap_or_else(|| "unknown".to_string()),
+            NetBoxBrief::Text(value) => value.clone(),
+            NetBoxBrief::Number(value) => value.to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxBriefObject {
+    #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    slug: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    label: Option<String>,
+    #[serde(default)]
+    display: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxSite {
+    id: u64,
+    #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    slug: Option<String>,
+    #[serde(default)]
+    display: Option<String>,
+    #[serde(default)]
+    status: Option<NetBoxBrief>,
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxRack {
+    id: u64,
+    #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    display: Option<String>,
+    #[serde(default)]
+    site: Option<NetBoxBrief>,
+    #[serde(default)]
+    status: Option<NetBoxBrief>,
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxDevice {
+    id: u64,
+    #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    display: Option<String>,
+    #[serde(default)]
+    role: Option<NetBoxBrief>,
+    #[serde(default)]
+    device_role: Option<NetBoxBrief>,
+    #[serde(default)]
+    site: Option<NetBoxBrief>,
+    #[serde(default)]
+    rack: Option<NetBoxBrief>,
+    #[serde(default)]
+    status: Option<NetBoxBrief>,
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxIpAddress {
+    id: u64,
+    address: String,
+    #[serde(default)]
+    status: Option<NetBoxBrief>,
+    #[serde(default)]
+    assigned_object: Option<NetBoxAssignedObject>,
+}
+
+#[derive(Debug, Deserialize)]
+struct NetBoxAssignedObject {
+    #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    display: Option<String>,
+    #[serde(default)]
+    device: Option<NetBoxBrief>,
+    #[serde(default)]
+    virtual_machine: Option<NetBoxBrief>,
+}
+
+impl NetBoxSite {
+    fn into_summary(self) -> NetBoxSiteSummary {
+        let name = self
+            .name
+            .or(self.display)
+            .unwrap_or_else(|| format!("site-{}", self.id));
+        let slug = self
+            .slug
+            .unwrap_or_else(|| name.to_ascii_lowercase().replace(' ', "-"));
+
+        NetBoxSiteSummary {
+            id: self.id,
+            name,
+            slug,
+            status: brief_status(self.status, "unknown"),
+        }
+    }
+}
+
+impl NetBoxRack {
+    fn into_summary(self) -> NetBoxRackSummary {
+        NetBoxRackSummary {
+            id: self.id,
+            name: self
+                .name
+                .or(self.display)
+                .unwrap_or_else(|| format!("rack-{}", self.id)),
+            site: brief_name(self.site, "unknown-site"),
+            status: brief_status(self.status, "unknown"),
+        }
+    }
+}
+
+impl NetBoxDevice {
+    fn into_summary(self) -> NetBoxDeviceSummary {
+        let role = self.role.or(self.device_role);
+
+        NetBoxDeviceSummary {
+            id: self.id,
+            name: self
+                .name
+                .or(self.display)
+                .unwrap_or_else(|| format!("device-{}", self.id)),
+            role: brief_name(role, "unknown-role"),
+            site: brief_name(self.site, "unknown-site"),
+            rack: brief_name(self.rack, "unracked"),
+            status: brief_status(self.status, "unknown"),
+        }
+    }
+}
+
+impl NetBoxIpAddress {
+    fn into_summary(self) -> NetBoxIpAddressSummary {
+        NetBoxIpAddressSummary {
+            id: self.id,
+            address: self.address,
+            status: brief_status(self.status, "unknown"),
+            assigned_object: assigned_object_name(self.assigned_object),
+        }
+    }
+}
+
+fn brief_name(brief: Option<NetBoxBrief>, fallback: &str) -> String {
+    brief
+        .map(|value| value.name())
+        .unwrap_or_else(|| fallback.to_string())
+}
+
+fn brief_status(brief: Option<NetBoxBrief>, fallback: &str) -> String {
+    brief
+        .map(|value| value.status())
+        .unwrap_or_else(|| fallback.to_string())
+}
+
+fn assigned_object_name(assigned_object: Option<NetBoxAssignedObject>) -> String {
+    assigned_object
+        .and_then(|object| {
+            let NetBoxAssignedObject {
+                name,
+                display,
+                device,
+                virtual_machine,
+            } = object;
+
+            name.or(display)
+                .or_else(|| device.map(|brief| brief.name()))
+                .or_else(|| virtual_machine.map(|brief| brief.name()))
+        })
+        .unwrap_or_else(|| "unassigned".to_string())
+}
+
+fn len_as_u16(len: usize) -> u16 {
+    u16::try_from(len).unwrap_or(u16::MAX)
+}
+
+impl NetBoxReadAdapter for NetBoxHttpAdapter {
+    fn inventory_snapshot(&self) -> AdapterResult<NetBoxInventorySnapshot> {
+        let sites = self
+            .get_paginated::<NetBoxSite>("/api/dcim/sites/")?
+            .into_iter()
+            .map(NetBoxSite::into_summary)
+            .collect();
+        let racks = self
+            .get_paginated::<NetBoxRack>("/api/dcim/racks/")?
+            .into_iter()
+            .map(NetBoxRack::into_summary)
+            .collect();
+        let devices = self
+            .get_paginated::<NetBoxDevice>("/api/dcim/devices/")?
+            .into_iter()
+            .map(NetBoxDevice::into_summary)
+            .collect();
+        let ip_addresses = self
+            .get_paginated::<NetBoxIpAddress>("/api/ipam/ip-addresses/")?
+            .into_iter()
+            .map(NetBoxIpAddress::into_summary)
+            .collect();
+
+        Ok(NetBoxInventorySnapshot {
+            sites,
+            racks,
+            devices,
+            ip_addresses,
+        })
+    }
+}
+
+impl InventoryReadAdapter for NetBoxHttpAdapter {
+    fn inventory_summary(&self) -> AdapterResult<InventorySummary> {
+        let snapshot = self.inventory_snapshot()?;
+
+        Ok(InventorySummary {
+            site_count: len_as_u16(snapshot.sites.len()),
+            rack_count: len_as_u16(snapshot.racks.len()),
+            device_count: len_as_u16(snapshot.devices.len()),
+            circuit_count: 0,
+            ip_address_count: len_as_u16(snapshot.ip_addresses.len()),
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct KeycloakHttpAdapter {
+    base_url: String,
+    token: String,
+    realm: String,
+    timeout: Duration,
+}
+
+impl KeycloakHttpAdapter {
+    pub fn new(
+        base_url: impl Into<String>,
+        token: impl Into<String>,
+        realm: impl Into<String>,
+    ) -> Self {
+        Self {
+            base_url: base_url.into().trim_end_matches('/').to_string(),
+            token: token.into(),
+            realm: realm.into(),
+            timeout: Duration::from_secs(10),
+        }
+    }
+
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn api_url(&self, path: &str) -> String {
+        format!("{}/{}", self.base_url, path.trim_start_matches('/'))
+    }
+
+    fn get_json<T>(&self, path: &str) -> AdapterResult<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let url = self.api_url(path);
+        let authorization = format!("Bearer {}", self.token);
+        let response = ureq::AgentBuilder::new()
+            .timeout(self.timeout)
+            .build()
+            .get(&url)
+            .set("Authorization", &authorization)
+            .set("Accept", "application/json")
+            .call()
+            .map_err(|err| AdapterError {
+                target: AdapterTarget::Keycloak,
+                message: format!("GET {url} failed: {err}"),
+            })?;
+
+        response.into_json::<T>().map_err(|err| AdapterError {
+            target: AdapterTarget::Keycloak,
+            message: format!("GET {url} returned invalid JSON: {err}"),
+        })
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct KeycloakRealm {
+    #[serde(default)]
+    realm: Option<String>,
+    #[serde(default)]
+    id: Option<String>,
+    #[serde(default)]
+    enabled: bool,
+    #[serde(default, rename = "displayName")]
+    display_name: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct KeycloakGroup {
+    id: String,
+    name: String,
+    #[serde(default)]
+    path: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct KeycloakRole {
+    #[serde(default)]
+    id: Option<String>,
+    name: String,
+    #[serde(default)]
+    composite: bool,
+    #[serde(default, rename = "clientRole")]
+    client_role: bool,
+}
+
+impl KeycloakRealm {
+    fn into_summary(self) -> KeycloakRealmSummary {
+        let realm = self
+            .realm
+            .or(self.id)
+            .unwrap_or_else(|| "unknown-realm".to_string());
+        let display_name = self.display_name.clone().unwrap_or_else(|| realm.clone());
+
+        KeycloakRealmSummary {
+            realm,
+            enabled: self.enabled,
+            display_name,
+        }
+    }
+}
+
+impl KeycloakGroup {
+    fn into_summary(self) -> KeycloakGroupSummary {
+        let path = self.path.unwrap_or_else(|| format!("/{}", self.name));
+
+        KeycloakGroupSummary {
+            id: self.id,
+            name: self.name,
+            path,
+        }
+    }
+}
+
+impl KeycloakRole {
+    fn into_summary(self) -> KeycloakRoleSummary {
+        let id = self.id.unwrap_or_else(|| self.name.clone());
+
+        KeycloakRoleSummary {
+            id,
+            name: self.name,
+            composite: self.composite,
+            client_role: self.client_role,
+        }
+    }
+}
+
+impl KeycloakReadAdapter for KeycloakHttpAdapter {
+    fn identity_snapshot(&self, realm: &str) -> AdapterResult<KeycloakIdentitySnapshot> {
+        let realm_segment = keycloak_path_segment(realm);
+        let realms = self
+            .get_json::<Vec<KeycloakRealm>>("/admin/realms")?
+            .into_iter()
+            .map(KeycloakRealm::into_summary)
+            .collect();
+        let groups = self
+            .get_json::<Vec<KeycloakGroup>>(&format!("/admin/realms/{realm_segment}/groups"))?
+            .into_iter()
+            .map(KeycloakGroup::into_summary)
+            .collect();
+        let roles = self
+            .get_json::<Vec<KeycloakRole>>(&format!("/admin/realms/{realm_segment}/roles"))?
+            .into_iter()
+            .map(KeycloakRole::into_summary)
+            .collect();
+
+        Ok(KeycloakIdentitySnapshot {
+            realms,
+            groups,
+            roles,
+        })
+    }
+}
+
+impl IdentityReadAdapter for KeycloakHttpAdapter {
+    fn identity_summary(&self) -> AdapterResult<IdentitySummary> {
+        let snapshot = self.identity_snapshot(&self.realm)?;
+
+        Ok(IdentitySummary {
+            realm: self.realm.clone(),
+            group_count: len_as_u16(snapshot.groups.len()),
+            role_count: len_as_u16(snapshot.roles.len()),
+        })
+    }
+}
+
+fn keycloak_path_segment(segment: &str) -> String {
+    segment.replace(' ', "%20").replace('/', "%2F")
+}
+
+#[derive(Debug, Clone)]
+pub struct OpenBaoHttpAdapter {
+    base_url: String,
+    token: String,
+    timeout: Duration,
+}
+
+impl OpenBaoHttpAdapter {
+    pub fn new(base_url: impl Into<String>, token: impl Into<String>) -> Self {
+        Self {
+            base_url: base_url.into().trim_end_matches('/').to_string(),
+            token: token.into(),
+            timeout: Duration::from_secs(10),
+        }
+    }
+
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn api_url(&self, path: &str) -> String {
+        format!("{}/{}", self.base_url, path.trim_start_matches('/'))
+    }
+
+    fn request_json<T>(&self, method: &str, path: &str) -> AdapterResult<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let url = self.api_url(path);
+        let response = ureq::AgentBuilder::new()
+            .timeout(self.timeout)
+            .build()
+            .request(method, &url)
+            .set("X-Vault-Token", &self.token)
+            .set("Accept", "application/json")
+            .call()
+            .map_err(|err| AdapterError {
+                target: AdapterTarget::OpenBao,
+                message: format!("{method} {url} failed: {err}"),
+            })?;
+
+        response.into_json::<T>().map_err(|err| AdapterError {
+            target: AdapterTarget::OpenBao,
+            message: format!("{method} {url} returned invalid JSON: {err}"),
+        })
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenBaoMount {
+    #[serde(rename = "type")]
+    engine_type: String,
+    #[serde(default)]
+    description: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenBaoPolicyList {
+    #[serde(default)]
+    keys: Vec<String>,
+    #[serde(default)]
+    policies: Vec<String>,
+}
+
+impl OpenBaoPolicyList {
+    fn names(self) -> Vec<String> {
+        if self.keys.is_empty() {
+            self.policies
+        } else {
+            self.keys
+        }
+    }
+}
+
+impl OpenBaoReadAdapter for OpenBaoHttpAdapter {
+    fn secret_snapshot(&self) -> AdapterResult<OpenBaoSecretSnapshot> {
+        let mounts = self
+            .request_json::<BTreeMap<String, OpenBaoMount>>("GET", "/v1/sys/mounts")?
+            .into_iter()
+            .map(|(path, mount)| OpenBaoMountSummary {
+                path,
+                engine_type: mount.engine_type,
+                description: mount.description.unwrap_or_default(),
+            })
+            .collect();
+        let policies = self
+            .request_json::<OpenBaoPolicyList>("LIST", "/v1/sys/policies/acl")?
+            .names()
+            .into_iter()
+            .map(|name| OpenBaoPolicySummary { name })
+            .collect();
+
+        Ok(OpenBaoSecretSnapshot { mounts, policies })
+    }
+}
+
+impl SecretsReadAdapter for OpenBaoHttpAdapter {
+    fn secret_mounts(&self) -> AdapterResult<Vec<SecretMountSummary>> {
+        let snapshot = self.secret_snapshot()?;
+        let policy_count = len_as_u16(snapshot.policies.len());
+
+        Ok(snapshot
+            .mounts
+            .into_iter()
+            .map(|mount| SecretMountSummary {
+                transit_enabled: mount.engine_type == "transit",
+                mount_path: mount.path,
+                policy_count,
+            })
+            .collect())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ArgoCdHttpAdapter {
+    base_url: String,
+    token: String,
+    timeout: Duration,
+}
+
+impl ArgoCdHttpAdapter {
+    pub fn new(base_url: impl Into<String>, token: impl Into<String>) -> Self {
+        Self {
+            base_url: base_url.into().trim_end_matches('/').to_string(),
+            token: token.into(),
+            timeout: Duration::from_secs(10),
+        }
+    }
+
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn api_url(&self, path: &str) -> String {
+        format!("{}/{}", self.base_url, path.trim_start_matches('/'))
+    }
+
+    fn get_json<T>(&self, path: &str) -> AdapterResult<T>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let url = self.api_url(path);
+        let authorization = format!("Bearer {}", self.token);
+        let response = ureq::AgentBuilder::new()
+            .timeout(self.timeout)
+            .build()
+            .get(&url)
+            .set("Authorization", &authorization)
+            .set("Accept", "application/json")
+            .call()
+            .map_err(|err| AdapterError {
+                target: AdapterTarget::ArgoCd,
+                message: format!("GET {url} failed: {err}"),
+            })?;
+
+        response.into_json::<T>().map_err(|err| AdapterError {
+            target: AdapterTarget::ArgoCd,
+            message: format!("GET {url} returned invalid JSON: {err}"),
+        })
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct ArgoCdApplications {
+    #[serde(default)]
+    items: Vec<ArgoCdApplication>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ArgoCdApplication {
+    #[serde(default)]
+    metadata: Option<ArgoCdMetadata>,
+    #[serde(default)]
+    status: Option<ArgoCdStatus>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ArgoCdMetadata {
+    #[serde(default)]
+    name: Option<String>,
+    #[serde(default)]
+    namespace: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ArgoCdStatus {
+    #[serde(default)]
+    sync: Option<ArgoCdSyncStatus>,
+    #[serde(default)]
+    health: Option<ArgoCdHealthStatus>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ArgoCdSyncStatus {
+    #[serde(default)]
+    status: Option<String>,
+    #[serde(default)]
+    revision: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ArgoCdHealthStatus {
+    #[serde(default)]
+    status: Option<String>,
+}
+
+impl ArgoCdApplication {
+    fn into_summary(self) -> GitOpsApplicationSummary {
+        let metadata = self.metadata.unwrap_or(ArgoCdMetadata {
+            name: None,
+            namespace: None,
+        });
+        let status = self.status.unwrap_or(ArgoCdStatus {
+            sync: None,
+            health: None,
+        });
+        let sync = status.sync.unwrap_or(ArgoCdSyncStatus {
+            status: None,
+            revision: None,
+        });
+        let health = status.health.unwrap_or(ArgoCdHealthStatus { status: None });
+
+        GitOpsApplicationSummary {
+            name: metadata.name.unwrap_or_else(|| "unknown-app".to_string()),
+            namespace: metadata.namespace.unwrap_or_else(|| "argocd".to_string()),
+            sync_status: sync.status.unwrap_or_else(|| "Unknown".to_string()),
+            health_status: health.status.unwrap_or_else(|| "Unknown".to_string()),
+            revision: sync.revision.unwrap_or_else(|| "unknown".to_string()),
+        }
+    }
+}
+
+impl ArgoCdReadAdapter for ArgoCdHttpAdapter {
+    fn sync_snapshot(&self) -> AdapterResult<GitOpsSyncSnapshot> {
+        let applications = self
+            .get_json::<ArgoCdApplications>("/api/v1/applications")?
+            .items
+            .into_iter()
+            .map(ArgoCdApplication::into_summary)
+            .collect();
+
+        Ok(GitOpsSyncSnapshot { applications })
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlanningInfrastructureAdapter {
     pub target: AdapterTarget,
@@ -528,6 +1552,16 @@ impl DnsReadAdapter for PlanningInfrastructureAdapter {
             dnssec_enabled: true,
         }])
     }
+
+    fn list_records(&self, zone_name: &str) -> AdapterResult<Vec<DnsRecordSummary>> {
+        Ok(vec![DnsRecordSummary {
+            zone_name: zone_name.to_string(),
+            record_name: format!("www.{zone_name}"),
+            record_type: "A".to_string(),
+            ttl: 300,
+            records: vec!["192.0.2.10".to_string()],
+        }])
+    }
 }
 
 impl InventoryReadAdapter for PlanningInfrastructureAdapter {
@@ -542,12 +1576,83 @@ impl InventoryReadAdapter for PlanningInfrastructureAdapter {
     }
 }
 
+impl NetBoxReadAdapter for PlanningInfrastructureAdapter {
+    fn inventory_snapshot(&self) -> AdapterResult<NetBoxInventorySnapshot> {
+        Ok(NetBoxInventorySnapshot {
+            sites: vec![NetBoxSiteSummary {
+                id: 1,
+                name: "National Region 1".to_string(),
+                slug: "national-region-1".to_string(),
+                status: "active".to_string(),
+            }],
+            racks: vec![NetBoxRackSummary {
+                id: 10,
+                name: "RACK-A01".to_string(),
+                site: "National Region 1".to_string(),
+                status: "active".to_string(),
+            }],
+            devices: vec![NetBoxDeviceSummary {
+                id: 100,
+                name: "rack-a-node-01".to_string(),
+                role: "compute".to_string(),
+                site: "National Region 1".to_string(),
+                rack: "RACK-A01".to_string(),
+                status: "active".to_string(),
+            }],
+            ip_addresses: vec![NetBoxIpAddressSummary {
+                id: 1000,
+                address: "192.0.2.10/32".to_string(),
+                status: "active".to_string(),
+                assigned_object: "rack-a-node-01".to_string(),
+            }],
+        })
+    }
+}
+
 impl IdentityReadAdapter for PlanningInfrastructureAdapter {
     fn identity_summary(&self) -> AdapterResult<IdentitySummary> {
         Ok(IdentitySummary {
             realm: "osdc".to_string(),
             group_count: 6,
             role_count: 12,
+        })
+    }
+}
+
+impl KeycloakReadAdapter for PlanningInfrastructureAdapter {
+    fn identity_snapshot(&self, realm: &str) -> AdapterResult<KeycloakIdentitySnapshot> {
+        Ok(KeycloakIdentitySnapshot {
+            realms: vec![KeycloakRealmSummary {
+                realm: realm.to_string(),
+                enabled: true,
+                display_name: "OSDC Sovereign Cloud".to_string(),
+            }],
+            groups: vec![
+                KeycloakGroupSummary {
+                    id: "grp-platform-operators".to_string(),
+                    name: "platform-operators".to_string(),
+                    path: "/platform-operators".to_string(),
+                },
+                KeycloakGroupSummary {
+                    id: "grp-tenant-admins".to_string(),
+                    name: "tenant-admins".to_string(),
+                    path: "/tenant-admins".to_string(),
+                },
+            ],
+            roles: vec![
+                KeycloakRoleSummary {
+                    id: "role-tenant-admin".to_string(),
+                    name: "tenant-admin".to_string(),
+                    composite: false,
+                    client_role: false,
+                },
+                KeycloakRoleSummary {
+                    id: "role-security-reviewer".to_string(),
+                    name: "security-reviewer".to_string(),
+                    composite: false,
+                    client_role: false,
+                },
+            ],
         })
     }
 }
@@ -562,6 +1667,36 @@ impl SecretsReadAdapter for PlanningInfrastructureAdapter {
     }
 }
 
+impl OpenBaoReadAdapter for PlanningInfrastructureAdapter {
+    fn secret_snapshot(&self) -> AdapterResult<OpenBaoSecretSnapshot> {
+        Ok(OpenBaoSecretSnapshot {
+            mounts: vec![
+                OpenBaoMountSummary {
+                    path: "secret/".to_string(),
+                    engine_type: "kv".to_string(),
+                    description: "tenant secret storage".to_string(),
+                },
+                OpenBaoMountSummary {
+                    path: "transit/".to_string(),
+                    engine_type: "transit".to_string(),
+                    description: "tenant encryption keys".to_string(),
+                },
+            ],
+            policies: vec![
+                OpenBaoPolicySummary {
+                    name: "default".to_string(),
+                },
+                OpenBaoPolicySummary {
+                    name: "tenant-ministry-health".to_string(),
+                },
+                OpenBaoPolicySummary {
+                    name: "platform-secrets-admin".to_string(),
+                },
+            ],
+        })
+    }
+}
+
 impl GitOpsReadAdapter for PlanningInfrastructureAdapter {
     fn preview_change(&self, request: &ChangeRequest) -> AdapterResult<GitOpsChangePreview> {
         Ok(GitOpsChangePreview {
@@ -569,6 +1704,29 @@ impl GitOpsReadAdapter for PlanningInfrastructureAdapter {
             target_branch: format!("osdc/{}", request.target_environment),
             files_changed: request.files.len() as u16,
             requires_approval: !request.rollout_plan.required_approvers.is_empty(),
+        })
+    }
+}
+
+impl ArgoCdReadAdapter for PlanningInfrastructureAdapter {
+    fn sync_snapshot(&self) -> AdapterResult<GitOpsSyncSnapshot> {
+        Ok(GitOpsSyncSnapshot {
+            applications: vec![
+                GitOpsApplicationSummary {
+                    name: "tenant-api".to_string(),
+                    namespace: "argocd".to_string(),
+                    sync_status: "Synced".to_string(),
+                    health_status: "Healthy".to_string(),
+                    revision: "git-sha-tenant-api".to_string(),
+                },
+                GitOpsApplicationSummary {
+                    name: "edge-shield".to_string(),
+                    namespace: "argocd".to_string(),
+                    sync_status: "OutOfSync".to_string(),
+                    health_status: "Progressing".to_string(),
+                    revision: "git-sha-edge-shield".to_string(),
+                },
+            ],
         })
     }
 }
@@ -822,8 +1980,352 @@ impl SecurityFindingAdapter for PlanningInfrastructureAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{
+        io::{Read, Write},
+        net::TcpListener,
+        thread,
+        time::Duration,
+    };
 
     struct PlanningGitOpsAdapter;
+
+    fn spawn_powerdns_fixture() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        thread::spawn(move || {
+            for _ in 0..2 {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut buffer = [0_u8; 4096];
+                let read = stream.read(&mut buffer).unwrap();
+                let request = String::from_utf8_lossy(&buffer[..read]);
+                assert!(request.contains("X-API-Key: test-key"));
+                let first_line = request.lines().next().unwrap_or_default();
+                let body = if first_line.starts_with("GET /api/v1/servers/localhost/zones ") {
+                    r#"[{"name":"health.example.gov.","account":"ministry-health","dnssec":true}]"#
+                } else if first_line
+                    .starts_with("GET /api/v1/servers/localhost/zones/health.example.gov. ")
+                {
+                    r#"{
+                        "rrsets": [
+                            {
+                                "name": "www.health.example.gov.",
+                                "type": "A",
+                                "ttl": 300,
+                                "records": [
+                                    {"content": "192.0.2.20", "disabled": false},
+                                    {"content": "192.0.2.21", "disabled": true}
+                                ]
+                            },
+                            {
+                                "name": "health.example.gov.",
+                                "type": "MX",
+                                "ttl": 3600,
+                                "records": [
+                                    {"content": "10 mail.health.example.gov.", "disabled": false}
+                                ]
+                            }
+                        ]
+                    }"#
+                } else {
+                    r#"{"error":"unexpected path"}"#
+                };
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                );
+                stream.write_all(response.as_bytes()).unwrap();
+            }
+        });
+
+        format!("http://{addr}")
+    }
+
+    fn spawn_netbox_fixture() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let next_sites_url = format!("http://{addr}/api/dcim/sites/?offset=1");
+
+        thread::spawn(move || {
+            for _ in 0..5 {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut buffer = [0_u8; 4096];
+                let read = stream.read(&mut buffer).unwrap();
+                let request = String::from_utf8_lossy(&buffer[..read]);
+                assert!(request
+                    .to_ascii_lowercase()
+                    .contains("authorization: token test-token"));
+                let first_line = request.lines().next().unwrap_or_default();
+                let body = if first_line.starts_with("GET /api/dcim/sites/ ") {
+                    format!(
+                        r#"{{
+                            "count": 2,
+                            "next": "{}",
+                            "previous": null,
+                            "results": [
+                                {{
+                                    "id": 1,
+                                    "name": "National Region 1",
+                                    "slug": "national-region-1",
+                                    "status": {{"value": "active", "label": "Active"}}
+                                }}
+                            ]
+                        }}"#,
+                        next_sites_url
+                    )
+                } else if first_line.starts_with("GET /api/dcim/sites/?offset=1 ") {
+                    r#"{
+                        "count": 2,
+                        "next": null,
+                        "previous": "http://example.invalid/api/dcim/sites/",
+                        "results": [
+                            {
+                                "id": 2,
+                                "name": "Disaster Recovery",
+                                "slug": "disaster-recovery",
+                                "status": {"value": "planned", "label": "Planned"}
+                            }
+                        ]
+                    }"#
+                    .to_string()
+                } else if first_line.starts_with("GET /api/dcim/racks/ ") {
+                    r#"{
+                        "count": 1,
+                        "next": null,
+                        "previous": null,
+                        "results": [
+                            {
+                                "id": 10,
+                                "name": "RACK-A01",
+                                "site": {"name": "National Region 1", "slug": "national-region-1"},
+                                "status": {"value": "active", "label": "Active"}
+                            }
+                        ]
+                    }"#
+                    .to_string()
+                } else if first_line.starts_with("GET /api/dcim/devices/ ") {
+                    r#"{
+                        "count": 1,
+                        "next": null,
+                        "previous": null,
+                        "results": [
+                            {
+                                "id": 100,
+                                "name": "rack-a-node-01",
+                                "role": {"name": "compute", "slug": "compute"},
+                                "site": {"name": "National Region 1", "slug": "national-region-1"},
+                                "rack": {"name": "RACK-A01"},
+                                "status": {"value": "active", "label": "Active"}
+                            }
+                        ]
+                    }"#
+                    .to_string()
+                } else if first_line.starts_with("GET /api/ipam/ip-addresses/ ") {
+                    r#"{
+                        "count": 1,
+                        "next": null,
+                        "previous": null,
+                        "results": [
+                            {
+                                "id": 1000,
+                                "address": "192.0.2.10/32",
+                                "status": {"value": "active", "label": "Active"},
+                                "assigned_object": {
+                                    "display": "rack-a-node-01 eth0",
+                                    "device": {"name": "rack-a-node-01"}
+                                }
+                            }
+                        ]
+                    }"#
+                    .to_string()
+                } else {
+                    r#"{"error":"unexpected path"}"#.to_string()
+                };
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                );
+                stream.write_all(response.as_bytes()).unwrap();
+            }
+        });
+
+        format!("http://{addr}")
+    }
+
+    fn spawn_keycloak_fixture() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        thread::spawn(move || {
+            for _ in 0..3 {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut buffer = [0_u8; 4096];
+                let read = stream.read(&mut buffer).unwrap();
+                let request = String::from_utf8_lossy(&buffer[..read]);
+                assert!(request
+                    .to_ascii_lowercase()
+                    .contains("authorization: bearer test-token"));
+                let first_line = request.lines().next().unwrap_or_default();
+                let body = if first_line.starts_with("GET /admin/realms ") {
+                    r#"[
+                        {
+                            "realm": "osdc",
+                            "enabled": true,
+                            "displayName": "OSDC Sovereign Cloud"
+                        }
+                    ]"#
+                } else if first_line.starts_with("GET /admin/realms/osdc/groups ") {
+                    r#"[
+                        {
+                            "id": "grp-platform-operators",
+                            "name": "platform-operators",
+                            "path": "/platform-operators"
+                        },
+                        {
+                            "id": "grp-tenant-admins",
+                            "name": "tenant-admins",
+                            "path": "/tenant-admins"
+                        }
+                    ]"#
+                } else if first_line.starts_with("GET /admin/realms/osdc/roles ") {
+                    r#"[
+                        {
+                            "id": "role-tenant-admin",
+                            "name": "tenant-admin",
+                            "composite": false,
+                            "clientRole": false
+                        },
+                        {
+                            "id": "role-platform-admin",
+                            "name": "platform-admin",
+                            "composite": true,
+                            "clientRole": false
+                        }
+                    ]"#
+                } else {
+                    r#"{"error":"unexpected path"}"#
+                };
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                );
+                stream.write_all(response.as_bytes()).unwrap();
+            }
+        });
+
+        format!("http://{addr}")
+    }
+
+    fn spawn_openbao_fixture() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        thread::spawn(move || {
+            for _ in 0..2 {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut buffer = [0_u8; 4096];
+                let read = stream.read(&mut buffer).unwrap();
+                let request = String::from_utf8_lossy(&buffer[..read]);
+                assert!(request.contains("X-Vault-Token: test-token"));
+                let first_line = request.lines().next().unwrap_or_default();
+                let body = if first_line.starts_with("GET /v1/sys/mounts ") {
+                    r#"{
+                        "secret/": {
+                            "type": "kv",
+                            "description": "tenant secrets"
+                        },
+                        "transit/": {
+                            "type": "transit",
+                            "description": "tenant encryption keys"
+                        }
+                    }"#
+                } else if first_line.starts_with("LIST /v1/sys/policies/acl ") {
+                    r#"{
+                        "keys": [
+                            "default",
+                            "tenant-ministry-health",
+                            "platform-secrets-admin"
+                        ]
+                    }"#
+                } else {
+                    r#"{"error":"unexpected path"}"#
+                };
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                );
+                stream.write_all(response.as_bytes()).unwrap();
+            }
+        });
+
+        format!("http://{addr}")
+    }
+
+    fn spawn_argocd_fixture() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut buffer = [0_u8; 4096];
+            let read = stream.read(&mut buffer).unwrap();
+            let request = String::from_utf8_lossy(&buffer[..read]);
+            assert!(request
+                .to_ascii_lowercase()
+                .contains("authorization: bearer test-token"));
+            let first_line = request.lines().next().unwrap_or_default();
+            let body = if first_line.starts_with("GET /api/v1/applications ") {
+                r#"{
+                    "items": [
+                        {
+                            "metadata": {
+                                "name": "tenant-api",
+                                "namespace": "argocd"
+                            },
+                            "status": {
+                                "sync": {
+                                    "status": "Synced",
+                                    "revision": "abc123"
+                                },
+                                "health": {
+                                    "status": "Healthy"
+                                }
+                            }
+                        },
+                        {
+                            "metadata": {
+                                "name": "edge-shield",
+                                "namespace": "argocd"
+                            },
+                            "status": {
+                                "sync": {
+                                    "status": "OutOfSync",
+                                    "revision": "def456"
+                                },
+                                "health": {
+                                    "status": "Progressing"
+                                }
+                            }
+                        }
+                    ]
+                }"#
+            } else {
+                r#"{"error":"unexpected path"}"#
+            };
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            stream.write_all(response.as_bytes()).unwrap();
+        });
+
+        format!("http://{addr}")
+    }
 
     impl GitOpsAdapter for PlanningGitOpsAdapter {
         fn submit_change(&self, request: &ChangeRequest) -> AdapterResult<AdapterReceipt> {
@@ -1044,6 +2546,115 @@ mod tests {
     }
 
     #[test]
+    fn powerdns_http_adapter_reads_zones_and_records() {
+        let base_url = spawn_powerdns_fixture();
+        let adapter = PowerDnsHttpAdapter::new(base_url, "test-key", "localhost")
+            .with_timeout(Duration::from_secs(2));
+
+        let zones = adapter.list_zones().unwrap();
+        assert_eq!(
+            zones,
+            vec![DnsZoneSummary {
+                zone_name: "health.example.gov.".to_string(),
+                owner_tenant: "ministry-health".to_string(),
+                dnssec_enabled: true,
+            }]
+        );
+
+        let records = adapter.list_records("health.example.gov.").unwrap();
+        assert_eq!(records.len(), 2);
+        assert_eq!(records[0].record_name, "www.health.example.gov.");
+        assert_eq!(records[0].record_type, "A");
+        assert_eq!(records[0].ttl, 300);
+        assert_eq!(records[0].records, vec!["192.0.2.20"]);
+        assert_eq!(records[1].record_type, "MX");
+        assert_eq!(records[1].records, vec!["10 mail.health.example.gov."]);
+    }
+
+    #[test]
+    fn netbox_http_adapter_reads_inventory_snapshot() {
+        let base_url = spawn_netbox_fixture();
+        let adapter =
+            NetBoxHttpAdapter::new(base_url, "test-token").with_timeout(Duration::from_secs(2));
+
+        let snapshot = adapter.inventory_snapshot().unwrap();
+
+        assert_eq!(snapshot.sites.len(), 2);
+        assert_eq!(snapshot.sites[0].name, "National Region 1");
+        assert_eq!(snapshot.sites[0].slug, "national-region-1");
+        assert_eq!(snapshot.sites[0].status, "active");
+        assert_eq!(snapshot.sites[1].status, "planned");
+        assert_eq!(snapshot.racks.len(), 1);
+        assert_eq!(snapshot.racks[0].site, "National Region 1");
+        assert_eq!(snapshot.devices.len(), 1);
+        assert_eq!(snapshot.devices[0].name, "rack-a-node-01");
+        assert_eq!(snapshot.devices[0].role, "compute");
+        assert_eq!(snapshot.devices[0].rack, "RACK-A01");
+        assert_eq!(snapshot.ip_addresses.len(), 1);
+        assert_eq!(snapshot.ip_addresses[0].address, "192.0.2.10/32");
+        assert_eq!(
+            snapshot.ip_addresses[0].assigned_object,
+            "rack-a-node-01 eth0"
+        );
+    }
+
+    #[test]
+    fn keycloak_http_adapter_reads_identity_snapshot() {
+        let base_url = spawn_keycloak_fixture();
+        let adapter = KeycloakHttpAdapter::new(base_url, "test-token", "osdc")
+            .with_timeout(Duration::from_secs(2));
+
+        let snapshot = adapter.identity_snapshot("osdc").unwrap();
+
+        assert_eq!(snapshot.realms.len(), 1);
+        assert_eq!(snapshot.realms[0].realm, "osdc");
+        assert!(snapshot.realms[0].enabled);
+        assert_eq!(snapshot.groups.len(), 2);
+        assert_eq!(snapshot.groups[0].path, "/platform-operators");
+        assert_eq!(snapshot.roles.len(), 2);
+        assert_eq!(snapshot.roles[0].name, "tenant-admin");
+        assert!(!snapshot.roles[0].client_role);
+        assert!(snapshot.roles[1].composite);
+    }
+
+    #[test]
+    fn openbao_http_adapter_reads_secret_snapshot() {
+        let base_url = spawn_openbao_fixture();
+        let adapter =
+            OpenBaoHttpAdapter::new(base_url, "test-token").with_timeout(Duration::from_secs(2));
+
+        let snapshot = adapter.secret_snapshot().unwrap();
+
+        assert_eq!(snapshot.mounts.len(), 2);
+        assert_eq!(snapshot.mounts[0].path, "secret/");
+        assert_eq!(snapshot.mounts[0].engine_type, "kv");
+        assert_eq!(snapshot.mounts[1].engine_type, "transit");
+        assert_eq!(snapshot.policies.len(), 3);
+        assert!(snapshot
+            .policies
+            .iter()
+            .any(|policy| policy.name == "tenant-ministry-health"));
+    }
+
+    #[test]
+    fn argocd_http_adapter_reads_sync_snapshot() {
+        let base_url = spawn_argocd_fixture();
+        let adapter =
+            ArgoCdHttpAdapter::new(base_url, "test-token").with_timeout(Duration::from_secs(2));
+
+        let snapshot = adapter.sync_snapshot().unwrap();
+
+        assert_eq!(snapshot.applications.len(), 2);
+        assert_eq!(snapshot.applications[0].name, "tenant-api");
+        assert_eq!(snapshot.applications[0].sync_status, "Synced");
+        assert_eq!(snapshot.applications[0].health_status, "Healthy");
+        assert_eq!(snapshot.applications[0].revision, "abc123");
+        assert_eq!(snapshot.applications[1].name, "edge-shield");
+        assert_eq!(snapshot.applications[1].sync_status, "OutOfSync");
+        assert_eq!(snapshot.applications[1].health_status, "Progressing");
+    }
+
+    #[test]
     fn planning_adapter_models_customer_ops_mfa_metering_and_billing() {
         let mfa =
             PlanningInfrastructureAdapter::new(AdapterTarget::PrivacyIdea, AdapterMode::GuardedApi);
@@ -1174,24 +2785,50 @@ mod tests {
         let zones = powerdns.list_zones().unwrap();
         assert_eq!(zones[0].owner_tenant, "ministry-health");
         assert!(zones[0].dnssec_enabled);
+        let records = powerdns.list_records(&zones[0].zone_name).unwrap();
+        assert_eq!(records[0].record_type, "A");
+        assert_eq!(records[0].records, vec!["192.0.2.10"]);
 
         let netbox =
             PlanningInfrastructureAdapter::new(AdapterTarget::NetBox, AdapterMode::ReadOnly);
         let inventory = netbox.inventory_summary().unwrap();
         assert_eq!(inventory.site_count, 1);
         assert!(inventory.device_count >= 64);
+        let snapshot = netbox.inventory_snapshot().unwrap();
+        assert_eq!(snapshot.sites[0].name, "National Region 1");
+        assert_eq!(snapshot.devices[0].rack, "RACK-A01");
+        assert_eq!(snapshot.ip_addresses[0].assigned_object, "rack-a-node-01");
 
         let keycloak =
             PlanningInfrastructureAdapter::new(AdapterTarget::Keycloak, AdapterMode::ReadOnly);
         let identity = keycloak.identity_summary().unwrap();
         assert_eq!(identity.realm, "osdc");
         assert!(identity.role_count >= 12);
+        let identity_snapshot = keycloak.identity_snapshot("osdc").unwrap();
+        assert_eq!(identity_snapshot.realms[0].realm, "osdc");
+        assert!(identity_snapshot
+            .groups
+            .iter()
+            .any(|group| group.name == "tenant-admins"));
+        assert!(identity_snapshot
+            .roles
+            .iter()
+            .any(|role| role.name == "tenant-admin"));
 
         let openbao =
             PlanningInfrastructureAdapter::new(AdapterTarget::OpenBao, AdapterMode::ReadOnly);
         let mounts = openbao.secret_mounts().unwrap();
         assert_eq!(mounts[0].mount_path, "tenants/ministry-health");
         assert!(mounts[0].transit_enabled);
+        let secret_snapshot = openbao.secret_snapshot().unwrap();
+        assert!(secret_snapshot
+            .mounts
+            .iter()
+            .any(|mount| mount.engine_type == "transit"));
+        assert!(secret_snapshot
+            .policies
+            .iter()
+            .any(|policy| policy.name == "tenant-ministry-health"));
 
         let gitops = PlanningInfrastructureAdapter::new(AdapterTarget::ArgoCd, AdapterMode::GitOps);
         let change = ChangeRequest {
@@ -1226,6 +2863,11 @@ mod tests {
         assert_eq!(preview.target_branch, "osdc/staging");
         assert_eq!(preview.files_changed, 1);
         assert!(preview.requires_approval);
+        let sync = gitops.sync_snapshot().unwrap();
+        assert!(sync
+            .applications
+            .iter()
+            .any(|application| application.sync_status == "OutOfSync"));
 
         let proxmox =
             PlanningInfrastructureAdapter::new(AdapterTarget::Proxmox, AdapterMode::ReadOnly);

@@ -54,12 +54,12 @@ The Rust layer should provide typed adapters, policy checks, approval flows, evi
 The next milestone is not a full cloud replacement. It is a software-only control-plane slice for the 250 kW regional pilot:
 
 1. PowerDNS adapter for zone and record workflows.
-2. NetBox adapter for read-first site, rack, device, circuit, and IPAM truth.
-3. Keycloak adapter for tenant, group, and role setup.
-4. OpenBao adapter for secret namespaces and policy setup.
-5. GitOps adapter for real pull requests or Argo CD/Flux changes.
+2. NetBox adapter for read-first site, rack, device, and IPAM truth.
+3. Keycloak adapter for read-first realm, group, and role truth before tenant writes.
+4. OpenBao adapter for read-first mount and ACL policy truth before secret writes.
+5. GitOps adapter for Argo CD sync readback first, then real Forgejo pull requests or Flux changes.
 6. Proxmox and CloudStack deployment profiles for 50 kW and 250 kW cases.
 7. OpenStack profile for the 250 kW+ path.
 8. PostgreSQL persistence for lifecycle state beyond embedded CSV catalogues.
 
-The adapter crate currently defines plan-only contracts. Live clients should come after credentials, staging systems, failure modes, approval boundaries, and audit requirements are defined.
+The adapter crate is mostly plan-only, with narrow PowerDNS, NetBox, Keycloak, OpenBao, and Argo CD read clients as the first live-read exceptions. Additional live clients should come after credentials, staging systems, failure modes, approval boundaries, and audit requirements are defined.
