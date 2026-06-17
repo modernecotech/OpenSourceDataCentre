@@ -8,6 +8,11 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `edge-shield-service-map.csv` expands Edge Shield into default production and simple deployment stacks.
 - `security-control-map.csv` maps security control areas to open tools and required evidence.
 - `proprietary-to-open-source-map.csv` maps common proprietary infrastructure platforms to OSDC open-source replacements.
+- `service-catalogue-v1.csv` is the broad sovereign cloud service catalogue across cloud core, edge, developer platform, security, data, AI, and operations.
+- `proprietary-open-source-equivalents.csv` maps Google/Microsoft/AWS-style service classes to OSDC open-source equivalents.
+- `upgrade-policy.csv` defines update classes, cadence, gates, owners, and rollback requirements.
+- `security-controls.csv` maps managed security controls to tools, evidence, UI surfaces, and service bundles.
+- `config-script-catalogue.csv` lists tool config scripts exposed through the browser editor workflow.
 
 Keep these files as simple rectangular CSVs with a single header row. When adding fields, update the Rust sample data and portal tests at the same time so the GUI and documentation remain aligned.
 

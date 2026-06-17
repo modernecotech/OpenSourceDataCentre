@@ -19,12 +19,26 @@ The project combines:
 - Open-source infrastructure stacks for bare metal, Kubernetes, storage, networking, monitoring, identity, AI serving, and job queueing.
 - Test harnesses and operational guidance for building systems, IT systems, AI workloads, and cost calculators.
 
+## What This Repository Produces
+
+| Output | Purpose |
+| --- | --- |
+| Reference architectures | 50 kW, 250 kW, 1 MW, and 5 MW sovereign datacentre deployment patterns. |
+| BOM and cost calculators | Country-specific CAPEX/OPEX, import duty, local labour, spares, energy, water, carbon, outage, and fallback-fuel planning. |
+| FreeCAD / IFC / STEP design system | Buildable structures, racks, adapters, service trenches, thermal spines, cable trays, and serviceable parts. |
+| Commissioning and reliability pack | L1-L5 commissioning, grid-loss, DC-bus ride-through, cooling failover, generator-start, and backup-restore tests. |
+| Operator training pack | Local skills, runbooks, spares lists, maintenance schedules, emergency procedures, staffing, and escalation paths. |
+| Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
+| Edge Shield security fabric | Sovereign DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, zero-trust access, logs, metrics, secrets, policy, and audit. |
+| Browser config management | Web-based editing of real tool config scripts with validation, GitOps review, staged rollout, rollback checks, and audit. |
+
 ## What This Project Is
 
 - A reference architecture for sovereign, sustainable datacentres.
 - A practical build path from 50 kW edge sites to national AI-ready infrastructure.
 - A set of open BOMs, calculators, software adapters, mechanical designs, and commissioning tests.
 - A way for countries to reduce dependency on closed cloud platforms and proprietary datacentre management stacks.
+- A national implementation manual for cloud capacity that can be operated and repaired locally.
 
 ## What This Project Is Not
 
@@ -32,6 +46,7 @@ The project combines:
 - It is not a substitute for licensed local engineers, fire engineers, electrical engineers, code approval, or authority review.
 - It is not a promise that marketplace parts are safe, compliant, or suitable for life-safety and critical-power systems.
 - It is not a hyperscaler clone.
+- It is not a Cloudflare clone or a claim to reproduce global anycast/DDoS capacity.
 - It is not a reason to skip commissioning, documentation, training, spare parts, security review, or disaster recovery.
 
 ## Design Principles for Sovereign Datacentres
@@ -54,6 +69,27 @@ The project combines:
 | **5 MW national/AI-ready** | National AI, HPC, larger public cloud | Build strategic compute infrastructure. |
 
 The flagship developing-world pilot is the 250 kW regional design: 10 racks at 25 kW average, N+1 pumps and controls, DC-first solar sodium-ion microgrid, fallback generator path, open-source management stack, and local fabrication where safe.
+
+## Architecture At A Glance
+
+```text
+             OSDC Unified Portal
+        Rust API / policy / audit / cost
+                    |
+ +------------------+------------------+
+ |                  |                  |
+Tenant UI       Operator UI        Security UI
+ |                  |                  |
+VMs/K8s/AI      racks/power/DCIM    SIEM/WAF/IAM
+ |                  |                  |
+OpenStack       NetBox/openDCIM     Wazuh/Falco/OPA
+Kubernetes      Prometheus          Keycloak/OpenBao
+Ceph            Grafana             Edge Shield
+Harbor          Velero              Coraza/CrowdSec
+Argo/Flux       Cilium              Suricata/Zeek
+```
+
+The Rust layer does not replace mature infrastructure systems. It provides the unified portal/API, policy checks, cost and sustainability calculations, approval flows, config generation, health checks, audit events, and GitOps rollout orchestration.
 
 ## Local Maintainability Doctrine
 
@@ -94,11 +130,144 @@ Underneath:
 
 Rust owns APIs, adapters, calculators, workflow automation, policy checks, and the unified interface. Mature infrastructure projects own the low-level cloud, storage, identity, telemetry, and scheduling systems.
 
+## Sovereign Cloud Service Catalogue
+
+The repository defines an open-source sovereign cloud service catalogue: identity, compute, storage, networking, edge, developer platform, observability, SOC, data, AI, DCIM, ITSM, backup, and upgrade workflows.
+
+The portal should expose workflows, not every low-level setting:
+
+- create a government tenant;
+- issue a secure application endpoint;
+- create a VM, Kubernetes cluster, bucket, volume, or PostgreSQL database;
+- approve GPU queue access;
+- deploy a model endpoint;
+- approve an OpenTofu plan;
+- patch Keycloak or Cilium through GitOps;
+- restore last night's backup;
+- show externally exposed services;
+- show vulnerable images and non-compliant workloads;
+- show which systems are behind on security patches.
+
+The catalogue is built as bundles:
+
+- **Bundle A - Sovereign Cloud Core:** OpenStack or CloudStack, Kubernetes, Ceph, Cilium, Keycloak, OpenBao, OPA/Kyverno, Harbor, OpenTofu, Argo CD or Flux, Prometheus/VictoriaMetrics, Grafana, Loki/Tempo, Velero, and NetBox.
+- **Bundle B - Sovereign Edge and Security:** PowerDNS, dnsdist, Caddy/Envoy/HAProxy, Varnish, Coraza, CrowdSec, WireGuard/NetBird/OpenZiti, Wazuh, Falco, Suricata, Zeek, and MISP/OpenCTI.
+- **Bundle C - Developer Platform:** Forgejo/Gitea, Woodpecker/Tekton, Harbor, Backstage option, Argo CD/Flux, Renovate, OpenTofu, Ansible/AWX, Trivy, Grype, Syft, and cosign.
+- **Bundle D - Data and AI Platform:** CloudNativePG, Valkey, NATS, Kafka, Trino, Iceberg, ClickHouse, Superset, Airflow/Argo Workflows, MLflow, KServe, vLLM/SGLang, JupyterHub, and vector stores.
+
+Machine-readable catalogue data lives in:
+
+- [service-catalogue-v1.csv](data/software/service-catalogue-v1.csv)
+- [proprietary-open-source-equivalents.csv](data/software/proprietary-open-source-equivalents.csv)
+- [security-controls.csv](data/software/security-controls.csv)
+- [upgrade-policy.csv](data/software/upgrade-policy.csv)
+- [config-script-catalogue.csv](data/software/config-script-catalogue.csv)
+- [service catalogue examples](examples/service-catalogue/)
+
 ## Sovereign Edge and Security Fabric
 
 OSDC Edge Shield is the repository's open-source edge and security pillar. It provides a nationally operated regional equivalent for the same classes of service commonly bought from Cloudflare, Akamai, Fastly, Okta, Datadog, Splunk, Vault, Terraform Cloud, and similar proprietary infrastructure platforms.
 
 It is not a claim to replace Cloudflare's global anycast network, global DDoS absorption, commercial threat intelligence, or 24/7 managed security operations. It is a sovereign fabric for DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, identity-aware access, secrets, logs, metrics, policies, keys, audit trails, and GitOps-controlled rollout.
+
+Minimum OSDC Edge Shield node:
+
+- PowerDNS Authoritative + dnsdist.
+- Caddy for TLS and reverse proxy.
+- Varnish/Vinyl Cache for HTTP caching.
+- Coraza WAF with OWASP Core Rule Set.
+- CrowdSec + nftables for abuse response.
+- WireGuard + Headscale or NetBird for private origin tunnels.
+- Keycloak + OPA for zero-trust access.
+- Prometheus + Loki + Grafana + OpenTelemetry for telemetry.
+- `osdc-edge` Rust agent for config, health, audit, and status.
+
+Regional profile:
+
+```text
+edge-a: active proxy/cache/DNS
+edge-b: active proxy/cache/DNS
+edge-c: management secondary DNS cold failover
+```
+
+OSDC Edge Shield provides sovereign edge protection, not unlimited DDoS protection. Volumetric attacks still require upstream ISPs, IXPs, scrubbing providers, BGP blackhole/FlowSpec, and national telecom coordination.
+
+## Browser-Based Config Management
+
+The UI should expose the real configuration scripts of individual tools rather than trying to capture every upstream option as a custom form field.
+
+```text
+Browser editor
+   |
+validate script
+   |
+open GitOps change
+   |
+review and approve
+   |
+staging rollout
+   |
+health checks and rollback test
+   |
+production rollout
+   |
+audit record
+```
+
+This keeps the browser as the management surface for the whole system while preserving the operational truth that mature tools have their own configuration languages. The portal can still provide guided forms for common workflows, but complete management should remain available through config-as-code.
+
+The current prototype exposes editable sample configs for:
+
+- Caddy: `/etc/caddy/Caddyfile`
+- PowerDNS: `/etc/powerdns/pdns.d/osdc.conf`
+- Coraza WAF: `/etc/coraza/osdc-crs.conf`
+- CrowdSec: `/etc/crowdsec/acquis.yaml`
+- WireGuard: `/etc/wireguard/osdc-edge.conf`
+
+Safety rules:
+
+- Browser edits stage GitOps changes; they do not rewrite live files directly.
+- Secrets appear as references or placeholders, never raw secret values.
+- High-risk files require service-owner review.
+- DNS, WAF, tunnel, key, and certificate changes require validation and rollback checks.
+
+## Managed Upgrade Path
+
+A sovereign cloud must not become a frozen pile of old open-source tools.
+
+```text
+Upstream releases
+   |
+Renovate watches charts containers Rust crates packages OS images
+   |
+Pull request created
+   |
+SBOM + vulnerability scan + licence scan + policy check
+   |
+Staging rollout through Argo CD / Flux
+   |
+Smoke tests + backup/restore test + rollback test
+   |
+Approval window
+   |
+Production rollout
+   |
+Health verification
+   |
+Audit record stored
+```
+
+| Update class | Frequency | Process |
+| --- | ---: | --- |
+| Critical CVE | 24-72 hours | Emergency staging test, fast approval, production patch. |
+| High security | Weekly | Normal PR, staging, rollout. |
+| Normal patch | Monthly | Maintenance window. |
+| Minor feature release | Quarterly | Compatibility test. |
+| Major version | 6-12 months | Migration plan, backup, dry run. |
+| Firmware/BMC | Quarterly or emergency | Lab test first, staged by rack. |
+| Kubernetes/OpenStack/Ceph | Planned release train | Never ad hoc. |
+
+The unified portal should show current version, available version, risk, staging result, backup status, rollback status, approval owner, scheduled window, and audit record. It should trigger GitOps; it should not SSH into machines randomly.
 
 ## Repository Map
 
@@ -109,6 +278,11 @@ It is not a claim to replace Cloudflare's global anycast network, global DDoS ab
 - [Cloudflare Equivalent Open Tooling](docs/security/cloudflare-equivalent-open-tooling.md) - open-source mapping for DNS, CDN, WAF, access, tunnels, telemetry, secrets, IaC, and SOC tools.
 - [DDoS Realistic Threat Model](docs/security/ddos-realistic-threat-model.md) - what Edge Shield can and cannot absorb locally.
 - [Zero Trust Access](docs/security/zero-trust-access.md), [WAF and API Protection](docs/security/waf-and-api-protection.md), and [SIEM/SOC Open Source Stack](docs/security/siem-soc-open-source-stack.md) - operating guides for the edge/security pillar.
+- [Sovereign Cloud Service Catalogue](docs/software/sovereign-cloud-service-catalogue.md) - broad open-source cloud service catalogue and bundles.
+- [Unified Portal Integration Model](docs/software/unified-portal-integration-model.md) - Rust API and workflow layer over mature open-source systems.
+- [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
+- [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
+- [Developer Platform](docs/software/developer-platform.md) and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage.
 - [Country Site Profile Guide](docs/deployment/country-site-profile-guide.md) - country-pack schema, planning fields, and profile examples.
 - [50 kW Edge Micro](docs/deployment/50kw-edge-micro.md), [250 kW Regional Pilot](docs/deployment/250kw-regional-pilot.md), [1 MW Regional Production](docs/deployment/1mw-regional-production.md), and [5 MW National AI-Ready](docs/deployment/5mw-national-ai-ready.md) - staged reference deployment patterns.
 - [Commissioning Overview](docs/commissioning/commissioning-overview.md) - L1-L5 commissioning model and critical integrated tests.
@@ -131,7 +305,7 @@ It is not a claim to replace Cloudflare's global anycast network, global DDoS ab
 - [Cost Calculators](docs/process/cost-calculators.md) - calculator scope, formulas, and validation rules.
 - [Alibaba/AliExpress Cost Scenarios](docs/costing/alibaba-aliexpress-scenarios.md) - marketplace price basis, scale scenarios, and build-time estimates.
 - [Open AI Governance](docs/process/open-ai-governance.md) - model selection and queueing guidance.
-- [Rust Workspace](crates/) - calculator, model, CLI, portal, and edge service crates.
+- [Rust Workspace](crates/) - calculator, model, CLI, portal, Edge Shield, Edge config, and Edge policy crates.
 - [Portal Crate](crates/osdc-portal/) - Rust-served tenant, operator, and Edge Shield GUI/API prototype.
 - [Edge Crate](crates/osdc-edge/) - Radxa-local Edge Shield status and config-preview service.
 - [BOM Data](data/bom/) - component catalogue and starter 250 kW bill of materials.
@@ -139,6 +313,8 @@ It is not a claim to replace Cloudflare's global anycast network, global DDoS ab
 - [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
 - [Software Service Data](data/software/) - open cloud service catalogue mappings.
 - [Country Profiles](data/country-profiles/) - example country-planning packs for grid, climate, energy, procurement, and sovereignty assumptions.
+- [Service Catalogue Examples](examples/service-catalogue/) - scale-specific service bundle selections.
+- [Config Script Examples](examples/config-scripts/) - sample tool configuration artifacts for browser-based editing.
 
 ## Initial Technical Position
 
@@ -164,14 +340,28 @@ cargo run -p osdc-edge -- 127.0.0.1:8790
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
 
-The first portal serves three GUI surfaces:
+The first portal serves four GUI surfaces:
 
 - Tenant portal: `http://127.0.0.1:8787/user`
 - Operator console: `http://127.0.0.1:8787/operator`
 - Edge Shield console: `http://127.0.0.1:8787/edge`
 - Cost planner: `http://127.0.0.1:8787/planner`
 
-The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, and scale/cost planning from the marketplace scenario data. The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
+The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, and scale/cost planning from the marketplace scenario data.
+
+Useful portal APIs:
+
+- `/api/catalog/core-services`
+- `/api/catalog/sovereign-services`
+- `/api/catalog/upgrade-policy`
+- `/api/catalog/blueprints`
+- `/api/config/scripts`
+- `/api/edge/services`
+- `/api/edge/status`
+- `/api/edge/config-preview`
+- `/api/cost/planning`
+
+The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
 
 For CSV fixture checks:
 

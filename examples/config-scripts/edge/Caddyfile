@@ -1,0 +1,21 @@
+{
+  email ops@example.gov
+}
+
+public.example.gov {
+  encode zstd gzip
+  reverse_proxy 10.30.0.20:8080
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+  }
+  log {
+    output file /var/log/caddy/public-example.log
+    format json
+  }
+}
+
+admin.example.gov {
+  reverse_proxy 10.30.0.30:8443
+  import zero_trust_access
+}

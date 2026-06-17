@@ -1,0 +1,38 @@
+{
+  "profile_id": "50kw-edge-services",
+  "deployment_stage": "50 kW edge micro",
+  "bundles": [
+    "A",
+    "B"
+  ],
+  "services": [
+    "identity",
+    "secrets",
+    "compute_vm",
+    "object_storage",
+    "backup",
+    "networking",
+    "dns",
+    "edge",
+    "observability",
+    "asset_inventory"
+  ],
+  "ui_workflows": [
+    "create tenant",
+    "issue secure application endpoint",
+    "create object bucket",
+    "restore backup",
+    "show externally exposed services"
+  ],
+  "upgrade_policy": {
+    "default_update_class": "normal_patch",
+    "gitops_required": true,
+    "blind_upgrades_allowed": false,
+    "required_gates": [
+      "scan",
+      "staging",
+      "smoke-test",
+      "rollback-plan"
+    ]
+  }
+}

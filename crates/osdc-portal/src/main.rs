@@ -15,6 +15,15 @@ const PLANNER_HTML: &str = include_str!("views/planner.html");
 const RACK_IMAGE: &[u8] = include_bytes!("../../../docs/assets/rack-thermal-spine-cutaway.png");
 const EXTERIOR_IMAGE: &[u8] =
     include_bytes!("../../../docs/assets/prefab-panel-datacentre-exterior-02.png");
+const EDGE_CADDYFILE: &str = include_str!("../../../examples/config-scripts/edge/Caddyfile");
+const EDGE_POWERDNS_CONF: &str =
+    include_str!("../../../examples/config-scripts/edge/pdns-osdc.conf");
+const EDGE_CORAZA_CONF: &str =
+    include_str!("../../../examples/config-scripts/edge/coraza-crs.conf");
+const EDGE_CROWDSEC_ACQUIS: &str =
+    include_str!("../../../examples/config-scripts/edge/crowdsec-acquis.yaml");
+const EDGE_WIREGUARD_CONF: &str =
+    include_str!("../../../examples/config-scripts/edge/wireguard-osdc-edge.conf");
 
 fn main() -> std::io::Result<()> {
     let addr = env::args()
@@ -82,7 +91,10 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/catalog/hardware") => json(&hardware_catalog()),
         ("GET", "/api/catalog/services") => json(&service_catalog()),
         ("GET", "/api/catalog/core-services") => json(&core_cloud_services()),
+        ("GET", "/api/catalog/sovereign-services") => json(&sovereign_cloud_services()),
+        ("GET", "/api/catalog/upgrade-policy") => json(&upgrade_policy()),
         ("GET", "/api/catalog/blueprints") => json(&provisioning_blueprints()),
+        ("GET", "/api/config/scripts") => json(&config_scripts()),
         ("GET", "/api/edge/services") => json(&edge_shield_services()),
         ("GET", "/api/edge/status") => json(&edge_shield_status()),
         ("GET", "/api/edge/config-preview") => json(&edge_config_preview()),
@@ -174,6 +186,45 @@ struct CoreCloudService {
     default_shape: &'static str,
     status: &'static str,
     status_kind: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct SovereignCloudService {
+    id: &'static str,
+    proprietary_service: &'static str,
+    open_equivalent: &'static str,
+    category: &'static str,
+    bundle: &'static str,
+    priority: &'static str,
+    ui_surface: &'static str,
+    upgrade_method: &'static str,
+    security_controls: &'static str,
+    workflow: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct UpgradePolicy {
+    update_class: &'static str,
+    frequency: &'static str,
+    target_window: &'static str,
+    required_gates: &'static str,
+    approval_owner: &'static str,
+    rollback_requirement: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct ConfigScript {
+    id: &'static str,
+    tool: &'static str,
+    path: &'static str,
+    owner: &'static str,
+    language: &'static str,
+    edit_mode: &'static str,
+    validation_command: &'static str,
+    rollout_target: &'static str,
+    risk: &'static str,
+    notes: &'static str,
+    content: &'static str,
 }
 
 #[derive(Debug, Serialize)]
@@ -503,7 +554,7 @@ fn edge_shield_services() -> Vec<EdgeShieldService> {
         EdgeShieldService {
             id: "edge_reverse_proxy",
             cloudflare_equivalent: "Cloudflare CDN proxy",
-            open_source_stack: "Caddy or Traefik",
+            open_source_stack: "Caddy, Envoy, HAProxy, Traefik",
             radxa_role: "TLS termination and origin routing",
             criticality: "critical",
             protocol: "HTTP 80 HTTPS 443",
@@ -513,7 +564,7 @@ fn edge_shield_services() -> Vec<EdgeShieldService> {
         EdgeShieldService {
             id: "edge_cache",
             cloudflare_equivalent: "Cloudflare CDN cache",
-            open_source_stack: "Varnish Cache or Nginx cache",
+            open_source_stack: "Varnish/Vinyl Cache or Nginx cache",
             radxa_role: "static and API response cache",
             criticality: "critical",
             protocol: "HTTP local",
@@ -553,7 +604,7 @@ fn edge_shield_services() -> Vec<EdgeShieldService> {
         EdgeShieldService {
             id: "edge_tunnel",
             cloudflare_equivalent: "Cloudflare Tunnel",
-            open_source_stack: "WireGuard, Headscale, NetBird, zrok/OpenZiti",
+            open_source_stack: "WireGuard, Headscale, NetBird, OpenZiti",
             radxa_role: "private origin tunnel endpoint",
             criticality: "important",
             protocol: "WireGuard UDP",
@@ -563,7 +614,7 @@ fn edge_shield_services() -> Vec<EdgeShieldService> {
         EdgeShieldService {
             id: "edge_access",
             cloudflare_equivalent: "Cloudflare Access",
-            open_source_stack: "Authelia or Authentik, Keycloak, OPA",
+            open_source_stack: "Keycloak, OPA, Authelia, Authentik",
             radxa_role: "zero-trust app access",
             criticality: "critical",
             protocol: "HTTPS OIDC",
@@ -1451,6 +1502,334 @@ fn core_cloud_services() -> Vec<CoreCloudService> {
     ]
 }
 
+fn sovereign_cloud_services() -> Vec<SovereignCloudService> {
+    vec![
+        SovereignCloudService {
+            id: "identity",
+            proprietary_service: "AWS IAM / Azure Entra / Google IAM",
+            open_equivalent: "Keycloak + OPA + OSDC tenancy",
+            category: "identity",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "tenant-admin",
+            upgrade_method: "helm+gitops",
+            security_controls: "MFA+OIDC+audit",
+            workflow: "create tenant and assign roles",
+        },
+        SovereignCloudService {
+            id: "secrets",
+            proprietary_service: "AWS Secrets Manager / Azure Key Vault",
+            open_equivalent: "OpenBao",
+            category: "secrets",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "security-admin",
+            upgrade_method: "helm+gitops",
+            security_controls: "sealed-init+audit+rotation",
+            workflow: "create secret and rotate credentials",
+        },
+        SovereignCloudService {
+            id: "compute_vm",
+            proprietary_service: "EC2 / Azure VM / Compute Engine",
+            open_equivalent: "OpenStack Nova + KVM",
+            category: "compute",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "tenant",
+            upgrade_method: "openstack-release-train",
+            security_controls: "image-signature+quota+audit",
+            workflow: "create VM instance",
+        },
+        SovereignCloudService {
+            id: "kubernetes",
+            proprietary_service: "EKS / AKS / GKE",
+            open_equivalent: "Kubernetes + Cluster API + Cilium",
+            category: "containers",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "tenant",
+            upgrade_method: "planned-release-train",
+            security_controls: "network-policy+image-policy+audit",
+            workflow: "create managed cluster",
+        },
+        SovereignCloudService {
+            id: "object_storage",
+            proprietary_service: "S3 / Blob Storage / Cloud Storage",
+            open_equivalent: "Ceph RGW",
+            category: "storage",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "tenant",
+            upgrade_method: "ceph-release-train",
+            security_controls: "policy+encryption+audit",
+            workflow: "create object bucket",
+        },
+        SovereignCloudService {
+            id: "backup",
+            proprietary_service: "AWS Backup / Azure Backup",
+            open_equivalent: "Velero + Restic + Kopia + Ceph snapshots",
+            category: "backup",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "operator",
+            upgrade_method: "helm+gitops",
+            security_controls: "restore-test+retention+audit",
+            workflow: "restore backup",
+        },
+        SovereignCloudService {
+            id: "edge",
+            proprietary_service: "Cloud CDN / Cloudflare / Front Door",
+            open_equivalent: "OSDC Edge Shield",
+            category: "edge",
+            bundle: "B",
+            priority: "core",
+            ui_surface: "security",
+            upgrade_method: "gitops",
+            security_controls: "WAF+rate-limit+tunnel+audit",
+            workflow: "issue secure endpoint",
+        },
+        SovereignCloudService {
+            id: "soc",
+            proprietary_service: "Security Hub / Sentinel / Defender",
+            open_equivalent: "Wazuh + OpenSearch + Falco + Kyverno",
+            category: "security",
+            bundle: "B",
+            priority: "core",
+            ui_surface: "security",
+            upgrade_method: "helm+gitops",
+            security_controls: "findings+incident+audit",
+            workflow: "triage security finding",
+        },
+        SovereignCloudService {
+            id: "gitops",
+            proprietary_service: "CodePipeline / Deployments",
+            open_equivalent: "Argo CD + Flux",
+            category: "developer",
+            bundle: "C",
+            priority: "core",
+            ui_surface: "operator",
+            upgrade_method: "helm+gitops",
+            security_controls: "approval+sync-window+audit",
+            workflow: "promote deployment",
+        },
+        SovereignCloudService {
+            id: "registry",
+            proprietary_service: "ECR / ACR / Artifact Registry",
+            open_equivalent: "Harbor + cosign + Syft + Grype",
+            category: "registry",
+            bundle: "C",
+            priority: "core",
+            ui_surface: "developer",
+            upgrade_method: "helm+gitops",
+            security_controls: "scan+sign+sbom",
+            workflow: "publish image",
+        },
+        SovereignCloudService {
+            id: "iac",
+            proprietary_service: "Terraform Cloud / ARM / Deployment Manager",
+            open_equivalent: "OpenTofu + Ansible + Crossplane",
+            category: "iac",
+            bundle: "C",
+            priority: "core",
+            ui_surface: "developer",
+            upgrade_method: "gitops",
+            security_controls: "plan-approval+drift+audit",
+            workflow: "approve infrastructure plan",
+        },
+        SovereignCloudService {
+            id: "observability",
+            proprietary_service: "CloudWatch / Azure Monitor",
+            open_equivalent: "OpenTelemetry + Prometheus + Grafana",
+            category: "observability",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "operator",
+            upgrade_method: "helm+gitops",
+            security_controls: "retention+rbac+audit",
+            workflow: "view service health",
+        },
+        SovereignCloudService {
+            id: "postgres",
+            proprietary_service: "RDS / Cloud SQL",
+            open_equivalent: "CloudNativePG",
+            category: "database",
+            bundle: "D",
+            priority: "core",
+            ui_surface: "tenant",
+            upgrade_method: "operator-release-train",
+            security_controls: "backup+secret+audit",
+            workflow: "create PostgreSQL database",
+        },
+        SovereignCloudService {
+            id: "messaging",
+            proprietary_service: "SQS / PubSub / Event Grid",
+            open_equivalent: "NATS + RabbitMQ + Knative Eventing",
+            category: "messaging",
+            bundle: "D",
+            priority: "important",
+            ui_surface: "tenant",
+            upgrade_method: "operator-release-train",
+            security_controls: "retention+quota+audit",
+            workflow: "create queue",
+        },
+        SovereignCloudService {
+            id: "model_endpoint",
+            proprietary_service: "Bedrock / Azure AI Foundry",
+            open_equivalent: "vLLM + SGLang + llama.cpp + Ollama",
+            category: "ai",
+            bundle: "D",
+            priority: "core",
+            ui_surface: "tenant",
+            upgrade_method: "helm+gitops",
+            security_controls: "model-license+quota+audit",
+            workflow: "deploy model endpoint",
+        },
+        SovereignCloudService {
+            id: "asset_inventory",
+            proprietary_service: "Cloud asset inventory",
+            open_equivalent: "NetBox + openDCIM",
+            category: "operations",
+            bundle: "A",
+            priority: "core",
+            ui_surface: "operator",
+            upgrade_method: "operator-release-train",
+            security_controls: "inventory+change+audit",
+            workflow: "view asset",
+        },
+    ]
+}
+
+fn upgrade_policy() -> Vec<UpgradePolicy> {
+    vec![
+        UpgradePolicy {
+            update_class: "critical_cve",
+            frequency: "24-72 hours",
+            target_window: "emergency",
+            required_gates: "staging-test+scan+backup-check+fast-approval",
+            approval_owner: "platform-security-owner",
+            rollback_requirement: "rollback-plan-required",
+        },
+        UpgradePolicy {
+            update_class: "high_security",
+            frequency: "weekly",
+            target_window: "scheduled-security-window",
+            required_gates: "pr+sbom+scan+staging+smoke-test",
+            approval_owner: "platform-owner",
+            rollback_requirement: "rollback-tested",
+        },
+        UpgradePolicy {
+            update_class: "normal_patch",
+            frequency: "monthly",
+            target_window: "maintenance-window",
+            required_gates: "pr+scan+staging+smoke-test",
+            approval_owner: "service-owner",
+            rollback_requirement: "rollback-available",
+        },
+        UpgradePolicy {
+            update_class: "minor_feature",
+            frequency: "quarterly",
+            target_window: "planned-window",
+            required_gates: "compatibility-test+docs-review+staging",
+            approval_owner: "service-owner",
+            rollback_requirement: "rollback-tested",
+        },
+        UpgradePolicy {
+            update_class: "major_version",
+            frequency: "6-12 months",
+            target_window: "migration-window",
+            required_gates: "migration-plan+backup+dry-run+rollback-test",
+            approval_owner: "architecture-board",
+            rollback_requirement: "rollback-tested",
+        },
+        UpgradePolicy {
+            update_class: "firmware_bmc",
+            frequency: "quarterly-or-emergency",
+            target_window: "rack-by-rack-window",
+            required_gates: "lab-test+vendor-notes+spare-node",
+            approval_owner: "hardware-owner",
+            rollback_requirement: "firmware-rollback-or-spare",
+        },
+        UpgradePolicy {
+            update_class: "kubernetes_openstack_ceph",
+            frequency: "planned-release-train",
+            target_window: "platform-release-window",
+            required_gates: "release-plan+staging+backup-restore+rollback-test",
+            approval_owner: "platform-owner",
+            rollback_requirement: "rollback-tested",
+        },
+    ]
+}
+
+fn config_scripts() -> Vec<ConfigScript> {
+    vec![
+        ConfigScript {
+            id: "edge_caddyfile",
+            tool: "Caddy",
+            path: "/etc/caddy/Caddyfile",
+            owner: "caddy",
+            language: "caddyfile",
+            edit_mode: "gitops-pr",
+            validation_command: "caddy validate --config /etc/caddy/Caddyfile",
+            rollout_target: "edge-a edge-b",
+            risk: "medium",
+            notes: "TLS routes reverse proxy and access middleware",
+            content: EDGE_CADDYFILE,
+        },
+        ConfigScript {
+            id: "edge_powerdns",
+            tool: "PowerDNS",
+            path: "/etc/powerdns/pdns.d/osdc.conf",
+            owner: "pdns",
+            language: "ini",
+            edit_mode: "gitops-pr",
+            validation_command: "pdnsutil check-all-zones",
+            rollout_target: "edge-a edge-b edge-c",
+            risk: "high",
+            notes: "authoritative DNS backend API and DNSSEC settings",
+            content: EDGE_POWERDNS_CONF,
+        },
+        ConfigScript {
+            id: "edge_coraza",
+            tool: "Coraza WAF",
+            path: "/etc/coraza/osdc-crs.conf",
+            owner: "root",
+            language: "modsecurity",
+            edit_mode: "gitops-pr",
+            validation_command: "coraza --validate /etc/coraza/osdc-crs.conf",
+            rollout_target: "edge-a edge-b",
+            risk: "high",
+            notes: "WAF CRS include file starts in detection mode",
+            content: EDGE_CORAZA_CONF,
+        },
+        ConfigScript {
+            id: "edge_crowdsec",
+            tool: "CrowdSec",
+            path: "/etc/crowdsec/acquis.yaml",
+            owner: "crowdsec",
+            language: "yaml",
+            edit_mode: "gitops-pr",
+            validation_command: "crowdsec hubtest run",
+            rollout_target: "edge-a edge-b",
+            risk: "medium",
+            notes: "log acquisition for WAF and proxy decisions",
+            content: EDGE_CROWDSEC_ACQUIS,
+        },
+        ConfigScript {
+            id: "edge_wireguard",
+            tool: "WireGuard",
+            path: "/etc/wireguard/osdc-edge.conf",
+            owner: "root",
+            language: "ini",
+            edit_mode: "secret-aware-pr",
+            validation_command: "wg-quick strip /etc/wireguard/osdc-edge.conf",
+            rollout_target: "edge-a edge-b",
+            risk: "high",
+            notes: "private origin tunnel with secret placeholders",
+            content: EDGE_WIREGUARD_CONF,
+        },
+    ]
+}
+
 fn provisioning_blueprints() -> Vec<ProvisioningBlueprint> {
     vec![
         ProvisioningBlueprint {
@@ -1942,6 +2321,7 @@ mod tests {
         assert!(edge.contains("Edge Shield"));
         assert!(edge.contains("edge-service-filter"));
         assert!(edge.contains("edge-config-preview"));
+        assert!(edge.contains("edge-script-editor"));
         assert!(planner.contains("Cost Planner"));
         assert!(planner.contains("planner-scenarios"));
         assert!(planner.contains("planner-price-basis"));
@@ -1968,6 +2348,64 @@ mod tests {
                 .as_str()
                 .unwrap_or_default()
                 .contains("Kueue")));
+    }
+
+    #[test]
+    fn exposes_sovereign_service_catalogue_and_upgrade_policy() {
+        let services = json_body("/api/catalog/sovereign-services");
+        let upgrade_policy = json_body("/api/catalog/upgrade-policy");
+        let services = services
+            .as_array()
+            .expect("sovereign service catalog should be array");
+        let upgrade_policy = upgrade_policy
+            .as_array()
+            .expect("upgrade policy should be array");
+
+        assert!(services.len() >= 16);
+        assert!(services.iter().any(|service| service["id"] == "identity"
+            && service["open_equivalent"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("Keycloak")
+            && service["workflow"] == "create tenant and assign roles"));
+        assert!(services.iter().any(|service| service["id"] == "registry"
+            && service["security_controls"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("sbom")));
+        assert!(upgrade_policy
+            .iter()
+            .any(|policy| policy["update_class"] == "critical_cve"
+                && policy["frequency"] == "24-72 hours"));
+        assert!(upgrade_policy.iter().any(|policy| {
+            policy["update_class"] == "kubernetes_openstack_ceph"
+                && policy["target_window"] == "platform-release-window"
+        }));
+    }
+
+    #[test]
+    fn exposes_browser_editable_config_scripts() {
+        let scripts = json_body("/api/config/scripts");
+        let scripts = scripts
+            .as_array()
+            .expect("config scripts should be an array");
+
+        assert!(scripts.len() >= 5);
+        assert!(scripts.iter().any(|script| script["id"] == "edge_caddyfile"
+            && script["content"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("public.example.gov")
+            && script["validation_command"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("caddy validate")));
+        assert!(scripts.iter().any(|script| script["id"] == "edge_wireguard"
+            && script["edit_mode"] == "secret-aware-pr"
+            && script["content"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("${OSDC_WIREGUARD_PRIVATE_KEY}")));
     }
 
     #[test]

@@ -20,7 +20,10 @@ It deliberately starts as a small standard-library HTTP server. That keeps the f
 | `/api/catalog/hardware` | JSON | Chosen SBC/GPU hardware baseline. |
 | `/api/catalog/services` | JSON | Open cloud service map. |
 | `/api/catalog/core-services` | JSON | Chosen AWS/Azure-like core services and their open-source OSDC implementation. |
+| `/api/catalog/sovereign-services` | JSON | Broad sovereign cloud service catalogue across cloud core, edge, developer, security, data, AI, and operations bundles. |
+| `/api/catalog/upgrade-policy` | JSON | Managed patch and upgrade classes with gates, owners, and rollback requirements. |
 | `/api/catalog/blueprints` | JSON | First provisioning blueprints for VMs, GPU model endpoints, databases, Kubernetes, and buckets. |
+| `/api/config/scripts` | JSON | Browser-editable config script catalogue with validation and rollout metadata. |
 | `/api/edge/services` | JSON | Open Cloudflare-alternative service map for Radxa edge nodes. |
 | `/api/edge/status` | JSON | Edge Shield metrics, Radxa nodes, service status, and rollout queue. |
 | `/api/edge/config-preview` | JSON | Generated Radxa edge config files and rollout checks before deployment. |
@@ -45,6 +48,10 @@ The next production step is to replace the in-process sample data with adapters:
 - Edge Shield deployment catalog from `data/software/edge-shield-service-map.csv`.
 - Security control catalog from `data/software/security-control-map.csv`.
 - Proprietary-to-open-source replacement catalog from `data/software/proprietary-to-open-source-map.csv`.
+- Sovereign cloud service catalogue from `data/software/service-catalogue-v1.csv`.
+- Upgrade policy from `data/software/upgrade-policy.csv`.
+- Software security controls from `data/software/security-controls.csv`.
+- Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.
 - Inventory and rack truth from NetBox/openDCIM.
 - VM and bare-metal state from OpenStack Nova/Ironic.
 - Storage state from Ceph.

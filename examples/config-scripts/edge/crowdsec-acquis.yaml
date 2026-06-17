@@ -1,0 +1,9 @@
+filenames:
+  - /var/log/caddy/*.log
+labels:
+  type: caddy
+---
+filenames:
+  - /var/log/coraza/audit.log
+labels:
+  type: modsecurity

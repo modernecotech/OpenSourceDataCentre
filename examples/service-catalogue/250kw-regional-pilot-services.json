@@ -1,0 +1,70 @@
+{
+  "profile_id": "250kw-regional-pilot-services",
+  "deployment_stage": "250 kW regional pilot",
+  "bundles": [
+    "A",
+    "B",
+    "C"
+  ],
+  "services": [
+    "identity",
+    "organizations",
+    "workload_identity",
+    "secrets",
+    "kms",
+    "compute_vm",
+    "bare_metal",
+    "kubernetes",
+    "object_storage",
+    "block_storage",
+    "file_storage",
+    "backup",
+    "networking",
+    "load_balancing",
+    "dns",
+    "edge",
+    "git_repos",
+    "ci",
+    "gitops",
+    "registry",
+    "iac",
+    "observability",
+    "logging",
+    "audit",
+    "soc",
+    "runtime_security",
+    "vulnerability",
+    "postgres",
+    "cache",
+    "messaging",
+    "gpu_queue",
+    "model_endpoint",
+    "asset_inventory",
+    "itsm",
+    "runbooks"
+  ],
+  "ui_workflows": [
+    "create government tenant",
+    "create VM",
+    "create Kubernetes cluster",
+    "create PostgreSQL database",
+    "approve IaC plan",
+    "patch Keycloak",
+    "restore namespace",
+    "show non-compliant workloads"
+  ],
+  "upgrade_policy": {
+    "default_update_class": "normal_patch",
+    "gitops_required": true,
+    "blind_upgrades_allowed": false,
+    "required_gates": [
+      "sbom",
+      "vulnerability-scan",
+      "licence-check",
+      "staging",
+      "backup-restore-test",
+      "rollback-test",
+      "owner-approval"
+    ]
+  }
+}

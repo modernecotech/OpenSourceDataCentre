@@ -85,6 +85,35 @@
             </div>
           </section>
 
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Browser Config Editor</h2>
+              <div class="panel-tools">
+                <input id="edge-script-filter" type="search" placeholder="Filter scripts">
+                <button id="edge-script-validate">Validate</button>
+                <button class="primary" id="edge-script-stage">Stage GitOps change</button>
+              </div>
+            </div>
+            <div class="editor-grid">
+              <table>
+                <thead>
+                  <tr><th>Tool</th><th>Path</th><th>Mode</th><th>Risk</th></tr>
+                </thead>
+                <tbody id="edge-script-list">
+                  <tr><td>Caddy</td><td>/etc/caddy/Caddyfile</td><td>gitops-pr</td><td>medium</td></tr>
+                </tbody>
+              </table>
+              <div class="editor-pane">
+                <div class="editor-meta">
+                  <strong id="edge-script-title">Select a config script</strong>
+                  <span id="edge-script-meta">validation and rollout metadata</span>
+                </div>
+                <textarea id="edge-script-editor" spellcheck="false"></textarea>
+                <div class="action-output" id="edge-script-output">Edits are staged through GitOps review, not written directly to live services.</div>
+              </div>
+            </div>
+          </section>
+
           <div class="split">
             <section class="panel">
               <div class="panel-header">

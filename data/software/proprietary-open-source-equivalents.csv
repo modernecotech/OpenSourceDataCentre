@@ -1,0 +1,34 @@
+proprietary_service,open_equivalent,category,default_bundle,ui_surface,notes
+AWS IAM / Azure Entra / Google IAM,Keycloak + OPA,identity,A,tenant-admin,users ministries tenants roles MFA SSO
+AWS Organizations / Azure Management Groups,Keycloak groups + OPA + OSDC tenancy,identity,A,tenant-admin,national entities ministries universities hospitals
+AWS Secrets Manager / Azure Key Vault,OpenBao,secrets,A,security-admin,secrets dynamic credentials encryption service
+AWS KMS / Azure Key Vault HSM,OpenBao Transit + Barbican + HSM,key-management,A,security-admin,key lifecycle rotation audit custody
+EC2 / Azure VM / Compute Engine,OpenStack Nova + KVM,compute,A,tenant,VM instances images sizes
+Bare metal instances,OpenStack Ironic + Metal3,bare-metal,A,operator,dedicated servers and GPU nodes
+EKS / AKS / GKE,Kubernetes + Cluster API + Cilium,containers,A,tenant,managed Kubernetes clusters
+Lambda / Cloud Functions,Knative Functions + OpenFaaS,serverless,D,tenant,serverless functions and scale-to-zero apps
+S3 / Blob Storage / Cloud Storage,Ceph RGW,storage,A,tenant,buckets quotas lifecycle
+EBS / Managed Disk,Ceph RBD + Cinder,storage,A,tenant,block volumes and snapshots
+EFS / Azure Files,CephFS + Manila,storage,A,tenant,shared file systems
+AWS Backup / Azure Backup,Velero + Restic + Kopia + Ceph snapshots,backup,A,operator,backup restore and drills
+VPC / VNet / Google VPC,OpenStack Neutron + OVN + FRRouting,network,A,tenant,networks subnets routers firewalls
+Route 53 / Azure DNS / Cloud DNS,PowerDNS + dnsdist,dns,B,tenant-admin,DNS zones and DNSSEC
+Cloud CDN / Front Door / Cloudflare,OSDC Edge Shield,edge,B,security,CDN cache WAF tunnels rate limits
+GitHub Enterprise / Azure DevOps,Forgejo + Gitea + Woodpecker + Argo CD,developer,C,developer,repos pipelines approvals GitOps
+Terraform Cloud,OpenTofu + GitOps runner + Ceph state,iac,C,developer,infrastructure plans and approvals
+ECR / ACR / Artifact Registry,Harbor + cosign + Syft + Grype,registry,C,developer,registry scanning signing SBOMs
+CloudWatch / Azure Monitor,OpenTelemetry + Prometheus + Grafana,observability,A,operator,metrics dashboards alerts
+Cloud Logging / Log Analytics,Loki + OpenSearch + ClickHouse logs,observability,A,operator,log search retention
+Security Hub / Defender / Sentinel,Wazuh + OpenSearch + Falco + Kyverno,security,B,security,security posture and findings
+GuardDuty,Wazuh + Zeek + Suricata + Falco,security,B,security,threat detections
+Inspector / Vulnerability Management,Trivy + Grype + OpenVAS,security,C,security,vulnerability results
+RDS / Cloud SQL,CloudNativePG + Percona + MariaDB operators,database,D,tenant,managed databases
+DynamoDB / Cosmos DB,ScyllaDB + Cassandra + FoundationDB + FerretDB,database,D,tenant,NoSQL services
+ElastiCache / Memorystore,Valkey,database,D,tenant,Redis-compatible cache
+SQS / PubSub / Event Grid,NATS + RabbitMQ + Knative Eventing,messaging,D,tenant,queues and events
+Kinesis / Event Hubs,Kafka + Redpanda + Pulsar,messaging,D,tenant,streaming topics
+BigQuery / Athena / Synapse,Trino + Iceberg + Ceph + Superset,analytics,D,tenant,query data lake
+SageMaker / Vertex AI / Azure ML,Kubeflow + MLflow + Ray + KServe,ai,D,tenant,ML workspaces
+Bedrock / Azure AI Foundry,vLLM + SGLang + llama.cpp + Ollama,ai,D,tenant,model endpoints
+Cloud asset inventory,NetBox + openDCIM,operations,A,operator,racks IPs circuits servers
+Systems Manager / Azure Arc,Ansible/AWX + Uyuni + Foreman,fleet,A,operator,patch status and runbooks

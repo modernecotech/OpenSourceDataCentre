@@ -81,6 +81,25 @@ The Rust layer is split deliberately:
 - `osdc-edge-config`: typed Edge Shield deployment profiles and validation.
 - `osdc-edge-policy`: route cache policy, zero-trust policy signals, and DDoS claim guardrails.
 
+## Unified Service Catalogue and Upgrades
+
+The broader sovereign cloud service catalogue is documented in:
+
+- [Sovereign Cloud Service Catalogue](../software/sovereign-cloud-service-catalogue.md)
+- [Unified Portal Integration Model](../software/unified-portal-integration-model.md)
+- [Patching and Upgrade Policy](../software/patching-and-upgrade-policy.md)
+- [Developer Platform](../software/developer-platform.md)
+- [Data and AI Platform](../software/data-and-ai-platform.md)
+
+The associated data files are:
+
+- `data/software/service-catalogue-v1.csv`
+- `data/software/proprietary-open-source-equivalents.csv`
+- `data/software/upgrade-policy.csv`
+- `data/software/security-controls.csv`
+
+The portal should expose workflows and upgrade decisions, not raw control of every upstream tool. Production changes should move through GitOps with SBOMs, scans, staging, backup/restore tests, rollback checks, approval, health verification, and audit records.
+
 ## Source Notes
 
 - OpenStack describes itself as open-source cloud infrastructure with services for compute, storage, and networking managed through APIs and dashboards: https://www.openstack.org/

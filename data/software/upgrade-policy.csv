@@ -1,0 +1,8 @@
+update_class,frequency,target_window,required_gates,approval_owner,rollback_requirement,notes
+critical_cve,24-72 hours,emergency,staging-test+scan+backup-check+fast-approval,platform-security-owner,rollback-plan-required,production patch after fast validation
+high_security,weekly,scheduled-security-window,pr+sbom+scan+staging+smoke-test,platform-owner,rollback-tested,normal security patch path
+normal_patch,monthly,maintenance-window,pr+scan+staging+smoke-test,service-owner,rollback-available,default patch cadence
+minor_feature,quarterly,planned-window,compatibility-test+docs-review+staging,service-owner,rollback-tested,feature release with user-visible notes
+major_version,6-12 months,migration-window,migration-plan+backup+dry-run+rollback-test,architecture-board,rollback-tested,major upgrades need dry run
+firmware_bmc,quarterly-or-emergency,rack-by-rack-window,lab-test+vendor-notes+spare-node,hardware-owner,firmware-rollback-or-spare,never patch all racks at once
+kubernetes_openstack_ceph,planned-release-train,platform-release-window,release-plan+staging+backup-restore+rollback-test,platform-owner,rollback-tested,never ad hoc

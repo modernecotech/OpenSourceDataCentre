@@ -1,0 +1,6 @@
+script_id,tool,path,owner,language,edit_mode,validation_command,rollout_target,risk,notes
+edge_caddyfile,Caddy,/etc/caddy/Caddyfile,caddy,caddyfile,gitops-pr,caddy validate --config /etc/caddy/Caddyfile,edge-a edge-b,medium,TLS routes reverse proxy and access middleware
+edge_powerdns,PowerDNS,/etc/powerdns/pdns.d/osdc.conf,pdns,ini,gitops-pr,pdnsutil check-all-zones,edge-a edge-b edge-c,high,authoritative DNS backend API and DNSSEC settings
+edge_coraza,Coraza WAF,/etc/coraza/osdc-crs.conf,root,modsecurity,gitops-pr,coraza --validate /etc/coraza/osdc-crs.conf,edge-a edge-b,high,WAF CRS include file starts in detection mode
+edge_crowdsec,CrowdSec,/etc/crowdsec/acquis.yaml,crowdsec,yaml,gitops-pr,crowdsec hubtest run,edge-a edge-b,medium,log acquisition for WAF and proxy decisions
+edge_wireguard,WireGuard,/etc/wireguard/osdc-edge.conf,root,ini,secret-aware-pr,wg-quick strip /etc/wireguard/osdc-edge.conf,edge-a edge-b,high,private origin tunnel with secret placeholders

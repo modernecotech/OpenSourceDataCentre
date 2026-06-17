@@ -113,6 +113,24 @@ pub struct OperationsProfile {
     pub operator_skill_requirement: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ServiceCatalogueSelection {
+    pub profile_id: String,
+    pub deployment_stage: String,
+    pub bundles: Vec<String>,
+    pub services: Vec<String>,
+    pub ui_workflows: Vec<String>,
+    pub upgrade_policy: ServiceUpgradePolicy,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ServiceUpgradePolicy {
+    pub default_update_class: String,
+    pub gitops_required: bool,
+    pub blind_upgrades_allowed: bool,
+    pub required_gates: Vec<String>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct CostSummary {
     pub it_energy_kwh: f64,
@@ -210,6 +228,27 @@ mod tests {
             assert!(!profile.country.is_empty());
             assert!(profile.procurement.shipping_multiplier >= 1.0);
             assert!((0.0..=1.0).contains(&profile.energy.solar_capacity_factor));
+        }
+    }
+
+    #[test]
+    fn deserializes_service_catalogue_examples() {
+        let profiles = [
+            include_str!("../../../examples/service-catalogue/50kw-edge-services.json"),
+            include_str!("../../../examples/service-catalogue/250kw-regional-pilot-services.json"),
+            include_str!("../../../examples/service-catalogue/1mw-sovereign-cloud-services.json"),
+            include_str!("../../../examples/service-catalogue/5mw-ai-ready-services.json"),
+        ];
+
+        for raw in profiles {
+            let profile: ServiceCatalogueSelection = serde_json::from_str(raw).unwrap();
+
+            assert!(!profile.profile_id.is_empty());
+            assert!(!profile.bundles.is_empty());
+            assert!(profile.services.iter().any(|service| service == "identity"));
+            assert!(profile.upgrade_policy.gitops_required);
+            assert!(!profile.upgrade_policy.blind_upgrades_allowed);
+            assert!(!profile.upgrade_policy.required_gates.is_empty());
         }
     }
 }

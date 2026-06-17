@@ -412,6 +412,68 @@ function renderChecks(targetId, checks) {
   }
 }
 
+function renderConfigScriptEditor(scripts) {
+  const tbody = document.getElementById("edge-script-list");
+  const editor = document.getElementById("edge-script-editor");
+  const title = document.getElementById("edge-script-title");
+  const meta = document.getElementById("edge-script-meta");
+  const output = document.getElementById("edge-script-output");
+  if (!tbody || !editor || !title || !meta) return;
+
+  let selectedId = scripts[0]?.id;
+
+  const selectScript = (scriptId) => {
+    selectedId = scriptId;
+    const script = scripts.find((item) => item.id === selectedId) ?? scripts[0];
+    if (!script) return;
+    title.textContent = `${script.tool} ${script.path}`;
+    meta.textContent = `${script.validation_command} | ${script.rollout_target} | ${script.edit_mode}`;
+    editor.value = script.content;
+    for (const row of tbody.querySelectorAll("tr")) {
+      row.classList.toggle("selected-row", row.dataset.scriptId === selectedId);
+    }
+    if (output) output.textContent = `${script.tool} loaded. Changes will be staged as a GitOps review.`;
+  };
+
+  clear(tbody);
+  for (const script of scripts) {
+    const tr = document.createElement("tr");
+    tr.dataset.scriptId = script.id;
+    tr.tabIndex = 0;
+    for (const field of [script.tool, script.path, script.edit_mode, script.risk]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.addEventListener("click", () => selectScript(script.id));
+    tr.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectScript(script.id);
+      }
+    });
+    tbody.append(tr);
+  }
+
+  selectScript(selectedId);
+
+  document.getElementById("edge-script-validate")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const script = scripts.find((item) => item.id === selectedId);
+    if (output && script) {
+      output.textContent = `Validation queued: ${script.validation_command}`;
+    }
+  });
+
+  document.getElementById("edge-script-stage")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const script = scripts.find((item) => item.id === selectedId);
+    if (output && script) {
+      output.textContent = `GitOps change staged for ${script.path}; review, staging rollout, and rollback checks required.`;
+    }
+  });
+}
+
 function formatUsd(value) {
   if (value >= 1_000_000) {
     return `$${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 2)}M`;
@@ -698,15 +760,17 @@ async function hydrateOperator() {
 }
 
 async function hydrateEdge() {
-  const [status, config] = await Promise.all([
+  const [status, config, scripts] = await Promise.all([
     api("/api/edge/status"),
     api("/api/edge/config-preview"),
+    api("/api/config/scripts"),
   ]);
 
   renderMetrics("edge-metrics", status.metrics);
   renderEdgeServices("edge-services", status.services);
   renderEdgeConfig("edge-config-preview", config.generated_files);
   renderChecks("edge-config-checks", config.rollout_checks);
+  renderConfigScriptEditor(scripts);
   const role = document.getElementById("edge-config-role");
   if (role) role.textContent = config.node_role;
   renderRows("edge-nodes", status.nodes, [
@@ -737,6 +801,10 @@ async function hydrateEdge() {
   attachTableFilters({
     textInputId: "edge-rollout-filter",
     tbodyId: "edge-rollout",
+  });
+  attachTableFilters({
+    textInputId: "edge-script-filter",
+    tbodyId: "edge-script-list",
   });
   wireActionButton("edge-detection-mode", "Detection mode staged");
   wireActionButton("edge-stage-rollout", "Rollout staged");

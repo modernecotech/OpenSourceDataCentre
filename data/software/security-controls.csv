@@ -1,0 +1,13 @@
+control_id,control_area,open_source_stack,ui_surface,required_evidence,default_bundle
+identity_access,Identity and access,Keycloak + OPA + Kyverno,tenant-admin,access-review+MFA-report+policy-version,A
+workload_identity,Workload identity,SPIFFE + SPIRE + OPA,security-admin,attestation-report+mtls-policy,A
+secrets_keys,Secrets and keys,OpenBao + Barbican + HSM,security-admin,key-ceremony+rotation-log+recovery-test,A
+registry_supply_chain,Registry and supply chain,Harbor + cosign + Syft + Grype + Trivy,developer,signed-image+SBOM+scan-report,C
+policy_as_code,Policy as code,OPA + Kyverno + Conftest + Checkov,security,policy-version+exception-register,A
+runtime_security,Runtime security,Falco + Wazuh + osquery,security,runtime-alerts+host-inventory,B
+network_detection,Network detection,Zeek + Suricata,security,ids-alerts+packet-evidence,B
+soc_siem,SOC and SIEM,Wazuh + OpenSearch + Sigma + MISP,security,incident-record+analyst-review,B
+observability_audit,Observability and audit,OpenTelemetry + Prometheus + Loki + Grafana,operator,retention-matrix+alert-test,A
+backup_restore,Backup and restore,Velero + Restic + Kopia + Ceph snapshots,operator,restore-test+RPO-RTO-record,A
+edge_protection,Edge protection,PowerDNS + Caddy + Varnish + Coraza + CrowdSec,security,WAF-report+DNSSEC-check+tunnel-review,B
+upgrade_control,Upgrade control,Renovate + Argo CD + Flux + GitOps,operator,upgrade-pr+staging-result+rollback-result,C
