@@ -32,6 +32,7 @@ The project combines:
 | Delivery control pack | Project lifecycle gates, authority permits, owner-engineer review, design freeze, operational readiness, handover, risk, action, and commissioning evidence registers. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
 | Sovereign developer platform | Forgejo-style repos, CI, Harbor registry, GitOps deployment, OpenTofu IaC, promotion gates, service templates, and VS Code-ready developer workflows. |
+| Data Platform as a Service | Optional open-source Foundry-like layer for governed data products, lakehouse tables, catalog, lineage, ontology objects, dashboards, apps, notebooks, and AI context. |
 | Edge Shield security fabric | Sovereign DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, zero-trust access, logs, metrics, secrets, policy, and audit. |
 | Unified lifecycle console | Browser surface that composes design gates, permits, evidence registers, commissioning, operations, sovereign services, config scripts, and repo documents from the existing CSV/doc sources. |
 | Prototype browser config management | Web-based editing of sample tool config scripts, with the production path defined as validation, GitOps review, staged rollout, rollback checks, and audit. |
@@ -99,11 +100,27 @@ The Rust layer does not replace mature infrastructure systems. It provides the u
 
 This repository is currently a strong architecture, planning framework, and working Rust prototype. It is not yet a deployable national cloud platform.
 
-The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended tenant, operator, Edge Shield, config-editor, lifecycle, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, or Flux installations.
+The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended tenant, operator, Edge Shield, config-editor, lifecycle, commercial, developer, data-platform, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, or MLflow installations.
 
 The next engineering phase is to continue replacing hardcoded samples with CSV-backed catalogue loading, then add adapter stubs for real infrastructure systems.
 
 Commercial readiness is also early. The repository now tracks the gap between the OSDC blueprint and a commercial colocation or hyperscale-grade datacentre through a gap register, standards/control matrix, SLA model, commercial product catalogue, MEP evidence targets, operations templates, and audit-evidence register. These artifacts are templates and planning controls, not certification evidence until project-specific professionals review and sign them off.
+
+## Portal Screenshots
+
+The screenshots below are captured from the local Rust portal prototype at `127.0.0.1:8787`.
+
+| Lifecycle console | Commercial console |
+| --- | --- |
+| ![OSDC lifecycle console showing design gates, evidence records, and lifecycle metrics](docs/assets/screenshots/osdc-lifecycle-console.png) | ![OSDC commercial console showing readiness gaps, standards metrics, and evidence links](docs/assets/screenshots/osdc-commercial-console.png) |
+
+| Developer console | Data platform console |
+| --- | --- |
+| ![OSDC developer console showing Forgejo, CI, GitOps, OpenTofu, and VS Code workflow catalogues](docs/assets/screenshots/osdc-developer-console.png) | ![OSDC data platform console showing governed data products, lakehouse services, pipelines, and ontology objects](docs/assets/screenshots/osdc-data-platform-console.png) |
+
+| Edge Shield console |
+| --- |
+| ![OSDC Edge Shield console showing edge service metrics and security gateway controls](docs/assets/screenshots/osdc-edge-console.png) |
 
 ## Local Maintainability Doctrine
 
@@ -217,6 +234,7 @@ Machine-readable catalogue data lives in:
 - [upgrade-policy.csv](data/software/upgrade-policy.csv) - update classes, cadence, gates, owners, and rollback requirements.
 - [config-script-catalogue.csv](data/software/config-script-catalogue.csv) - browser-editable config-script catalogue.
 - [developer platform catalogues](data/software/) - developer services, templates, deployment environments, promotion gates, and VS Code workflows.
+- [data platform catalogues](data/software/) - data services, products, pipelines, ontology objects, access policies, and templates.
 - [service catalogue examples](examples/service-catalogue/)
 
 ## Sovereign Developer Platform
@@ -242,6 +260,32 @@ OSDC audit, health, rollback, cost, and energy view
 The developer console exposes service templates with `.devcontainer/devcontainer.json`, `.woodpecker.yml`, GitOps deployment manifests, OpenTofu examples, promotion gates, environment status, and `vscode://` clone links for a smooth VS Code workflow. Developers can create a repository, open it in VS Code, work inside a dev container, push code, trigger CI, publish to Harbor, and promote through GitOps.
 
 Machine-readable developer-platform data lives in [data/software](data/software/) and template artifacts live in [examples/developer-platform](examples/developer-platform/). The main guide is [Developer Platform](docs/software/developer-platform.md).
+
+## Data Platform as a Service
+
+OSDC can optionally provide a sovereign data platform with Palantir-like workflow classes while staying fully open-source and locally operated:
+
+```text
+Data Platform Console
+   |
+source registration and ingestion
+   |
+Ceph/MinIO + Iceberg lakehouse
+   |
+Trino query and governed SQL
+   |
+OpenMetadata or DataHub catalog and lineage
+   |
+dbt/Dagster/Airflow transforms
+   |
+Superset dashboards, notebooks, data apps, AI context
+   |
+OSDC access policy, audit, quality, and lifecycle gates
+```
+
+This is not a clone of a proprietary platform. It is an open implementation of the same operational idea: governed data products, ontology/business objects, lineage, quality gates, access policies, dashboards, notebooks, operational apps, and AI-ready context running on the independent OSDC cloud.
+
+Machine-readable data-platform files live in [data/software](data/software/) and starter templates live in [examples/data-platform](examples/data-platform/). The main guide is [Data Platform as a Service](docs/software/data-platform-service.md).
 
 ## Sovereign Edge and Security Fabric
 
@@ -382,7 +426,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Unified Portal Integration Model](docs/software/unified-portal-integration-model.md) - Rust API and workflow layer over mature open-source systems.
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
-- [Developer Platform](docs/software/developer-platform.md) and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage, including Forgejo, CI, Harbor, GitOps, OpenTofu, promotion gates, templates, and VS Code workflows.
+- [Developer Platform](docs/software/developer-platform.md), [Data Platform as a Service](docs/software/data-platform-service.md), and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage, including Forgejo, CI, Harbor, GitOps, OpenTofu, governed data products, lakehouse, catalog, lineage, ontology, templates, and VS Code workflows.
 - [Commercial Readiness](docs/commercial-readiness/README.md) - gap register, standards matrix, SLA model, commercial service catalogue, audit evidence, and customer responsibility matrix.
 - [Delivery Controls](docs/delivery/README.md) - lifecycle gates, authority permits, design freeze, operational readiness, handover, owner-engineer review, risk, and action tracking.
 - [Engineering Evidence](data/engineering/) - MEP evidence register for electrical, DC protection, coordination, earthing, EPO, generator fuel, BESS safety, thermal, cooling, fire, and controls artifacts.
@@ -426,6 +470,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
 - [Software Service Data](data/software/) - open cloud service catalogue mappings.
 - [Developer Platform Examples](examples/developer-platform/) - VS Code devcontainer, CI, GitOps, and OpenTofu starter artifacts.
+- [Data Platform Examples](examples/data-platform/) - Dagster, dbt, Superset, ontology, and data pipeline starter artifacts.
 - [Commercial Readiness Data](data/commercial/) - gap register, standards matrix, SLA classes, colocation products, cross-connects, remote hands, and audit evidence.
 - [Delivery Data](data/delivery/) - project gates, authority permits, risk register, and action tracker.
 - [Commissioning Data](data/commissioning/) - commissioning evidence register for L1-L5 and integrated systems tests.
@@ -463,16 +508,18 @@ cargo run -p osdc-edge -- 127.0.0.1:8790
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
 
-The first portal serves six GUI surfaces:
+The first portal serves eight GUI surfaces:
 
 - Tenant portal: `http://127.0.0.1:8787/user`
 - Operator console: `http://127.0.0.1:8787/operator`
 - Edge Shield console: `http://127.0.0.1:8787/edge`
 - Cost planner: `http://127.0.0.1:8787/planner`
 - Lifecycle console: `http://127.0.0.1:8787/lifecycle`
+- Commercial console: `http://127.0.0.1:8787/commercial`
 - Developer console: `http://127.0.0.1:8787/developer`
+- Data platform console: `http://127.0.0.1:8787/data-platform`
 
-The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, developer platform templates and GitOps workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
+The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, commercial readiness products and evidence controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
 
 Useful portal APIs:
 
@@ -491,6 +538,8 @@ Useful portal APIs:
 - `/api/commercial/colocation-products`
 - `/api/commercial/cross-connect-products`
 - `/api/commercial/remote-hands-products`
+- `/api/commercial/remote-hands-pricebook`
+- `/api/commercial/access-roles`
 - `/api/commercial/audit-evidence`
 - `/api/site-selection/scorecard`
 - `/api/security/physical-controls`
@@ -505,6 +554,7 @@ Useful portal APIs:
 - `/api/commissioning/evidence`
 - `/api/lifecycle/overview`
 - `/api/developer/platform`
+- `/api/data-platform/overview`
 
 The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
 

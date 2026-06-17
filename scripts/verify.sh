@@ -76,9 +76,11 @@ unique_columns = {
     Path("data/bom/bom-250kw-open-regional.csv"): "line_id",
     Path("data/commissioning/commissioning-evidence-register.csv"): "evidence_id",
     Path("data/commercial/audit-evidence.csv"): "evidence_id",
+    Path("data/commercial/access-roles.csv"): "access_role_id",
     Path("data/commercial/colocation-products.csv"): "product_id",
     Path("data/commercial/commercial-gap-register.csv"): "gap_id",
     Path("data/commercial/cross-connect-products.csv"): "product_id",
+    Path("data/commercial/remote-hands-pricebook.csv"): "pricebook_id",
     Path("data/commercial/remote-hands-products.csv"): "product_id",
     Path("data/commercial/sla-classes.csv"): "sla_class_id",
     Path("data/commercial/standards-control-matrix.csv"): "requirement_id",
@@ -95,6 +97,12 @@ unique_columns = {
     Path("data/site-selection/site-selection-scorecard.csv"): "criterion_id",
     Path("data/software/config-script-catalogue.csv"): "script_id",
     Path("data/software/core-cloud-services.csv"): "service_id",
+    Path("data/software/data-access-policies.csv"): "policy_id",
+    Path("data/software/data-ontology-objects.csv"): "object_id",
+    Path("data/software/data-pipelines.csv"): "pipeline_id",
+    Path("data/software/data-platform-services.csv"): "service_id",
+    Path("data/software/data-platform-templates.csv"): "template_id",
+    Path("data/software/data-products.csv"): "product_id",
     Path("data/software/developer-platform-services.csv"): "service_id",
     Path("data/software/developer-promotion-gates.csv"): "gate_id",
     Path("data/software/developer-templates.csv"): "template_id",
@@ -358,7 +366,7 @@ if portal_doc.exists() and portal_source.exists():
         route
         for route in source_routes
         if route.startswith("/api/")
-        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/developer", "/health"}
+        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/developer", "/data-platform", "/health"}
     }
     for route in sorted(doc_routes - source_routes):
         fail(f"{portal_doc}: documents missing portal route {route}")

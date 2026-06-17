@@ -8,6 +8,8 @@ This directory stores machine-readable catalogues for commercial datacentre read
 - `colocation-products.csv` defines rack, cage, suite, power, access, and remote-hands commercial products.
 - `cross-connect-products.csv` defines meet-me-room and network-interconnection products.
 - `remote-hands-products.csv` defines remote/smart-hands task classes.
+- `remote-hands-pricebook.csv` defines remote/smart-hands billing units, response targets, approvals, and evidence references.
+- `access-roles.csv` defines customer, carrier, staff, and break-glass physical access roles.
 - `audit-evidence.csv` maps evidence records to owners, cadence, and storage paths.
 
 These files describe commercial readiness targets. They are not legal contracts, certified designs, or proof of compliance until reviewed and signed off by qualified local professionals and auditors.

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Commercial Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="commercial">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Commercial</strong>
+          <span>readiness and customer services</span>
+        </div>
+        <nav class="nav-list" aria-label="Commercial navigation">
+          <a class="active" href="/commercial"><span class="nav-icon">C</span>Commercial</a>
+          <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/data-platform"><span class="nav-icon">A</span>Data</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+        </nav>
+        <small>scope: commercial-readiness</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Commercial Console</h1>
+            <p>Standards, SLAs, colocation products, interconnection, remote hands, access, and audit evidence</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="commercial-refresh" aria-label="Refresh commercial data">R</button>
+            <button id="commercial-export-gaps">Export gaps</button>
+            <a class="button primary" href="/docs/commercial-readiness/README.md" target="_blank" rel="noreferrer">Readiness docs</a>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="commercial-metrics">
+            <div class="metric"><span>Open gaps</span><strong>12</strong><em>commercial readiness</em></div>
+            <div class="metric"><span>Standards controls</span><strong>8</strong><em>mapped to evidence</em></div>
+            <div class="metric"><span>Customer products</span><strong>0</strong><em>colo cross-connect hands</em></div>
+            <div class="metric"><span>Audit records</span><strong>0</strong><em>cadence and owners</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Commercial Gap Register</h2>
+              <div class="panel-tools">
+                <input id="commercial-gap-filter" type="search" placeholder="Filter gaps">
+                <select id="commercial-gap-status" aria-label="Gap status filter">
+                  <option value="">All status</option>
+                  <option value="open">open</option>
+                  <option value="review">review</option>
+                  <option value="closed">closed</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Domain</th><th>ID</th><th>Expectation</th><th>Current state</th><th>Priority</th><th>Status</th><th>Artifact</th></tr>
+              </thead>
+              <tbody id="commercial-gaps">
+                <tr><td>certification</td><td>G001</td><td>Tier/TIA/EN/ISO mapped</td><td>scope guardrails</td><td>critical</td><td><span class="status warn">open</span></td><td>docs/commercial-readiness/standards-compliance-matrix.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Standards Control Matrix</h2>
+              <div class="panel-tools">
+                <input id="commercial-standard-filter" type="search" placeholder="Filter standards">
+                <button id="commercial-export-standards">Export standards</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Family</th><th>ID</th><th>Control area</th><th>Applies</th><th>Design response</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="commercial-standards">
+                <tr><td>Uptime/Tier</td><td>STD001</td><td>reliability topology</td><td>yes</td><td>map evidence</td><td>owner-engineer</td><td><span class="status warn">open</span></td><td>docs/commercial-readiness/uptime-tier-gap-analysis.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>SLA Classes</h2>
+              <div class="panel-tools">
+                <input id="commercial-sla-filter" type="search" placeholder="Filter SLAs">
+                <button id="commercial-export-slas">Export SLAs</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Class</th><th>Scope</th><th>Target</th><th>Window</th><th>Credit model</th><th>Exclusions</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="commercial-slas">
+                <tr><td>SLA_POWER_A</td><td>power A/B feed</td><td>facility-backed power</td><td>monthly</td><td>credit after root cause</td><td>planned maintenance</td><td>facilities</td><td><span class="status info">template</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Colocation Products</h2>
+                <div class="panel-tools">
+                  <input id="commercial-colocation-filter" type="search" placeholder="Filter products">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Product</th><th>Type</th><th>Unit</th><th>Commit</th><th>Controls</th><th>Demarcation</th></tr>
+                </thead>
+                <tbody id="commercial-colocation">
+                  <tr><td>COLO_FULL_CAB</td><td>full-cabinet</td><td>42U</td><td>monthly</td><td>A/B-feed</td><td>customer cabinet</td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Cross-Connect Products</h2>
+                <div class="panel-tools">
+                  <input id="commercial-cross-connect-filter" type="search" placeholder="Filter cross-connects">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Product</th><th>Type</th><th>Media</th><th>Demarcation</th><th>Workflow</th><th>Status</th></tr>
+                </thead>
+                <tbody id="commercial-cross-connects">
+                  <tr><td>XC_IXP</td><td>ixp-port</td><td>ethernet</td><td>IXP switch</td><td>member approval</td><td><span class="status info">template</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Remote Hands Products</h2>
+                <div class="panel-tools">
+                  <input id="commercial-remote-filter" type="search" placeholder="Filter remote hands">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Product</th><th>Class</th><th>Response</th><th>Approval</th><th>Scope</th><th>Status</th></tr>
+                </thead>
+                <tbody id="commercial-remote-products">
+                  <tr><td>RH_SMART_HANDS</td><td>smart-hands</td><td>scheduled</td><td>service-owner</td><td>approved MOP</td><td><span class="status info">template</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Remote Hands Pricebook</h2>
+                <div class="panel-tools">
+                  <input id="commercial-pricebook-filter" type="search" placeholder="Filter pricebook">
+                  <button id="commercial-export-pricebook">Export pricebook</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Class</th><th>ID</th><th>Unit</th><th>Target</th><th>Approval</th><th>Status</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="commercial-pricebook">
+                  <tr><td>smart-hands</td><td>RHP_SMART_HANDS</td><td>per-hour</td><td>scheduled</td><td>service-owner</td><td><span class="status info">template</span></td><td>docs/operations/mop-template.md</td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Physical Access Roles</h2>
+                <div class="panel-tools">
+                  <input id="commercial-access-filter" type="search" placeholder="Filter access">
+                  <button id="commercial-export-access">Export access</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Scope</th><th>ID</th><th>Role</th><th>Approval</th><th>Review</th><th>Areas</th><th>Status</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="commercial-access">
+                  <tr><td>emergency-access</td><td>ACCESS_BREAK_GLASS</td><td>break glass access</td><td>incident-commander</td><td>per-use</td><td>approved area</td><td><span class="status info">template</span></td><td>docs/security-physical/break-glass-physical-access.md</td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Audit Evidence</h2>
+                <div class="panel-tools">
+                  <input id="commercial-audit-filter" type="search" placeholder="Filter audit evidence">
+                  <button id="commercial-export-audit">Export audit</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Domain</th><th>ID</th><th>Evidence</th><th>Owner</th><th>Cadence</th><th>Status</th><th>Path</th></tr>
+                </thead>
+                <tbody id="commercial-audit">
+                  <tr><td>certification</td><td>EV001</td><td>standards compliance matrix</td><td>owner-engineer</td><td>quarterly</td><td><span class="status info">template</span></td><td>docs/commercial-readiness/standards-compliance-matrix.md</td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Commercial Actions</h2>
+              <div class="button-row">
+                <button id="commercial-create-gap">Create gap review</button>
+                <button id="commercial-open-sla">Prepare SLA pack</button>
+                <button id="commercial-open-access">Review access list</button>
+                <button id="commercial-open-audit">Assemble audit pack</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="action-output" id="commercial-action-output">Commercial actions are staged as prototype workflow events.</div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

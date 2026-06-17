@@ -1,0 +1,6 @@
+policy_id,scope,subject,allowed_actions,conditions,enforcement_point,evidence_path,status
+DATA_ROLE_HEALTH,health product access,role:health-analyst,query dashboard export,aggregate only no direct identifiers,Trino OpenMetadata Superset,docs/software/data-platform-service.md,pilot
+DATA_ROLE_EDUCATION,education product access,role:education-analyst,query dashboard export,school-level aggregation and row policy,Trino OpenMetadata Superset,docs/software/data-platform-service.md,template
+DATA_ROLE_OPERATIONS,facility telemetry access,role:facility-operator,query alert dashboard,site tenant and OT segmentation policy,Trino Grafana Superset,docs/software/data-platform-service.md,pilot
+DATA_ROLE_AI_CURATOR,AI corpus curator,role:ai-curator,approve dataset build index,license pii consent and lineage checks,OpenMetadata MLflow OPA,docs/software/data-platform-service.md,template
+DATA_BREAK_GLASS,break glass data access,role:data-break-glass,temporary query export,incident ticket manager approval audit expiry,Keycloak OPA OpenMetadata,docs/compliance/control-evidence-register.md,template

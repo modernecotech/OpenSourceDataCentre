@@ -1,0 +1,8 @@
+dashboard_title: Health Capacity Overview
+slug: health-capacity-overview
+description: Regional health capacity dashboard sourced from governed Iceberg tables.
+charts:
+  - name: Available beds by region
+    dataset: iceberg.health.capacity_daily
+    metric: available_beds
+    dimension: region

@@ -11,6 +11,7 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `security-control-map.csv` is the older control-map view. Keep it aligned with `security-controls.csv` or mark rows for migration.
 - `upgrade-policy.csv` and `config-script-catalogue.csv` are operational source files, not derived views.
 - `developer-platform-services.csv`, `developer-templates.csv`, `deployment-environments.csv`, `developer-promotion-gates.csv`, and `vscode-workflows.csv` define the Forgejo/CI/Harbor/GitOps/OpenTofu/VS Code developer platform.
+- `data-platform-services.csv`, `data-products.csv`, `data-pipelines.csv`, `data-ontology-objects.csv`, `data-access-policies.csv`, and `data-platform-templates.csv` define the optional open-source data platform service.
 
 Every row in `service-catalogue-v1.csv` must include a maturity value:
 
@@ -36,6 +37,12 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 - `deployment-environments.csv` lists deployment targets and GitOps policies.
 - `developer-promotion-gates.csv` lists required checks and approvers.
 - `vscode-workflows.csv` lists VS Code-facing actions and artifacts.
+- `data-platform-services.csv` lists the Palantir-like open data-platform components.
+- `data-products.csv` lists governed domain data products.
+- `data-pipelines.csv` lists ingestion, transform, and AI context pipelines.
+- `data-ontology-objects.csv` lists business objects and relationships.
+- `data-access-policies.csv` lists policy subjects, conditions, and enforcement points.
+- `data-platform-templates.csv` lists starter templates for generated data-product repositories.
 
 Keep these files as simple rectangular CSVs with a single header row. When adding fields, update the Rust sample data and portal tests at the same time so the GUI and documentation remain aligned.
 

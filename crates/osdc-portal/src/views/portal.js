@@ -174,6 +174,25 @@ function attachColumnFilter({ textInputId, selectId, tbodyId, columnIndex }) {
   return apply;
 }
 
+function attachMultiTableFilter(inputId, tbodyIds) {
+  const input = document.getElementById(inputId);
+  const tbodies = tbodyIds.map((id) => document.getElementById(id)).filter(Boolean);
+  if (!input || !tbodies.length) return;
+
+  const apply = () => {
+    const query = input.value.trim().toLowerCase();
+    for (const tbody of tbodies) {
+      for (const row of tbody.querySelectorAll("tr")) {
+        row.hidden = Boolean(query && !row.textContent.toLowerCase().includes(query));
+      }
+    }
+  };
+
+  input.addEventListener("input", apply);
+  apply();
+  return apply;
+}
+
 function statusCell(label, kind) {
   const td = document.createElement("td");
   const badge = document.createElement("span");
@@ -485,6 +504,147 @@ function renderVsCodeWorkflows(targetId, workflows) {
   }
 }
 
+function renderDataPlatformServices(targetId, services, compact = false) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const service of services) {
+    const tr = document.createElement("tr");
+    const fields = compact
+      ? [service.service_id, service.function, service.default_stack, service.control]
+      : [service.service_id, service.function, service.default_stack, service.control];
+    for (const field of fields) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(service.status, statusClassFromStatus(service.status)));
+    if (!compact) {
+      const evidence = document.createElement("td");
+      appendValueOrRepoLink(evidence, service.evidence_path);
+      tr.append(evidence);
+    }
+    target.append(tr);
+  }
+}
+
+function renderDataProducts(targetId, products) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const product of products) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      product.name,
+      product.domain,
+      product.owner,
+      product.lakehouse_table,
+      product.ontology_object,
+      product.quality_gate,
+      product.access_policy,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(product.status, statusClassFromStatus(product.status)));
+    target.append(tr);
+  }
+}
+
+function renderDataPipelines(targetId, pipelines) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const pipeline of pipelines) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      pipeline.name,
+      pipeline.engine,
+      pipeline.source,
+      pipeline.target,
+      pipeline.schedule,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(pipeline.status, statusClassFromStatus(pipeline.status)));
+    target.append(tr);
+  }
+}
+
+function renderDataOntology(targetId, objects) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const object of objects) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      object.name,
+      object.domain,
+      object.description,
+      object.relationships,
+      object.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(object.status, statusClassFromStatus(object.status)));
+    target.append(tr);
+  }
+}
+
+function renderDataPolicies(targetId, policies) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const policy of policies) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      policy.policy_id,
+      policy.scope,
+      policy.subject,
+      policy.allowed_actions,
+      policy.conditions,
+      policy.enforcement_point,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(policy.status, statusClassFromStatus(policy.status)));
+    target.append(tr);
+  }
+}
+
+function renderDataTemplates(targetId, templates) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const template of templates) {
+    const tr = document.createElement("tr");
+    for (const field of [template.name, template.template_type]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    for (const field of [
+      template.repo_path,
+      template.devcontainer_path,
+      template.pipeline_path,
+      template.preview_surface,
+    ]) {
+      const td = document.createElement("td");
+      appendValueOrRepoLink(td, field);
+      tr.append(td);
+    }
+    tr.append(statusCell(template.status, statusClassFromStatus(template.status)));
+    target.append(tr);
+  }
+}
+
 function attachCardFilter(inputId, containerId) {
   const input = document.getElementById(inputId);
   const container = document.getElementById(containerId);
@@ -581,6 +741,261 @@ function renderLifecycleDocuments(targetId, documents) {
     }
     const path = document.createElement("td");
     appendValueOrRepoLink(path, documentItem.path);
+    tr.append(path);
+    target.append(tr);
+  }
+}
+
+function renderCommercialGaps(targetId, gaps, includeCurrentState = false) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const gap of gaps) {
+    const tr = document.createElement("tr");
+    const fields = [
+      gap.domain,
+      gap.gap_id,
+      gap.commercial_expectation,
+      gap.priority,
+    ];
+    if (includeCurrentState) fields.splice(3, 0, gap.current_repo_state);
+    for (const field of fields) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(gap.status, statusClassFromStatus(gap.status)));
+    const artifact = document.createElement("td");
+    appendValueOrRepoLink(artifact, gap.next_artifact);
+    tr.append(artifact);
+    target.append(tr);
+  }
+}
+
+function renderCommercialRemoteHandsPricebook(targetId, items) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of items) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      item.task_class,
+      item.pricebook_id,
+      item.billing_unit,
+      item.target_response,
+      item.requires_approval,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, statusClassFromStatus(item.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, item.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderCommercialAccessRoles(targetId, roles) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const role of roles) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      role.scope,
+      role.access_role_id,
+      role.role_name,
+      role.approval_owner,
+      role.review_cadence,
+      role.allowed_areas,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(role.status, statusClassFromStatus(role.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, role.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderCommercialMetrics({
+  gaps,
+  standards,
+  colocation,
+  crossConnects,
+  remoteProducts,
+  pricebook,
+  accessRoles,
+  auditEvidence,
+}) {
+  const openGaps = gaps.filter((gap) => String(gap.status).toLowerCase() !== "closed");
+  const customerProducts =
+    colocation.length + crossConnects.length + remoteProducts.length + pricebook.length;
+  renderMetrics("commercial-metrics", [
+    {
+      label: "Open gaps",
+      value: openGaps.length,
+      detail: "commercial readiness",
+    },
+    {
+      label: "Standards controls",
+      value: standards.length,
+      detail: "mapped to evidence",
+    },
+    {
+      label: "Customer products",
+      value: customerProducts,
+      detail: "colo cross-connect hands",
+    },
+    {
+      label: "Access and audit",
+      value: accessRoles.length + auditEvidence.length,
+      detail: "roles evidence cadence",
+    },
+  ]);
+}
+
+function renderCommercialStandards(targetId, standards) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of standards) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      item.standard_family,
+      item.requirement_id,
+      item.control_area,
+      item.applies,
+      item.osdc_design_response,
+      item.responsible_party,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, statusClassFromStatus(item.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, item.evidence_file);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderCommercialSlas(targetId, slas) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const sla of slas) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      sla.sla_class_id,
+      sla.service_scope,
+      sla.target,
+      sla.measurement_window,
+      sla.credit_model,
+      sla.exclusions,
+      sla.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(sla.status, statusClassFromStatus(sla.status)));
+    target.append(tr);
+  }
+}
+
+function renderCommercialColocationProducts(targetId, products) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const product of products) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      product.product_id,
+      product.product_type,
+      product.unit,
+      product.default_commitment,
+      product.required_controls,
+      product.demarcation,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    target.append(tr);
+  }
+}
+
+function renderCommercialCrossConnectProducts(targetId, products) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const product of products) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      product.product_id,
+      product.product_type,
+      product.media,
+      product.demarcation,
+      product.workflow,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(product.status, statusClassFromStatus(product.status)));
+    target.append(tr);
+  }
+}
+
+function renderCommercialRemoteHandsProducts(targetId, products) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const product of products) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      product.product_id,
+      product.task_class,
+      product.response_target,
+      product.requires_approval,
+      product.scope_boundary,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(product.status, statusClassFromStatus(product.status)));
+    target.append(tr);
+  }
+}
+
+function renderCommercialAuditEvidence(targetId, evidence) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of evidence) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      item.domain,
+      item.evidence_id,
+      item.evidence_name,
+      item.owner,
+      item.cadence,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, statusClassFromStatus(item.status)));
+    const path = document.createElement("td");
+    appendValueOrRepoLink(path, item.evidence_path);
     tr.append(path);
     target.append(tr);
   }
@@ -1101,9 +1516,13 @@ async function hydrateOperator() {
 }
 
 async function hydrateLifecycle() {
-  const [overview, developer] = await Promise.all([
+  const [overview, developer, dataPlatform, commercialGaps, remoteHandsPricebook, accessRoles] = await Promise.all([
     api("/api/lifecycle/overview"),
     api("/api/developer/platform"),
+    api("/api/data-platform/overview"),
+    api("/api/commercial/gaps"),
+    api("/api/commercial/remote-hands-pricebook"),
+    api("/api/commercial/access-roles"),
   ]);
 
   renderMetrics("lifecycle-metrics", overview.metrics);
@@ -1113,6 +1532,13 @@ async function hydrateLifecycle() {
   renderLifecycleServices("lifecycle-services", overview.services);
   renderLifecycleDocuments("lifecycle-documents", overview.documents);
   renderDeveloperServices("lifecycle-developer", developer.services, true);
+  renderDataPlatformServices("lifecycle-data-platform", dataPlatform.services, true);
+  renderCommercialGaps("lifecycle-commercial-gaps", commercialGaps);
+  renderCommercialRemoteHandsPricebook(
+    "lifecycle-commercial-remote-hands",
+    remoteHandsPricebook
+  );
+  renderCommercialAccessRoles("lifecycle-commercial-access", accessRoles);
 
   attachCardFilter("lifecycle-stage-filter", "lifecycle-stages");
   attachTableFilters({
@@ -1139,6 +1565,15 @@ async function hydrateLifecycle() {
     textInputId: "lifecycle-developer-filter",
     tbodyId: "lifecycle-developer",
   });
+  attachTableFilters({
+    textInputId: "lifecycle-data-filter",
+    tbodyId: "lifecycle-data-platform",
+  });
+  attachMultiTableFilter("lifecycle-commercial-filter", [
+    "lifecycle-commercial-gaps",
+    "lifecycle-commercial-remote-hands",
+    "lifecycle-commercial-access",
+  ]);
 
   wireActionButton(
     "lifecycle-refresh",
@@ -1184,6 +1619,21 @@ async function hydrateLifecycle() {
     "osdc-lifecycle-services.csv"
   );
   wireDownloadButton("lifecycle-export-docs", "lifecycle-documents", "osdc-lifecycle-docs.csv");
+  wireDownloadButton(
+    "lifecycle-export-commercial-gaps",
+    "lifecycle-commercial-gaps",
+    "osdc-commercial-gaps.csv"
+  );
+  wireDownloadButton(
+    "lifecycle-export-commercial-remote-hands",
+    "lifecycle-commercial-remote-hands",
+    "osdc-remote-hands-pricebook.csv"
+  );
+  wireDownloadButton(
+    "lifecycle-export-commercial-access",
+    "lifecycle-commercial-access",
+    "osdc-access-roles.csv"
+  );
 }
 
 async function hydrateDeveloper() {
@@ -1254,6 +1704,195 @@ async function hydrateDeveloper() {
   wireDownloadButton("developer-export-vscode", "developer-vscode", "osdc-vscode-workflows.csv");
 }
 
+async function hydrateCommercial() {
+  const [
+    gaps,
+    standards,
+    slas,
+    colocation,
+    crossConnects,
+    remoteProducts,
+    pricebook,
+    accessRoles,
+    auditEvidence,
+  ] = await Promise.all([
+    api("/api/commercial/gaps"),
+    api("/api/commercial/standards"),
+    api("/api/commercial/sla-classes"),
+    api("/api/commercial/colocation-products"),
+    api("/api/commercial/cross-connect-products"),
+    api("/api/commercial/remote-hands-products"),
+    api("/api/commercial/remote-hands-pricebook"),
+    api("/api/commercial/access-roles"),
+    api("/api/commercial/audit-evidence"),
+  ]);
+
+  renderCommercialMetrics({
+    gaps,
+    standards,
+    colocation,
+    crossConnects,
+    remoteProducts,
+    pricebook,
+    accessRoles,
+    auditEvidence,
+  });
+  renderCommercialGaps("commercial-gaps", gaps, true);
+  renderCommercialStandards("commercial-standards", standards);
+  renderCommercialSlas("commercial-slas", slas);
+  renderCommercialColocationProducts("commercial-colocation", colocation);
+  renderCommercialCrossConnectProducts("commercial-cross-connects", crossConnects);
+  renderCommercialRemoteHandsProducts("commercial-remote-products", remoteProducts);
+  renderCommercialRemoteHandsPricebook("commercial-pricebook", pricebook);
+  renderCommercialAccessRoles("commercial-access", accessRoles);
+  renderCommercialAuditEvidence("commercial-audit", auditEvidence);
+
+  attachTableFilters({
+    textInputId: "commercial-gap-filter",
+    statusSelectId: "commercial-gap-status",
+    tbodyId: "commercial-gaps",
+  });
+  attachTableFilters({
+    textInputId: "commercial-standard-filter",
+    tbodyId: "commercial-standards",
+  });
+  attachTableFilters({
+    textInputId: "commercial-sla-filter",
+    tbodyId: "commercial-slas",
+  });
+  attachTableFilters({
+    textInputId: "commercial-colocation-filter",
+    tbodyId: "commercial-colocation",
+  });
+  attachTableFilters({
+    textInputId: "commercial-cross-connect-filter",
+    tbodyId: "commercial-cross-connects",
+  });
+  attachTableFilters({
+    textInputId: "commercial-remote-filter",
+    tbodyId: "commercial-remote-products",
+  });
+  attachTableFilters({
+    textInputId: "commercial-pricebook-filter",
+    tbodyId: "commercial-pricebook",
+  });
+  attachTableFilters({
+    textInputId: "commercial-access-filter",
+    tbodyId: "commercial-access",
+  });
+  attachTableFilters({
+    textInputId: "commercial-audit-filter",
+    tbodyId: "commercial-audit",
+  });
+
+  wireActionButton("commercial-refresh", "Commercial data refreshed.", "commercial-action-output");
+  wireActionButton(
+    "commercial-create-gap",
+    "Commercial gap review staged.",
+    "commercial-action-output"
+  );
+  wireActionButton(
+    "commercial-open-sla",
+    "SLA pack assembled from current templates.",
+    "commercial-action-output"
+  );
+  wireActionButton(
+    "commercial-open-access",
+    "Access review staged for commercial and security owners.",
+    "commercial-action-output"
+  );
+  wireActionButton(
+    "commercial-open-audit",
+    "Audit evidence pack assembled.",
+    "commercial-action-output"
+  );
+
+  wireDownloadButton("commercial-export-gaps", "commercial-gaps", "osdc-commercial-gaps.csv");
+  wireDownloadButton(
+    "commercial-export-standards",
+    "commercial-standards",
+    "osdc-commercial-standards.csv"
+  );
+  wireDownloadButton("commercial-export-slas", "commercial-slas", "osdc-sla-classes.csv");
+  wireDownloadButton(
+    "commercial-export-pricebook",
+    "commercial-pricebook",
+    "osdc-remote-hands-pricebook.csv"
+  );
+  wireDownloadButton("commercial-export-access", "commercial-access", "osdc-access-roles.csv");
+  wireDownloadButton("commercial-export-audit", "commercial-audit", "osdc-audit-evidence.csv");
+}
+
+async function hydrateDataPlatform() {
+  const overview = await api("/api/data-platform/overview");
+
+  renderMetrics("data-metrics", overview.metrics);
+  renderDataPlatformServices("data-services", overview.services);
+  renderDataProducts("data-products", overview.products);
+  renderDataPipelines("data-pipelines", overview.pipelines);
+  renderDataOntology("data-ontology", overview.ontology);
+  renderDataPolicies("data-policies", overview.access_policies);
+  renderDataTemplates("data-templates", overview.templates);
+
+  attachTableFilters({
+    textInputId: "data-service-filter",
+    statusSelectId: "data-service-status",
+    tbodyId: "data-services",
+  });
+  attachTableFilters({
+    textInputId: "data-product-filter",
+    statusSelectId: "data-product-status",
+    tbodyId: "data-products",
+  });
+  attachTableFilters({
+    textInputId: "data-pipeline-filter",
+    tbodyId: "data-pipelines",
+  });
+  attachTableFilters({
+    textInputId: "data-ontology-filter",
+    tbodyId: "data-ontology",
+  });
+  attachTableFilters({
+    textInputId: "data-policy-filter",
+    tbodyId: "data-policies",
+  });
+  attachTableFilters({
+    textInputId: "data-template-filter",
+    tbodyId: "data-templates",
+  });
+
+  wireActionButton("data-refresh", "Data platform refreshed.", "data-action-output");
+  wireActionButton(
+    "data-create-product",
+    "Data product request staged.",
+    "data-action-output"
+  );
+  wireActionButton(
+    "data-register-source",
+    "Source registration request staged.",
+    "data-action-output"
+  );
+  wireActionButton(
+    "data-create-pipeline",
+    "Pipeline template request staged.",
+    "data-action-output"
+  );
+  wireActionButton(
+    "data-publish-dashboard",
+    "Dashboard publication request staged.",
+    "data-action-output"
+  );
+  wireActionButton(
+    "data-open-ontology",
+    "Ontology browser request staged.",
+    "data-action-output"
+  );
+
+  wireDownloadButton("data-export-products", "data-products", "osdc-data-products.csv");
+  wireDownloadButton("data-export-policies", "data-policies", "osdc-data-policies.csv");
+  wireDownloadButton("data-export-templates", "data-templates", "osdc-data-templates.csv");
+}
+
 async function hydrateEdge() {
   const [status, config, scripts] = await Promise.all([
     api("/api/edge/status"),
@@ -1320,6 +1959,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (document.body.dataset.portal === "developer") {
     hydrateDeveloper().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "commercial") {
+    hydrateCommercial().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "data-platform") {
+    hydrateDataPlatform().catch((error) => console.error(error));
   }
   if (document.body.dataset.portal === "edge") {
     hydrateEdge().catch((error) => console.error(error));

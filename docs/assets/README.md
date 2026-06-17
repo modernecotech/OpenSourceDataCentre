@@ -6,6 +6,14 @@ These images are project-bound documentation assets generated with the built-in 
 - `prefab-panel-datacentre-exterior-02.png`: exterior concept with visible service trench and panel building details.
 - `rack-thermal-spine-cutaway.png`: cutaway concept for rack heat capture, service-trench thermal spine, and plant equipment.
 
+Portal screenshots captured from the local Rust prototype live in `screenshots/`:
+
+- `screenshots/osdc-lifecycle-console.png`: lifecycle console with gates, metrics, evidence, and programme controls.
+- `screenshots/osdc-commercial-console.png`: commercial readiness console with gap register, standards, SLAs, products, access, and audit evidence.
+- `screenshots/osdc-developer-console.png`: developer console with Forgejo-style services, templates, GitOps, and VS Code workflows.
+- `screenshots/osdc-data-platform-console.png`: data platform console with governed products, pipelines, ontology, policies, and templates.
+- `screenshots/osdc-edge-console.png`: Edge Shield console with open security gateway controls and config-script workflows.
+
 Prompt themes:
 
 - Practical developing-world industrial site.

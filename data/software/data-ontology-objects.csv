@@ -1,0 +1,8 @@
+object_id,name,domain,description,source_products,relationships,owner,status
+ONT_FACILITY,facility,operations,Physical site or datacentre facility,DP_DATACENTRE_TELEMETRY,has_rack has_power_path has_cooling_loop,operations-owner,pilot
+ONT_RACK,rack,operations,Server rack with power thermal and tenant mappings,DP_DATACENTRE_TELEMETRY,belongs_to_facility hosts_tenant_workload,operations-owner,pilot
+ONT_PATIENT_REGION,patient service region,health,Aggregated health service geography without direct patient identity,DP_HEALTH_CAPACITY,served_by_facility reports_capacity,health-data-owner,template
+ONT_SCHOOL,school,education,Education site and attendance reporting entity,DP_EDUCATION_ATTENDANCE,belongs_to_region reports_attendance,education-data-owner,template
+ONT_FEEDER,grid feeder,energy,Electrical feeder or utility circuit supplying sites,DP_ENERGY_GRID,feeds_facility emits_outage_event,energy-data-owner,pilot
+ONT_AGENCY,government agency,finance,Public agency responsible for programme spending,DP_PUBLIC_FINANCE,owns_programme pays_supplier,finance-data-owner,template
+ONT_DATASET,dataset,ai,Curated dataset or document collection approved for AI use,DP_AI_TRAINING_CORPUS,contains_document has_license has_lineage,ai-platform-owner,template

@@ -15,6 +15,8 @@ const EDGE_HTML: &str = include_str!("views/edge.html");
 const PLANNER_HTML: &str = include_str!("views/planner.html");
 const LIFECYCLE_HTML: &str = include_str!("views/lifecycle.html");
 const DEVELOPER_HTML: &str = include_str!("views/developer.html");
+const DATA_PLATFORM_HTML: &str = include_str!("views/data-platform.html");
+const COMMERCIAL_HTML: &str = include_str!("views/commercial.html");
 const RACK_IMAGE: &[u8] = include_bytes!("../../../docs/assets/rack-thermal-spine-cutaway.png");
 const EXTERIOR_IMAGE: &[u8] =
     include_bytes!("../../../docs/assets/prefab-panel-datacentre-exterior-02.png");
@@ -40,6 +42,9 @@ const CROSS_CONNECT_PRODUCTS_CSV: &str =
     include_str!("../../../data/commercial/cross-connect-products.csv");
 const REMOTE_HANDS_PRODUCTS_CSV: &str =
     include_str!("../../../data/commercial/remote-hands-products.csv");
+const REMOTE_HANDS_PRICEBOOK_CSV: &str =
+    include_str!("../../../data/commercial/remote-hands-pricebook.csv");
+const ACCESS_ROLES_CSV: &str = include_str!("../../../data/commercial/access-roles.csv");
 const AUDIT_EVIDENCE_CSV: &str = include_str!("../../../data/commercial/audit-evidence.csv");
 const SITE_SELECTION_SCORECARD_CSV: &str =
     include_str!("../../../data/site-selection/site-selection-scorecard.csv");
@@ -68,6 +73,16 @@ const DEPLOYMENT_ENVIRONMENTS_CSV: &str =
 const DEVELOPER_PROMOTION_GATES_CSV: &str =
     include_str!("../../../data/software/developer-promotion-gates.csv");
 const VSCODE_WORKFLOWS_CSV: &str = include_str!("../../../data/software/vscode-workflows.csv");
+const DATA_PLATFORM_SERVICES_CSV: &str =
+    include_str!("../../../data/software/data-platform-services.csv");
+const DATA_PRODUCTS_CSV: &str = include_str!("../../../data/software/data-products.csv");
+const DATA_PIPELINES_CSV: &str = include_str!("../../../data/software/data-pipelines.csv");
+const DATA_ONTOLOGY_OBJECTS_CSV: &str =
+    include_str!("../../../data/software/data-ontology-objects.csv");
+const DATA_ACCESS_POLICIES_CSV: &str =
+    include_str!("../../../data/software/data-access-policies.csv");
+const DATA_PLATFORM_TEMPLATES_CSV: &str =
+    include_str!("../../../data/software/data-platform-templates.csv");
 
 fn main() -> std::io::Result<()> {
     let addr = env::args()
@@ -81,7 +96,9 @@ fn main() -> std::io::Result<()> {
     println!("edge shield console: http://{addr}/edge");
     println!("planning console: http://{addr}/planner");
     println!("lifecycle console: http://{addr}/lifecycle");
+    println!("commercial console: http://{addr}/commercial");
     println!("developer console: http://{addr}/developer");
+    println!("data platform console: http://{addr}/data-platform");
     println!("catalog API: http://{addr}/api/catalog/hardware");
 
     for stream in listener.incoming() {
@@ -130,6 +147,8 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/planner") => html(PLANNER_HTML),
         ("GET", "/lifecycle") => html(LIFECYCLE_HTML),
         ("GET", "/developer") => html(DEVELOPER_HTML),
+        ("GET", "/data-platform") => html(DATA_PLATFORM_HTML),
+        ("GET", "/commercial") => html(COMMERCIAL_HTML),
         ("GET", "/styles.css") => bytes("200 OK", "text/css; charset=utf-8", STYLE_CSS.as_bytes()),
         ("GET", "/portal.js") => bytes(
             "200 OK",
@@ -160,6 +179,8 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/commercial/colocation-products") => json(&colocation_products()),
         ("GET", "/api/commercial/cross-connect-products") => json(&cross_connect_products()),
         ("GET", "/api/commercial/remote-hands-products") => json(&remote_hands_products()),
+        ("GET", "/api/commercial/remote-hands-pricebook") => json(&remote_hands_pricebook()),
+        ("GET", "/api/commercial/access-roles") => json(&access_roles()),
         ("GET", "/api/commercial/audit-evidence") => json(&audit_evidence()),
         ("GET", "/api/site-selection/scorecard") => json(&site_selection_scorecard()),
         ("GET", "/api/security/physical-controls") => json(&physical_security_controls()),
@@ -174,6 +195,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/commissioning/evidence") => json(&commissioning_evidence()),
         ("GET", "/api/lifecycle/overview") => json(&lifecycle_overview()),
         ("GET", "/api/developer/platform") => json(&developer_platform()),
+        ("GET", "/api/data-platform/overview") => json(&data_platform_overview()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -408,6 +430,30 @@ struct RemoteHandsProduct {
     requires_approval: String,
     scope_boundary: String,
     required_evidence: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RemoteHandsPricebook {
+    pricebook_id: String,
+    task_class: String,
+    billing_unit: String,
+    included_response: String,
+    target_response: String,
+    requires_approval: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AccessRole {
+    access_role_id: String,
+    role_name: String,
+    scope: String,
+    approval_owner: String,
+    review_cadence: String,
+    allowed_areas: String,
+    evidence_path: String,
     status: String,
 }
 
@@ -694,6 +740,94 @@ struct VsCodeWorkflow {
     command_or_uri: String,
     artifact_path: String,
     portal_action: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize)]
+struct DataPlatformOverview {
+    metrics: Vec<LifecycleMetric>,
+    services: Vec<DataPlatformService>,
+    products: Vec<DataProduct>,
+    pipelines: Vec<DataPipeline>,
+    ontology: Vec<DataOntologyObject>,
+    access_policies: Vec<DataAccessPolicy>,
+    templates: Vec<DataPlatformTemplate>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataPlatformService {
+    service_id: String,
+    function: String,
+    default_stack: String,
+    portal_surface: String,
+    user_surface: String,
+    control: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataProduct {
+    product_id: String,
+    name: String,
+    domain: String,
+    owner: String,
+    source_systems: String,
+    lakehouse_table: String,
+    ontology_object: String,
+    quality_gate: String,
+    access_policy: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataPipeline {
+    pipeline_id: String,
+    name: String,
+    engine: String,
+    source: String,
+    target: String,
+    schedule: String,
+    owner: String,
+    quality_gate: String,
+    gitops_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataOntologyObject {
+    object_id: String,
+    name: String,
+    domain: String,
+    description: String,
+    source_products: String,
+    relationships: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataAccessPolicy {
+    policy_id: String,
+    scope: String,
+    subject: String,
+    allowed_actions: String,
+    conditions: String,
+    enforcement_point: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DataPlatformTemplate {
+    template_id: String,
+    name: String,
+    template_type: String,
+    repo_path: String,
+    devcontainer_path: String,
+    pipeline_path: String,
+    preview_surface: String,
+    owner: String,
     status: String,
 }
 
@@ -2064,6 +2198,17 @@ fn remote_hands_products() -> Vec<RemoteHandsProduct> {
     )
 }
 
+fn remote_hands_pricebook() -> Vec<RemoteHandsPricebook> {
+    csv_rows(
+        REMOTE_HANDS_PRICEBOOK_CSV,
+        "data/commercial/remote-hands-pricebook.csv",
+    )
+}
+
+fn access_roles() -> Vec<AccessRole> {
+    csv_rows(ACCESS_ROLES_CSV, "data/commercial/access-roles.csv")
+}
+
 fn audit_evidence() -> Vec<AuditEvidence> {
     csv_rows(AUDIT_EVIDENCE_CSV, "data/commercial/audit-evidence.csv")
 }
@@ -2209,6 +2354,91 @@ fn developer_platform() -> DeveloperPlatform {
         environments,
         promotion_gates,
         vscode_workflows,
+    }
+}
+
+fn data_platform_services() -> Vec<DataPlatformService> {
+    csv_rows(
+        DATA_PLATFORM_SERVICES_CSV,
+        "data/software/data-platform-services.csv",
+    )
+}
+
+fn data_products() -> Vec<DataProduct> {
+    csv_rows(DATA_PRODUCTS_CSV, "data/software/data-products.csv")
+}
+
+fn data_pipelines() -> Vec<DataPipeline> {
+    csv_rows(DATA_PIPELINES_CSV, "data/software/data-pipelines.csv")
+}
+
+fn data_ontology_objects() -> Vec<DataOntologyObject> {
+    csv_rows(
+        DATA_ONTOLOGY_OBJECTS_CSV,
+        "data/software/data-ontology-objects.csv",
+    )
+}
+
+fn data_access_policies() -> Vec<DataAccessPolicy> {
+    csv_rows(
+        DATA_ACCESS_POLICIES_CSV,
+        "data/software/data-access-policies.csv",
+    )
+}
+
+fn data_platform_templates() -> Vec<DataPlatformTemplate> {
+    csv_rows(
+        DATA_PLATFORM_TEMPLATES_CSV,
+        "data/software/data-platform-templates.csv",
+    )
+}
+
+fn data_platform_overview() -> DataPlatformOverview {
+    let services = data_platform_services();
+    let products = data_products();
+    let pipelines = data_pipelines();
+    let ontology = data_ontology_objects();
+    let access_policies = data_access_policies();
+    let templates = data_platform_templates();
+
+    let production_baseline = services
+        .iter()
+        .filter(|service| service.status == "production-baseline")
+        .count();
+
+    DataPlatformOverview {
+        metrics: vec![
+            LifecycleMetric {
+                label: "Platform services".to_string(),
+                value: services.len().to_string(),
+                detail: "ingest lakehouse catalog apps AI".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Data products".to_string(),
+                value: products.len().to_string(),
+                detail: "governed domain products".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Pipelines".to_string(),
+                value: pipelines.len().to_string(),
+                detail: "ingest transform index".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Production baselines".to_string(),
+                value: production_baseline.to_string(),
+                detail: "lakehouse query catalog".to_string(),
+                kind: "info",
+            },
+        ],
+        services,
+        products,
+        pipelines,
+        ontology,
+        access_policies,
+        templates,
     }
 }
 
@@ -2360,6 +2590,8 @@ fn lifecycle_overview() -> LifecycleOverview {
     let operations = operations_procedures();
     let audit = audit_evidence();
     let standards = commercial_standards();
+    let pricebook = remote_hands_pricebook();
+    let access = access_roles();
     let site = site_selection_scorecard();
     let physical = physical_security_controls();
     let sustainability = sustainability_metrics();
@@ -2381,8 +2613,13 @@ fn lifecycle_overview() -> LifecycleOverview {
             .iter()
             .filter(|item| !is_closed_status(&item.status))
             .count();
-    let evidence_count =
-        engineering.len() + commissioning.len() + operations.len() + audit.len() + standards.len();
+    let evidence_count = engineering.len()
+        + commissioning.len()
+        + operations.len()
+        + audit.len()
+        + standards.len()
+        + pricebook.len()
+        + access.len();
 
     let metrics = vec![
         LifecycleMetric {
@@ -2566,6 +2803,30 @@ fn lifecycle_overview() -> LifecycleOverview {
             status_kind: status_kind(&item.status),
             status: item.status,
             artifact: item.evidence_file,
+        });
+    }
+    for item in pricebook {
+        evidence.push(LifecycleEvidenceItem {
+            source: "remote-hands-pricebook",
+            id: item.pricebook_id,
+            domain: item.task_class,
+            title: item.billing_unit,
+            owner: item.requires_approval,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_path,
+        });
+    }
+    for item in access {
+        evidence.push(LifecycleEvidenceItem {
+            source: "access-role",
+            id: item.access_role_id,
+            domain: item.scope,
+            title: item.role_name,
+            owner: item.approval_owner,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_path,
         });
     }
     for item in permits {
@@ -3293,27 +3554,46 @@ mod tests {
         let planner = body(&route_response("GET", "/planner"));
         let lifecycle = body(&route_response("GET", "/lifecycle"));
         let developer = body(&route_response("GET", "/developer"));
+        let data_platform = body(&route_response("GET", "/data-platform"));
+        let commercial = body(&route_response("GET", "/commercial"));
 
         assert!(user.contains("Tenant Cloud"));
         assert!(user.contains("tenant-service-filter"));
         assert!(user.contains("tenant-action-output"));
+        assert!(user.contains("href=\"/commercial\""));
         assert!(operator.contains("Operator Console"));
         assert!(operator.contains("operator-service-filter"));
+        assert!(operator.contains("href=\"/commercial\""));
         assert!(edge.contains("Edge Shield"));
         assert!(edge.contains("edge-service-filter"));
         assert!(edge.contains("edge-config-preview"));
         assert!(edge.contains("edge-script-editor"));
+        assert!(edge.contains("href=\"/commercial\""));
         assert!(planner.contains("Cost Planner"));
         assert!(planner.contains("planner-scenarios"));
         assert!(planner.contains("planner-price-basis"));
+        assert!(planner.contains("href=\"/commercial\""));
         assert!(lifecycle.contains("Lifecycle Console"));
         assert!(lifecycle.contains("lifecycle-stages"));
         assert!(lifecycle.contains("lifecycle-evidence"));
         assert!(lifecycle.contains("lifecycle-services"));
+        assert!(lifecycle.contains("lifecycle-commercial-gaps"));
+        assert!(lifecycle.contains("lifecycle-commercial-remote-hands"));
+        assert!(lifecycle.contains("lifecycle-commercial-access"));
         assert!(developer.contains("Developer Console"));
         assert!(developer.contains("developer-templates"));
         assert!(developer.contains("developer-vscode"));
         assert!(developer.contains("Forgejo"));
+        assert!(developer.contains("href=\"/commercial\""));
+        assert!(data_platform.contains("Data Platform"));
+        assert!(data_platform.contains("data-products"));
+        assert!(data_platform.contains("data-ontology"));
+        assert!(data_platform.contains("Open Data Platform Stack"));
+        assert!(data_platform.contains("href=\"/commercial\""));
+        assert!(commercial.contains("Commercial Console"));
+        assert!(commercial.contains("commercial-standards"));
+        assert!(commercial.contains("commercial-pricebook"));
+        assert!(commercial.contains("commercial-access"));
     }
 
     #[test]
@@ -3510,6 +3790,8 @@ mod tests {
         let colocation = json_body("/api/commercial/colocation-products");
         let cross_connects = json_body("/api/commercial/cross-connect-products");
         let remote_hands = json_body("/api/commercial/remote-hands-products");
+        let pricebook = json_body("/api/commercial/remote-hands-pricebook");
+        let access_roles = json_body("/api/commercial/access-roles");
         let evidence = json_body("/api/commercial/audit-evidence");
 
         assert!(gaps.as_array().unwrap().iter().any(|gap| {
@@ -3542,6 +3824,16 @@ mod tests {
             .unwrap()
             .iter()
             .any(|product| product["product_id"] == "RH_SMART_HANDS"));
+        assert!(pricebook
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["pricebook_id"] == "RHP_SMART_HANDS"));
+        assert!(access_roles
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|role| role["access_role_id"] == "ACCESS_BREAK_GLASS"));
         assert!(evidence
             .as_array()
             .unwrap()
@@ -3642,6 +3934,17 @@ mod tests {
             .iter()
             .any(|item| item["id"] == "COM_GRID_LOSS"
                 && item["artifact"] == "docs/commissioning/grid-loss-test.md"));
+        assert!(overview["evidence"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["id"] == "ACCESS_BREAK_GLASS" && item["source"] == "access-role"));
+        assert!(overview["evidence"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["id"] == "RHP_SMART_HANDS"
+                && item["source"] == "remote-hands-pricebook"));
         assert!(overview["services"]
             .as_array()
             .unwrap()
@@ -3708,6 +4011,62 @@ mod tests {
     }
 
     #[test]
+    fn exposes_data_platform_for_governed_data_products() {
+        let overview = json_body("/api/data-platform/overview");
+
+        assert!(overview["services"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|service| {
+                service["service_id"] == "dp_lakehouse"
+                    && service["default_stack"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("Apache Iceberg")
+            }));
+        assert!(overview["products"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|product| {
+                product["product_id"] == "DP_DATACENTRE_TELEMETRY"
+                    && product["ontology_object"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("rack")
+            }));
+        assert!(overview["pipelines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|pipeline| {
+                pipeline["pipeline_id"] == "PIPE_FACILITY_TELEMETRY"
+                    && pipeline["gitops_path"]
+                        == "examples/data-platform/facility-telemetry/dagster_assets.py"
+            }));
+        assert!(overview["ontology"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|object| object["object_id"] == "ONT_FACILITY"));
+        assert!(overview["access_policies"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|policy| policy["policy_id"] == "DATA_ROLE_AI_CURATOR"));
+        assert!(overview["templates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|template| {
+                template["template_id"] == "DATA_TEMPLATE_DAGSTER"
+                    && template["devcontainer_path"]
+                        == "examples/data-platform/health-capacity/.devcontainer/devcontainer.json"
+            }));
+    }
+
+    #[test]
     fn static_assets_have_content_types_and_unknown_routes_404() {
         let css = response_text(&route_response("GET", "/styles.css"));
         let png = response_text(&route_response(
@@ -3732,6 +4091,10 @@ mod tests {
             "GET",
             "/examples/developer-platform/rust-api/.devcontainer/devcontainer.json",
         ));
+        let data_template = response_text(&route_response(
+            "GET",
+            "/examples/data-platform/health-capacity/dagster_assets.py",
+        ));
         let escaped = response_text(&route_response("GET", "/docs/../Cargo.toml"));
 
         assert!(doc.contains("Content-Type: text/markdown; charset=utf-8"));
@@ -3740,6 +4103,8 @@ mod tests {
         assert!(csv.contains("GATE_06"));
         assert!(devcontainer.contains("Content-Type: application/json; charset=utf-8"));
         assert!(devcontainer.contains("OSDC Rust API"));
+        assert!(data_template.contains("Content-Type: text/plain; charset=utf-8"));
+        assert!(data_template.contains("capacity_daily"));
         assert!(escaped.starts_with("HTTP/1.1 404 Not Found"));
     }
 }

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Data Platform</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="data-platform">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Data</strong>
+          <span>open data platform</span>
+        </div>
+        <nav class="nav-list" aria-label="Data platform navigation">
+          <a class="active" href="/data-platform"><span class="nav-icon">A</span>Data</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/commercial"><span class="nav-icon">C</span>Commercial</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+        </nav>
+        <small>mode: governed lakehouse</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Data Platform</h1>
+            <p>Open lakehouse, catalog, lineage, ontology, dashboards, apps, and AI context</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="data-refresh" aria-label="Refresh data platform">R</button>
+            <button id="data-export-products">Export products</button>
+            <button class="primary" id="data-create-product">Create data product</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="data-metrics">
+            <div class="metric"><span>Platform services</span><strong>12</strong><em>ingest lakehouse catalog apps AI</em></div>
+            <div class="metric"><span>Data products</span><strong>6</strong><em>governed domain products</em></div>
+            <div class="metric"><span>Pipelines</span><strong>5</strong><em>ingest transform index</em></div>
+            <div class="metric"><span>Production baselines</span><strong>3</strong><em>lakehouse query catalog</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Open Data Platform Stack</h2>
+              <div class="panel-tools">
+                <input id="data-service-filter" type="search" placeholder="Filter services">
+                <select id="data-service-status" aria-label="Data service status filter">
+                  <option value="">All status</option>
+                  <option value="production-baseline">production-baseline</option>
+                  <option value="pilot">pilot</option>
+                  <option value="experimental">experimental</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Function</th><th>Stack</th><th>Control</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="data-services">
+                <tr><td>dp_lakehouse</td><td>open lakehouse</td><td>Iceberg</td><td>retention encryption</td><td><span class="status">production-baseline</span></td><td>docs/software/data-platform-service.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Governed Data Products</h2>
+              <div class="panel-tools">
+                <input id="data-product-filter" type="search" placeholder="Filter products">
+                <select id="data-product-status" aria-label="Data product status filter">
+                  <option value="">All status</option>
+                  <option value="pilot">pilot</option>
+                  <option value="template">template</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Product</th><th>Domain</th><th>Owner</th><th>Lakehouse table</th><th>Ontology</th><th>Quality gate</th><th>Access</th><th>Status</th></tr>
+              </thead>
+              <tbody id="data-products">
+                <tr><td>Health capacity</td><td>health</td><td>health-data-owner</td><td>iceberg.health.capacity_daily</td><td>facility</td><td>freshness</td><td>role:health-analyst</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Pipelines</h2>
+                <div class="panel-tools">
+                  <input id="data-pipeline-filter" type="search" placeholder="Filter pipelines">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Pipeline</th><th>Engine</th><th>Source</th><th>Target</th><th>Schedule</th><th>Status</th></tr>
+                </thead>
+                <tbody id="data-pipelines">
+                  <tr><td>health capacity ingest</td><td>Dagster</td><td>clinic</td><td>Iceberg</td><td>daily</td><td><span class="status info">pilot</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Ontology Objects</h2>
+                <div class="panel-tools">
+                  <input id="data-ontology-filter" type="search" placeholder="Filter ontology">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Object</th><th>Domain</th><th>Description</th><th>Relationships</th><th>Owner</th><th>Status</th></tr>
+                </thead>
+                <tbody id="data-ontology">
+                  <tr><td>facility</td><td>operations</td><td>Physical site</td><td>has_rack</td><td>operations</td><td><span class="status info">pilot</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Access Policies</h2>
+              <div class="panel-tools">
+                <input id="data-policy-filter" type="search" placeholder="Filter policies">
+                <button id="data-export-policies">Export policies</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Policy</th><th>Scope</th><th>Subject</th><th>Allowed</th><th>Conditions</th><th>Enforced By</th><th>Status</th></tr>
+              </thead>
+              <tbody id="data-policies">
+                <tr><td>DATA_ROLE_HEALTH</td><td>health</td><td>role</td><td>query</td><td>aggregate only</td><td>Trino</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Data Product Templates</h2>
+              <div class="panel-tools">
+                <input id="data-template-filter" type="search" placeholder="Filter templates">
+                <button id="data-export-templates">Export templates</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Template</th><th>Type</th><th>Repository</th><th>Devcontainer</th><th>Pipeline</th><th>Preview</th><th>Status</th></tr>
+              </thead>
+              <tbody id="data-templates">
+                <tr><td>Dagster data product</td><td>asset-pipeline</td><td>examples/data-platform/health-capacity</td><td>.devcontainer</td><td>dagster_assets.py</td><td>asset graph</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Data Platform Actions</h2>
+              <div class="button-row">
+                <button id="data-register-source">Register source</button>
+                <button id="data-create-pipeline">Create pipeline</button>
+                <button id="data-publish-dashboard">Publish dashboard</button>
+                <button id="data-open-ontology">Open ontology</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="action-output" id="data-action-output">Data platform actions are staged as prototype workflow events.</div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

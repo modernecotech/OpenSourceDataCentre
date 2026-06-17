@@ -449,6 +449,20 @@ tr.selected-row td {
   overflow-wrap: anywhere;
 }
 
+.table-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.table-block {
+  min-width: 0;
+}
+
+.table-block h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
 td a {
   color: var(--blue);
   overflow-wrap: anywhere;

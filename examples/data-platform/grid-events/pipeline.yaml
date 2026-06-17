@@ -1,0 +1,16 @@
+apiVersion: osdc.dev/v1alpha1
+kind: DataPipeline
+metadata:
+  name: grid-event-stream
+spec:
+  source:
+    type: kafka
+    topic: utility.grid.events
+  target:
+    table: iceberg.energy.grid_events
+  quality:
+    requiredFields:
+      - event_time
+      - feeder_id
+      - event_type
+  owner: energy-data-owner

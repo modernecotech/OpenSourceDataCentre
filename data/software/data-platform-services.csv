@@ -1,0 +1,13 @@
+service_id,function,default_stack,portal_surface,user_surface,control,evidence_path,status
+dp_ingest,batch and streaming ingestion,Airbyte Meltano Kafka NATS Debezium,/data-platform,/data-platform,source approval schema capture secret references,docs/software/data-platform-service.md,pilot
+dp_lakehouse,open lakehouse storage,Ceph RGW MinIO Apache Iceberg Parquet Nessie or Hive Metastore,/data-platform,/data-platform,open table format retention encryption object policy,docs/software/data-platform-service.md,production-baseline
+dp_query,federated SQL and semantic query,Trino DuckDB Spark SQL,/data-platform,/data-platform,query RBAC row filters workload quotas,docs/software/data-platform-service.md,production-baseline
+dp_catalog,data catalog lineage and glossary,OpenMetadata primary with DataHub optional,/data-platform,/data-platform,ownership classification lineage quality contracts,docs/software/data-platform-service.md,production-baseline
+dp_transform,analytics transformations,dbt Core SQLMesh Spark,/data-platform,/developer,versioned transforms tests docs lineage,docs/software/data-platform-service.md,pilot
+dp_orchestrate,asset and workflow orchestration,Dagster Airflow Argo Workflows,/data-platform,/data-platform,schedules backfills retries run audit,docs/software/data-platform-service.md,pilot
+dp_quality,data quality and contracts,Great Expectations Soda dbt tests OpenMetadata tests,/data-platform,/data-platform,contract tests quality score and incident workflow,docs/software/data-platform-service.md,pilot
+dp_bi,dashboards and exploration,Apache Superset Metabase Evidence,/data-platform,/data-platform,dashboard review certified datasets access policy,docs/software/data-platform-service.md,pilot
+dp_notebooks,secure notebooks,JupyterHub JupyterLab VS Code Server optional,/data-platform,/data-platform,project isolation secrets policy image baseline,docs/software/data-platform-service.md,pilot
+dp_ontology,ontology and operational graph,OpenMetadata glossary DataHub graph Neo4j or TerminusDB optional,/data-platform,/data-platform,business objects relationships provenance and access policy,docs/software/data-platform-service.md,experimental
+dp_apps,operational data apps,Appsmith ToolJet Streamlit FastAPI Plotly Dash,/data-platform,/user,approved data products tenant app publishing,docs/software/data-platform-service.md,pilot
+dp_ai_context,AI context and retrieval,MLflow KServe vLLM pgvector Qdrant OpenMetadata context,/data-platform,/user,lineage-aware retrieval model approval prompt audit,docs/software/data-platform-service.md,pilot

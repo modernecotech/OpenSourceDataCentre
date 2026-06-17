@@ -1,0 +1,7 @@
+product_id,name,domain,owner,source_systems,lakehouse_table,ontology_object,quality_gate,access_policy,status
+DP_HEALTH_CAPACITY,Health capacity view,health,health-data-owner,clinic systems bed census staffing,iceberg.health.capacity_daily,facility patient_service_region,completeness freshness pii classification,role:health-analyst,pilot
+DP_EDUCATION_ATTENDANCE,Education attendance view,education,education-data-owner,school MIS exam records,iceberg.education.attendance_term,school student_region,duplicate check row count drift,role:education-analyst,template
+DP_ENERGY_GRID,Energy and grid operations,energy,energy-data-owner,SCADA meter utility outage CSV,iceberg.energy.grid_events,substation feeder outage_event,timestamp validity source lineage,role:energy-operator,pilot
+DP_DATACENTRE_TELEMETRY,Datacentre telemetry,operations,operations-owner,EPMS BMS DCIM Prometheus,iceberg.osdc.facility_telemetry,rack power_path cooling_loop,range checks sensor calibration lineage,role:facility-operator,pilot
+DP_PUBLIC_FINANCE,Public finance spending,finance,finance-data-owner,ERP procurement budget CSV,iceberg.finance.spending_monthly,agency programme supplier,classification approval reconciliation,role:finance-analyst,template
+DP_AI_TRAINING_CORPUS,AI training corpus index,ai,ai-platform-owner,approved documents object storage,iceberg.ai.corpus_index,dataset document collection,license pii consent lineage,role:ai-curator,template

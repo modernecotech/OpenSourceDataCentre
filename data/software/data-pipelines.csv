@@ -1,0 +1,6 @@
+pipeline_id,name,engine,source,target,schedule,owner,quality_gate,gitops_path,status
+PIPE_HEALTH_INGEST,health capacity ingest,Airbyte plus Dagster,clinic source exports,iceberg.health.capacity_daily,daily,health-data-owner,DP_HEALTH_CAPACITY,examples/data-platform/health-capacity/dagster_assets.py,pilot
+PIPE_GRID_STREAM,grid event stream,Kafka plus Flink or Spark,utility telemetry topics,iceberg.energy.grid_events,streaming,energy-data-owner,DP_ENERGY_GRID,examples/data-platform/grid-events/pipeline.yaml,template
+PIPE_FACILITY_TELEMETRY,facility telemetry lakehouse,Dagster plus Prometheus export,EPMS BMS DCIM Prometheus,iceberg.osdc.facility_telemetry,5min,operations-owner,DP_DATACENTRE_TELEMETRY,examples/data-platform/facility-telemetry/dagster_assets.py,pilot
+PIPE_FINANCE_DBT,finance spending transforms,dbt Core,raw finance extracts,iceberg.finance.spending_monthly,daily,finance-data-owner,DP_PUBLIC_FINANCE,examples/data-platform/finance-dbt/models/spending_monthly.sql,template
+PIPE_CORPUS_INDEX,AI corpus indexing,Argo Workflows plus Python,approved object storage,iceberg.ai.corpus_index,on-demand,ai-platform-owner,DP_AI_TRAINING_CORPUS,examples/data-platform/corpus-index/workflow.yaml,template

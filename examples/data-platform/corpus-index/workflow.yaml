@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: corpus-index-
+spec:
+  entrypoint: build-index
+  templates:
+    - name: build-index
+      container:
+        image: harbor.osdc.local/data/corpus-indexer:replace-me
+        command: ["python", "build_index.py"]
+        env:
+          - name: TARGET_TABLE
+            value: iceberg.ai.corpus_index

@@ -1,0 +1,19 @@
+objects:
+  - id: facility
+    label: Facility
+    owner: operations-owner
+    source_products:
+      - DP_DATACENTRE_TELEMETRY
+    relationships:
+      - has_rack
+      - has_power_path
+      - has_cooling_loop
+  - id: dataset
+    label: Dataset
+    owner: ai-platform-owner
+    source_products:
+      - DP_AI_TRAINING_CORPUS
+    relationships:
+      - contains_document
+      - has_license
+      - has_lineage

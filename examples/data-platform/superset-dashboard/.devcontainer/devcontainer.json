@@ -1,0 +1,12 @@
+{
+  "name": "OSDC Superset Dashboard Pack",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml"
+      ]
+    }
+  },
+  "postCreateCommand": "python -m pip install apache-superset"
+}

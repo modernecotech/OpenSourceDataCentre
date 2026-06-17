@@ -9,11 +9,13 @@ Last reviewed: 2026-06-17.
 - Edge Shield console: `/edge`
 - Cost planner: `/planner`
 - Lifecycle console: `/lifecycle`
+- Commercial console: `/commercial`
 - Developer console: `/developer`
+- Data platform console: `/data-platform`
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, NetBox, Ceph, Kubernetes, Kueue, OpenBao, and the facility gateways.
 
-Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is loaded from `data/software/service-catalogue-v1.csv`; commercial-readiness, delivery, commissioning, engineering, operations, site-selection, physical-security, sustainability, AI-ready, and developer-platform planning routes are loaded from CSVs under `data/`. `/api/lifecycle/overview` composes those catalogues into one design-to-run operator view.
+Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is loaded from `data/software/service-catalogue-v1.csv`; commercial-readiness, delivery, commissioning, engineering, operations, site-selection, physical-security, sustainability, AI-ready, developer-platform, and data-platform planning routes are loaded from CSVs under `data/`. `/api/lifecycle/overview` composes those catalogues into one design-to-run operator view.
 
 ## Current Routes
 
@@ -24,7 +26,9 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/edge` | HTML | Edge Shield GUI for DNS, proxy, cache, WAF, tunnels, config scripts, and rollout previews. |
 | `/planner` | HTML | Cost and scale planning GUI for 50 kW to 5 MW scenarios. |
 | `/lifecycle` | HTML | Unified design-to-commission-to-operations console across gates, permits, evidence, work items, services, config scripts, and documents. |
+| `/commercial` | HTML | Commercial readiness console for gaps, standards, SLA classes, colocation products, cross-connects, remote hands, access roles, and audit evidence. |
 | `/developer` | HTML | Developer platform console for Forgejo-style repos, CI, Harbor, GitOps, OpenTofu, templates, environments, promotion gates, and VS Code workflows. |
+| `/data-platform` | HTML | Optional open-source data platform console for governed data products, lakehouse, catalog, lineage, ontology, pipelines, dashboards, apps, and AI context. |
 | `/api/catalog/hardware` | JSON | Chosen SBC/GPU hardware baseline. |
 | `/api/catalog/services` | JSON | Open cloud service map. |
 | `/api/catalog/core-services` | JSON | Chosen AWS/Azure-like core services and their open-source OSDC implementation. |
@@ -49,6 +53,8 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/api/commercial/colocation-products` | JSON | Rack, cage, suite, power, access, and remote-hands product templates. |
 | `/api/commercial/cross-connect-products` | JSON | Meet-me-room, IP transit, IXP, and cloud-on-ramp-equivalent product templates. |
 | `/api/commercial/remote-hands-products` | JSON | Remote/smart-hands task classes and evidence requirements. |
+| `/api/commercial/remote-hands-pricebook` | JSON | Remote/smart-hands billing units, response targets, approvals, and evidence references. |
+| `/api/commercial/access-roles` | JSON | Customer, carrier, staff, security, and break-glass access role templates. |
 | `/api/commercial/audit-evidence` | JSON | Audit-evidence register with owners, cadence, and evidence paths. |
 | `/api/site-selection/scorecard` | JSON | Site-selection due-diligence criteria and evidence targets. |
 | `/api/security/physical-controls` | JSON | Physical security control catalogue for zones, access, CCTV, loading dock, and break-glass procedures. |
@@ -63,6 +69,7 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/api/commissioning/evidence` | JSON | Commissioning evidence register for L1-L5 and integrated systems tests, acceptance criteria, owners, and evidence paths. |
 | `/api/lifecycle/overview` | JSON | Composed lifecycle view that joins project gates, delivery risks/actions, commercial gaps, permits, engineering evidence, commissioning, operations, audit evidence, standards, service catalogues, config scripts, and key documents. |
 | `/api/developer/platform` | JSON | Developer platform overview with services, templates, deployment environments, promotion gates, and VS Code workflow links. |
+| `/api/data-platform/overview` | JSON | Data platform overview with open-source service stack, data products, pipelines, ontology objects, access policies, and starter templates. |
 | `/health` | text | Readiness check. |
 
 ## Data Direction
@@ -81,6 +88,7 @@ The next production step is to replace the in-process sample data with adapters:
 - Software security controls from `data/software/security-controls.csv`.
 - Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.
 - Developer platform catalogues from `data/software/developer-*.csv`, `data/software/deployment-environments.csv`, `data/software/vscode-workflows.csv`, and `examples/developer-platform/`.
+- Data platform catalogues from `data/software/data-*.csv` and `examples/data-platform/`.
 - Inventory and rack truth from NetBox/openDCIM.
 - VM and bare-metal state from OpenStack Nova/Ironic.
 - Storage state from Ceph.
@@ -105,9 +113,11 @@ Open:
 - `http://127.0.0.1:8787/edge`
 - `http://127.0.0.1:8787/planner`
 - `http://127.0.0.1:8787/lifecycle`
+- `http://127.0.0.1:8787/commercial`
 - `http://127.0.0.1:8787/developer`
+- `http://127.0.0.1:8787/data-platform`
 
-The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant/planner/lifecycle/developer tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, developer, and edge workflows.
+The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant/planner/lifecycle/commercial/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, commercial, developer, data, and edge workflows.
 
 The Radxa-local edge service can be run separately:
 

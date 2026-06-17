@@ -15,7 +15,9 @@
         </div>
         <nav class="nav-list" aria-label="Lifecycle navigation">
           <a class="active" href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/commercial"><span class="nav-icon">C</span>Commercial</a>
           <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/data-platform"><span class="nav-icon">A</span>Data</a>
           <a href="/operator"><span class="nav-icon">O</span>Operator</a>
           <a href="/user"><span class="nav-icon">U</span>Tenant</a>
           <a href="/edge"><span class="nav-icon">E</span>Edge</a>
@@ -123,6 +125,8 @@
                   <option value="physical-security">physical-security</option>
                   <option value="sustainability">sustainability</option>
                   <option value="ai-ready">ai-ready</option>
+                  <option value="remote-hands-pricebook">remote-hands-pricebook</option>
+                  <option value="access-role">access-role</option>
                 </select>
                 <button id="lifecycle-export-evidence">Export evidence</button>
               </div>
@@ -165,6 +169,54 @@
 
           <section class="panel">
             <div class="panel-header">
+              <h2>Commercial Readiness</h2>
+              <div class="panel-tools">
+                <input id="lifecycle-commercial-filter" type="search" placeholder="Filter commercial records">
+                <a class="button" href="/docs/commercial-readiness/README.md" target="_blank" rel="noreferrer">Docs</a>
+                <button id="lifecycle-export-commercial-gaps">Export gaps</button>
+                <button id="lifecycle-export-commercial-remote-hands">Export hands</button>
+                <button id="lifecycle-export-commercial-access">Export access</button>
+              </div>
+            </div>
+            <div class="panel-body table-stack">
+              <div class="table-block">
+                <h3>Gap Register</h3>
+                <table>
+                  <thead>
+                    <tr><th>Domain</th><th>ID</th><th>Expectation</th><th>Priority</th><th>Status</th><th>Artifact</th></tr>
+                  </thead>
+                  <tbody id="lifecycle-commercial-gaps">
+                    <tr><td>certification</td><td>G001</td><td>Tier/TIA/ISO evidence mapped</td><td>critical</td><td><span class="status warn">open</span></td><td>docs/commercial-readiness/standards-compliance-matrix.md</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-block">
+                <h3>Remote Hands Pricebook</h3>
+                <table>
+                  <thead>
+                    <tr><th>Class</th><th>ID</th><th>Unit</th><th>Target</th><th>Approval</th><th>Status</th><th>Evidence</th></tr>
+                  </thead>
+                  <tbody id="lifecycle-commercial-remote-hands">
+                    <tr><td>smart hands</td><td>RHP_SMART_HANDS</td><td>hour</td><td>4 hours</td><td>yes</td><td><span class="status info">template</span></td><td>docs/commercial/remote-hands-service.md</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-block">
+                <h3>Physical Access Roles</h3>
+                <table>
+                  <thead>
+                    <tr><th>Scope</th><th>ID</th><th>Role</th><th>Approval</th><th>Review</th><th>Areas</th><th>Status</th><th>Evidence</th></tr>
+                  </thead>
+                  <tbody id="lifecycle-commercial-access">
+                    <tr><td>emergency</td><td>ACCESS_BREAK_GLASS</td><td>Break-glass physical access</td><td>incident commander</td><td>per event</td><td>controlled zones</td><td><span class="status danger">restricted</span></td><td>docs/security-physical/break-glass-physical-access.md</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
               <h2>Developer Deployment Path</h2>
               <div class="panel-tools">
                 <input id="lifecycle-developer-filter" type="search" placeholder="Filter developer stack">
@@ -177,6 +229,24 @@
               </thead>
               <tbody id="lifecycle-developer">
                 <tr><td>dev_forge</td><td>source repositories</td><td>Forgejo</td><td>git clone</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Data Platform Option</h2>
+              <div class="panel-tools">
+                <input id="lifecycle-data-filter" type="search" placeholder="Filter data platform">
+                <a class="button primary" href="/data-platform">Data console</a>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Function</th><th>Stack</th><th>Control</th><th>Status</th></tr>
+              </thead>
+              <tbody id="lifecycle-data-platform">
+                <tr><td>dp_lakehouse</td><td>open lakehouse</td><td>Iceberg</td><td>retention</td><td><span class="status">production-baseline</span></td></tr>
               </tbody>
             </table>
           </section>

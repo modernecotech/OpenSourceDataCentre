@@ -1,0 +1,5 @@
+template_id,name,template_type,repo_path,devcontainer_path,pipeline_path,preview_surface,owner,status
+DATA_TEMPLATE_DAGSTER,Dagster data product,asset-pipeline,examples/data-platform/health-capacity,examples/data-platform/health-capacity/.devcontainer/devcontainer.json,examples/data-platform/health-capacity/dagster_assets.py,Dagster asset graph,data-platform-team,pilot
+DATA_TEMPLATE_DBT,dbt transform project,transform,examples/data-platform/finance-dbt,examples/data-platform/finance-dbt/.devcontainer/devcontainer.json,examples/data-platform/finance-dbt/models/spending_monthly.sql,dbt docs lineage,data-platform-team,template
+DATA_TEMPLATE_SUPERSET,Superset dashboard pack,dashboard,examples/data-platform/superset-dashboard,examples/data-platform/superset-dashboard/.devcontainer/devcontainer.json,examples/data-platform/superset-dashboard/dashboard.yaml,Superset dashboard,data-platform-team,template
+DATA_TEMPLATE_ONTOLOGY,Ontology object pack,ontology,examples/data-platform/ontology-pack,examples/data-platform/ontology-pack/.devcontainer/devcontainer.json,examples/data-platform/ontology-pack/ontology.yaml,Ontology browser,data-governance-team,experimental

@@ -1,0 +1,7 @@
+pricebook_id,task_class,billing_unit,included_response,target_response,requires_approval,evidence_path,status
+RHP_VISUAL,visual-inspection,per-ticket,none,4-business-hours,tenant-owner,docs/commercial/remote-hands-service.md,template
+RHP_POWER_CYCLE,power-cycle,per-ticket,none,4-business-hours,tenant-owner,docs/commercial/remote-hands-service.md,template
+RHP_CABLE_PATCH,cable-patch,per-ticket,first-15-minutes,next-business-day,tenant-owner,docs/network-commercial/cross-connect-workflow.md,template
+RHP_MEDIA_SWAP,media-swap,per-ticket,none,next-business-day,tenant-owner,docs/commercial/remote-hands-service.md,template
+RHP_SMART_HANDS,smart-hands,per-hour,none,scheduled,service-owner,docs/operations/mop-template.md,template
+RHP_EMERGENCY,emergency-hands,per-hour,none,as-available,incident-commander,docs/operations/incident-command.md,template

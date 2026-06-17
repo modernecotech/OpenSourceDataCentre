@@ -1,0 +1,7 @@
+access_role_id,role_name,scope,approval_owner,review_cadence,allowed_areas,evidence_path,status
+ACCESS_TENANT_PRIMARY,tenant primary approver,customer-access,commercial-owner,quarterly,assigned cage rack portal,docs/commercial/access-and-visitor-management.md,template
+ACCESS_TENANT_VISITOR,tenant visitor,escorted-access,tenant-primary,per-visit,front desk assigned cage under escort,docs/security-physical/visitor-and-contractor-access.md,template
+ACCESS_REMOTE_HANDS,remote hands technician,facility-operations,operations-owner,quarterly,white space assigned racks loading dock,docs/commercial/remote-hands-service.md,template
+ACCESS_CARRIER_TECH,carrier technician,meet-me-room,network-owner,quarterly,meet-me room carrier demarcation,docs/network-commercial/carrier-onboarding.md,template
+ACCESS_SECURITY_GUARD,security guard,security-operations,security-owner,quarterly,gatehouse perimeter CCTV desk,docs/security-physical/perimeter-and-gatehouse.md,template
+ACCESS_BREAK_GLASS,break glass access,emergency-access,incident-commander,per-use,approved emergency area only,docs/security-physical/break-glass-physical-access.md,template
