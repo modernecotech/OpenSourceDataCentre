@@ -1,0 +1,10 @@
+permit_id,authority_area,permit_or_approval,applies,evidence_path,owner,status
+PERMIT_PLANNING,planning,planning or zoning approval,yes,docs/site-selection/authority-having-jurisdiction-checklist.md,project-manager,template
+PERMIT_BUILDING,building,building permit and occupancy approval,yes,docs/site-selection/authority-having-jurisdiction-checklist.md,owner-engineer,template
+PERMIT_FIRE,fire,fire strategy and life-safety approval,yes,docs/engineering/fire-strategy.md,life-safety-engineer,template
+PERMIT_ELECTRICAL,electrical,electrical design inspection and energization approval,yes,docs/engineering/electrical-single-line-250kw.md,electrical-engineer,template
+PERMIT_FUEL,environmental,fuel storage and refuelling approval,conditional,docs/engineering/generator-fuel-and-refuelling-plan.md,facilities-engineer,template
+PERMIT_BESS,fire-electrical,BESS safety and emergency-response approval,yes,docs/engineering/battery-safety-and-fire-strategy.md,life-safety-engineer,template
+PERMIT_TELECOM,telecom,carrier entry and telecom regulatory approval,conditional,docs/network-commercial/carrier-onboarding.md,network-owner,template
+PERMIT_ENV,environmental,environmental impact screening and water/noise conditions,conditional,docs/sustainability/water-strategy.md,project-manager,template
+PERMIT_OCCUPANCY,operations,production occupancy and service launch approval,yes,docs/delivery/operational-readiness-review.md,operations-owner,template

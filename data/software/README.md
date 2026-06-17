@@ -10,6 +10,7 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `security-controls.csv` is the compliance/control catalogue for UI surfaces, tools, and evidence.
 - `security-control-map.csv` is the older control-map view. Keep it aligned with `security-controls.csv` or mark rows for migration.
 - `upgrade-policy.csv` and `config-script-catalogue.csv` are operational source files, not derived views.
+- `developer-platform-services.csv`, `developer-templates.csv`, `deployment-environments.csv`, `developer-promotion-gates.csv`, and `vscode-workflows.csv` define the Forgejo/CI/Harbor/GitOps/OpenTofu/VS Code developer platform.
 
 Every row in `service-catalogue-v1.csv` must include a maturity value:
 
@@ -30,6 +31,11 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 - `upgrade-policy.csv` defines update classes, cadence, gates, owners, and rollback requirements.
 - `security-controls.csv` maps managed security controls to tools, evidence, UI surfaces, and service bundles.
 - `config-script-catalogue.csv` lists tool config scripts exposed through the browser editor workflow.
+- `developer-platform-services.csv` lists the developer platform components and controls.
+- `developer-templates.csv` lists VS Code-ready starter templates.
+- `deployment-environments.csv` lists deployment targets and GitOps policies.
+- `developer-promotion-gates.csv` lists required checks and approvers.
+- `vscode-workflows.csv` lists VS Code-facing actions and artifacts.
 
 Keep these files as simple rectangular CSVs with a single header row. When adding fields, update the Rust sample data and portal tests at the same time so the GUI and documentation remain aligned.
 

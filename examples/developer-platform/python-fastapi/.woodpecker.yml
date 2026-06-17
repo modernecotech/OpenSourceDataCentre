@@ -1,0 +1,20 @@
+steps:
+  test:
+    image: python:3.12-bookworm
+    commands:
+      - python -m pip install -r requirements.txt || true
+      - python -m compileall .
+  build-image:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: harbor.osdc.local/apps/python-fastapi
+      tags:
+        - ${CI_COMMIT_SHA}
+      registry: harbor.osdc.local
+      username:
+        from_secret: harbor_robot_user
+      password:
+        from_secret: harbor_robot_token
+when:
+  branch:
+    - main

@@ -15,7 +15,7 @@ The project combines:
 - Building systems for DC-powered HVAC auxiliaries, lighting, physical security, solar power, sodium-ion storage, and earth-based cooling.
 - FreeCAD 1.1 design artifacts for mechanical parts, racks, adapters, cable paths, and serviceable assemblies.
 - Flexible rack patterns for 19-inch EIA, Open19, OCP Open Rack V3, and Open Rack Wide where appropriate.
-- A Rust-based unified control plane for inventory, observability, cost modelling, scheduling, workflow automation, and user/admin interfaces.
+- A Rust-based unified control plane for lifecycle delivery, inventory, observability, cost modelling, scheduling, workflow automation, and user/admin interfaces.
 - Open-source infrastructure stacks for bare metal, Kubernetes, storage, networking, monitoring, identity, AI serving, and job queueing.
 - Test harnesses and operational guidance for building systems, IT systems, AI workloads, and cost calculators.
 
@@ -29,8 +29,11 @@ The project combines:
 | Commissioning and reliability pack | L1-L5 commissioning, grid-loss, DC-bus ride-through, cooling failover, generator-start, and backup-restore tests. |
 | Operator training pack | Local skills, runbooks, spares lists, maintenance schedules, emergency procedures, staffing, and escalation paths. |
 | Commercial readiness pack | Gap register, standards matrix, SLA model, colocation products, cross-connect workflows, audit evidence, and customer responsibility boundaries. |
+| Delivery control pack | Project lifecycle gates, authority permits, owner-engineer review, design freeze, operational readiness, handover, risk, action, and commissioning evidence registers. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
+| Sovereign developer platform | Forgejo-style repos, CI, Harbor registry, GitOps deployment, OpenTofu IaC, promotion gates, service templates, and VS Code-ready developer workflows. |
 | Edge Shield security fabric | Sovereign DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, zero-trust access, logs, metrics, secrets, policy, and audit. |
+| Unified lifecycle console | Browser surface that composes design gates, permits, evidence registers, commissioning, operations, sovereign services, config scripts, and repo documents from the existing CSV/doc sources. |
 | Prototype browser config management | Web-based editing of sample tool config scripts, with the production path defined as validation, GitOps review, staged rollout, rollback checks, and audit. |
 
 ## What This Project Is
@@ -90,13 +93,13 @@ Harbor          Velero              Coraza/CrowdSec
 Argo/Flux       Cilium              Suricata/Zeek
 ```
 
-The Rust layer does not replace mature infrastructure systems. It provides the unified portal/API, policy checks, cost and sustainability calculations, approval flows, config generation, health checks, audit events, and GitOps rollout orchestration.
+The Rust layer does not replace mature infrastructure systems. It provides the unified portal/API, lifecycle control plane, policy checks, cost and sustainability calculations, approval flows, config generation, health checks, audit events, and GitOps rollout orchestration.
 
 ## Current Maturity
 
 This repository is currently a strong architecture, planning framework, and working Rust prototype. It is not yet a deployable national cloud platform.
 
-The current portal is a small standard-library Rust HTTP server with in-process sample data. It demonstrates the intended tenant, operator, Edge Shield, config-editor, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, or Flux installations.
+The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended tenant, operator, Edge Shield, config-editor, lifecycle, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, or Flux installations.
 
 The next engineering phase is to continue replacing hardcoded samples with CSV-backed catalogue loading, then add adapter stubs for real infrastructure systems.
 
@@ -123,14 +126,37 @@ Commercial datacentres are judged by evidence as much as by architecture. OSDC t
 
 - certification and standards boundaries;
 - MEP drawings, calculations, and commissioning evidence;
+- site selection, flood, seismic, geotechnical, utility, fibre, and authority due diligence;
 - fire/life-safety and battery safety strategy;
+- physical security zones, visitor controls, CCTV retention, loading dock, cage, rack, and break-glass access;
 - meet-me room, cross-connect, carrier, IXP, and cloud-on-ramp products;
 - customer onboarding, SLAs, service credits, and responsibility boundaries;
 - MOP/SOP/EOP discipline, shift handover, permit-to-work, and incident command;
+- lockout/tagout, escalation, post-incident review, drills, alarm philosophy, telemetry retention, and capacity management;
 - ISO 27001/SOC 2-style audit evidence and supplier-risk management;
-- BMS/EPMS/DCIM integration and OT cybersecurity zones.
+- risk register, control evidence, management review, PCI DSS physical-scope, and data-residency evidence templates;
+- BMS/EPMS/DCIM integration and OT cybersecurity zones;
+- BMS/EPMS segmentation, remote OT access, OT patch/backup, PLC hardening, and facility gateway threat modelling;
+- sustainability measurement boundaries, metering, carbon, water, heat reuse, circularity, and battery lifecycle;
+- AI-ready rack classes, liquid cooling, GPU networking, energy-aware scheduling, model governance, and tenant isolation.
 
 Machine-readable commercial data lives in [data/commercial](data/commercial/). The main entry point is [Commercial Readiness](docs/commercial-readiness/README.md).
+
+## Delivery and Commissioning Controls
+
+Commercial-grade delivery needs visible gate discipline, not just design documents. OSDC now treats project control as a first-class catalogue:
+
+- lifecycle gates from concept through owner-engineer review, design freeze, procurement, construction readiness, integrated systems testing, operational readiness, and handover;
+- authority permits for planning, grid interconnect, fire strategy, environmental, water, telecom/fibre, building-control, generator/fuel, security, and waste approvals;
+- design-freeze checks for single-line diagrams, protection coordination, cooling topology, fire strategy, network topology, commissioning scripts, cost model, and risk register;
+- owner-engineer independent review checkpoints for power, cooling, controls, fire/life safety, physical security, operations, commissioning, sustainability, AI-ready loads, and commercial products;
+- risk and action registers with owner, criticality, status, due date, dependency, and next evidence fields;
+- commissioning evidence register for L1-L5 tests, integrated systems tests, blackout/recovery, cooling failover, generator start, backup/restore, access-control, CCTV, alarm, BMS/EPMS/DCIM, and evidence retention;
+- operational readiness and handover templates for staffing, training, spares, permits, MOP/SOP/EOP approval, monitoring, backup/restore, DR, customer onboarding, and post-handover defects.
+
+Machine-readable delivery data lives in [data/delivery](data/delivery/) and commissioning evidence data lives in [data/commissioning](data/commissioning/). The main entry points are [Delivery Controls](docs/delivery/README.md) and [Commissioning Evidence Register](docs/commissioning/commissioning-evidence-register.md).
+
+The portal exposes these sources through `/lifecycle` and `/api/lifecycle/overview`. That unified interface composes project gates, risks, actions, gaps, permits, engineering evidence, commissioning evidence, operations procedures, audit evidence, standards controls, service catalogues, config scripts, and key documents into one browser surface.
 
 ## Software Position
 
@@ -190,7 +216,32 @@ Machine-readable catalogue data lives in:
 - [security-controls.csv](data/software/security-controls.csv) - compliance/control catalogue and evidence requirements.
 - [upgrade-policy.csv](data/software/upgrade-policy.csv) - update classes, cadence, gates, owners, and rollback requirements.
 - [config-script-catalogue.csv](data/software/config-script-catalogue.csv) - browser-editable config-script catalogue.
+- [developer platform catalogues](data/software/) - developer services, templates, deployment environments, promotion gates, and VS Code workflows.
 - [service catalogue examples](examples/service-catalogue/)
+
+## Sovereign Developer Platform
+
+OSDC includes a GitHub/Azure DevOps-style developer path for countries that need local software delivery without relying on foreign SaaS control planes:
+
+```text
+OSDC Developer Console
+   |
+Forgejo repositories
+   |
+Woodpecker or Tekton CI
+   |
+Harbor registry, scan, sign, SBOM
+   |
+Argo CD or Flux GitOps
+   |
+OpenTofu and Ansible infrastructure changes
+   |
+OSDC audit, health, rollback, cost, and energy view
+```
+
+The developer console exposes service templates with `.devcontainer/devcontainer.json`, `.woodpecker.yml`, GitOps deployment manifests, OpenTofu examples, promotion gates, environment status, and `vscode://` clone links for a smooth VS Code workflow. Developers can create a repository, open it in VS Code, work inside a dev container, push code, trigger CI, publish to Harbor, and promote through GitOps.
+
+Machine-readable developer-platform data lives in [data/software](data/software/) and template artifacts live in [examples/developer-platform](examples/developer-platform/). The main guide is [Developer Platform](docs/software/developer-platform.md).
 
 ## Sovereign Edge and Security Fabric
 
@@ -331,14 +382,22 @@ Work outside that scope should remain documented but not block the first real co
 - [Unified Portal Integration Model](docs/software/unified-portal-integration-model.md) - Rust API and workflow layer over mature open-source systems.
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
-- [Developer Platform](docs/software/developer-platform.md) and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage.
+- [Developer Platform](docs/software/developer-platform.md) and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage, including Forgejo, CI, Harbor, GitOps, OpenTofu, promotion gates, templates, and VS Code workflows.
 - [Commercial Readiness](docs/commercial-readiness/README.md) - gap register, standards matrix, SLA model, commercial service catalogue, audit evidence, and customer responsibility matrix.
-- [Engineering Evidence](docs/engineering/electrical-single-line-250kw.md) - first MEP evidence targets for electrical single-line, DC protection, cooling P&ID, sequence of operations, fire strategy, and EPMS/BMS architecture.
+- [Delivery Controls](docs/delivery/README.md) - lifecycle gates, authority permits, design freeze, operational readiness, handover, owner-engineer review, risk, and action tracking.
+- [Engineering Evidence](data/engineering/) - MEP evidence register for electrical, DC protection, coordination, earthing, EPO, generator fuel, BESS safety, thermal, cooling, fire, and controls artifacts.
+- [Site Selection](docs/site-selection/README.md) - flood, seismic, geotechnical, utility, fibre, road, logistics, permitting, and authority due diligence.
+- [Life Safety](docs/life-safety/README.md) - battery fire risk, suppression selection, detection, compartmentation, egress, alarm integration, and post-fire recovery.
+- [Physical Security](docs/security-physical/README.md) - security zones, perimeter, anti-tailgating, visitor access, CCTV, loading dock, cage/rack access, access review, and break-glass procedure.
+- [Sustainability](docs/sustainability/README.md) - PUE/WUE/CUE boundaries, metering, carbon, renewable energy, water, heat reuse, circularity, and battery lifecycle.
+- [AI-Ready Facilities](docs/ai-ready/README.md) - rack power classes, liquid cooling, GPU networking, RDMA/RoCE/InfiniBand choices, power ramp policy, scheduling, governance, and tenant isolation.
 - [Network Commercial Products](docs/network-commercial/meet-me-room-design.md) - meet-me room, cross-connect, carrier onboarding, IXP readiness, and cloud-on-ramp equivalent.
 - [Compliance Pack](docs/compliance/iso27001-isms-outline.md) - ISMS, SOC 2 readiness, statement of applicability, internal audit, and supplier risk templates.
+- [Operations Procedure Catalogue](data/operations/) - MOP, SOP, EOP, shift, permit, lockout/tagout, incident, escalation, review, drill, alarm, telemetry, and capacity procedure targets.
 - [Country Site Profile Guide](docs/deployment/country-site-profile-guide.md) - country-pack schema, planning fields, and profile examples.
 - [50 kW Edge Micro](docs/deployment/50kw-edge-micro.md), [250 kW Regional Pilot](docs/deployment/250kw-regional-pilot.md), [1 MW Regional Production](docs/deployment/1mw-regional-production.md), and [5 MW National AI-Ready](docs/deployment/5mw-national-ai-ready.md) - staged reference deployment patterns.
 - [Commissioning Overview](docs/commissioning/commissioning-overview.md) - L1-L5 commissioning model and critical integrated tests.
+- [Commissioning Evidence Register](docs/commissioning/commissioning-evidence-register.md), [Integrated Systems Test Register](docs/commissioning/integrated-systems-test-register.md), and [Defects and Retest Log](docs/commissioning/defects-and-retest-log.md) - evidence, retest, and acceptance controls for project closeout.
 - [Data Residency](docs/sovereignty/data-residency.md), [Key Management](docs/sovereignty/key-management.md), and [Backup and Disaster Recovery](docs/sovereignty/backup-and-disaster-recovery.md) - sovereignty controls for public infrastructure.
 - [Local Fabrication Guide](docs/procurement/local-fabrication-guide.md) and [Second-Source Requirements](docs/procurement/second-source-requirements.md) - maintainability and procurement doctrine.
 - [Operator Training](docs/operations/operator-training.md), [Spares and Tools](docs/operations/spares-and-tools.md), and [Emergency Runbooks](docs/operations/emergency-runbooks.md) - local operations pack.
@@ -366,7 +425,16 @@ Work outside that scope should remain documented but not block the first real co
 - [Costing Data](data/costing/) - current marketplace price basis and scenario cost ranges.
 - [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
 - [Software Service Data](data/software/) - open cloud service catalogue mappings.
+- [Developer Platform Examples](examples/developer-platform/) - VS Code devcontainer, CI, GitOps, and OpenTofu starter artifacts.
 - [Commercial Readiness Data](data/commercial/) - gap register, standards matrix, SLA classes, colocation products, cross-connects, remote hands, and audit evidence.
+- [Delivery Data](data/delivery/) - project gates, authority permits, risk register, and action tracker.
+- [Commissioning Data](data/commissioning/) - commissioning evidence register for L1-L5 and integrated systems tests.
+- [Engineering Evidence Data](data/engineering/) - engineering evidence register for design-basis, validation, and commissioning artifacts.
+- [Operations Data](data/operations/) - procedure catalogue for commercial operations discipline.
+- [Site Selection Data](data/site-selection/) - due-diligence scorecard criteria.
+- [Security Data](data/security/) - physical security control catalogue.
+- [Sustainability Data](data/sustainability/) - measurement-boundary and reporting metrics.
+- [AI-Ready Data](data/ai-ready/) - high-density rack class planning data.
 - [Country Profiles](data/country-profiles/) - example country-planning packs for grid, climate, energy, procurement, and sovereignty assumptions.
 - [Service Catalogue Examples](examples/service-catalogue/) - scale-specific service bundle selections.
 - [Config Script Examples](examples/config-scripts/) - sample tool configuration artifacts for browser-based editing.
@@ -395,14 +463,16 @@ cargo run -p osdc-edge -- 127.0.0.1:8790
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
 
-The first portal serves four GUI surfaces:
+The first portal serves six GUI surfaces:
 
 - Tenant portal: `http://127.0.0.1:8787/user`
 - Operator console: `http://127.0.0.1:8787/operator`
 - Edge Shield console: `http://127.0.0.1:8787/edge`
 - Cost planner: `http://127.0.0.1:8787/planner`
+- Lifecycle console: `http://127.0.0.1:8787/lifecycle`
+- Developer console: `http://127.0.0.1:8787/developer`
 
-The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, and scale/cost planning from the marketplace scenario data.
+The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, developer platform templates and GitOps workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
 
 Useful portal APIs:
 
@@ -422,6 +492,19 @@ Useful portal APIs:
 - `/api/commercial/cross-connect-products`
 - `/api/commercial/remote-hands-products`
 - `/api/commercial/audit-evidence`
+- `/api/site-selection/scorecard`
+- `/api/security/physical-controls`
+- `/api/sustainability/metrics`
+- `/api/ai-ready/rack-classes`
+- `/api/engineering/evidence`
+- `/api/operations/procedures`
+- `/api/delivery/gates`
+- `/api/delivery/permits`
+- `/api/delivery/risks`
+- `/api/delivery/actions`
+- `/api/commissioning/evidence`
+- `/api/lifecycle/overview`
+- `/api/developer/platform`
 
 The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
 

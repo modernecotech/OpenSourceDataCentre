@@ -1,7 +1,8 @@
 use std::{
-    env,
+    env, fs,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
+    path::{Path, PathBuf},
 };
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -12,6 +13,8 @@ const USER_HTML: &str = include_str!("views/user.html");
 const OPERATOR_HTML: &str = include_str!("views/operator.html");
 const EDGE_HTML: &str = include_str!("views/edge.html");
 const PLANNER_HTML: &str = include_str!("views/planner.html");
+const LIFECYCLE_HTML: &str = include_str!("views/lifecycle.html");
+const DEVELOPER_HTML: &str = include_str!("views/developer.html");
 const RACK_IMAGE: &[u8] = include_bytes!("../../../docs/assets/rack-thermal-spine-cutaway.png");
 const EXTERIOR_IMAGE: &[u8] =
     include_bytes!("../../../docs/assets/prefab-panel-datacentre-exterior-02.png");
@@ -38,6 +41,33 @@ const CROSS_CONNECT_PRODUCTS_CSV: &str =
 const REMOTE_HANDS_PRODUCTS_CSV: &str =
     include_str!("../../../data/commercial/remote-hands-products.csv");
 const AUDIT_EVIDENCE_CSV: &str = include_str!("../../../data/commercial/audit-evidence.csv");
+const SITE_SELECTION_SCORECARD_CSV: &str =
+    include_str!("../../../data/site-selection/site-selection-scorecard.csv");
+const PHYSICAL_SECURITY_CONTROLS_CSV: &str =
+    include_str!("../../../data/security/physical-security-controls.csv");
+const SUSTAINABILITY_METRICS_CSV: &str =
+    include_str!("../../../data/sustainability/sustainability-metrics.csv");
+const AI_RACK_CLASSES_CSV: &str =
+    include_str!("../../../data/ai-ready/high-density-rack-classes.csv");
+const ENGINEERING_EVIDENCE_CSV: &str =
+    include_str!("../../../data/engineering/engineering-evidence-register.csv");
+const OPERATIONS_PROCEDURES_CSV: &str =
+    include_str!("../../../data/operations/procedure-catalogue.csv");
+const PROJECT_GATES_CSV: &str = include_str!("../../../data/delivery/project-gates.csv");
+const AUTHORITY_PERMITS_CSV: &str = include_str!("../../../data/delivery/authority-permits.csv");
+const DELIVERY_RISKS_CSV: &str = include_str!("../../../data/delivery/risk-register.csv");
+const DELIVERY_ACTIONS_CSV: &str = include_str!("../../../data/delivery/action-tracker.csv");
+const COMMISSIONING_EVIDENCE_CSV: &str =
+    include_str!("../../../data/commissioning/commissioning-evidence-register.csv");
+const DEVELOPER_PLATFORM_SERVICES_CSV: &str =
+    include_str!("../../../data/software/developer-platform-services.csv");
+const DEVELOPER_TEMPLATES_CSV: &str =
+    include_str!("../../../data/software/developer-templates.csv");
+const DEPLOYMENT_ENVIRONMENTS_CSV: &str =
+    include_str!("../../../data/software/deployment-environments.csv");
+const DEVELOPER_PROMOTION_GATES_CSV: &str =
+    include_str!("../../../data/software/developer-promotion-gates.csv");
+const VSCODE_WORKFLOWS_CSV: &str = include_str!("../../../data/software/vscode-workflows.csv");
 
 fn main() -> std::io::Result<()> {
     let addr = env::args()
@@ -50,6 +80,8 @@ fn main() -> std::io::Result<()> {
     println!("operator console: http://{addr}/operator");
     println!("edge shield console: http://{addr}/edge");
     println!("planning console: http://{addr}/planner");
+    println!("lifecycle console: http://{addr}/lifecycle");
+    println!("developer console: http://{addr}/developer");
     println!("catalog API: http://{addr}/api/catalog/hardware");
 
     for stream in listener.incoming() {
@@ -96,6 +128,8 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/operator") => html(OPERATOR_HTML),
         ("GET", "/edge") => html(EDGE_HTML),
         ("GET", "/planner") => html(PLANNER_HTML),
+        ("GET", "/lifecycle") => html(LIFECYCLE_HTML),
+        ("GET", "/developer") => html(DEVELOPER_HTML),
         ("GET", "/styles.css") => bytes("200 OK", "text/css; charset=utf-8", STYLE_CSS.as_bytes()),
         ("GET", "/portal.js") => bytes(
             "200 OK",
@@ -127,6 +161,19 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/commercial/cross-connect-products") => json(&cross_connect_products()),
         ("GET", "/api/commercial/remote-hands-products") => json(&remote_hands_products()),
         ("GET", "/api/commercial/audit-evidence") => json(&audit_evidence()),
+        ("GET", "/api/site-selection/scorecard") => json(&site_selection_scorecard()),
+        ("GET", "/api/security/physical-controls") => json(&physical_security_controls()),
+        ("GET", "/api/sustainability/metrics") => json(&sustainability_metrics()),
+        ("GET", "/api/ai-ready/rack-classes") => json(&ai_rack_classes()),
+        ("GET", "/api/engineering/evidence") => json(&engineering_evidence()),
+        ("GET", "/api/operations/procedures") => json(&operations_procedures()),
+        ("GET", "/api/delivery/gates") => json(&project_gates()),
+        ("GET", "/api/delivery/permits") => json(&authority_permits()),
+        ("GET", "/api/delivery/risks") => json(&delivery_risks()),
+        ("GET", "/api/delivery/actions") => json(&delivery_actions()),
+        ("GET", "/api/commissioning/evidence") => json(&commissioning_evidence()),
+        ("GET", "/api/lifecycle/overview") => json(&lifecycle_overview()),
+        ("GET", "/api/developer/platform") => json(&developer_platform()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -134,6 +181,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
             bytes("200 OK", "image/png", EXTERIOR_IMAGE)
         }
         ("GET", "/health") => bytes("200 OK", "text/plain; charset=utf-8", b"ok\n"),
+        _ if method == "GET" && is_repo_text_path(path) => repo_text(path),
         _ => bytes("404 Not Found", "text/plain; charset=utf-8", b"not found\n"),
     }
 }
@@ -177,6 +225,53 @@ fn bytes(status: &str, content_type: &str, body: &[u8]) -> Vec<u8> {
     .into_bytes();
     response.extend_from_slice(body);
     response
+}
+
+fn is_repo_text_path(path: &str) -> bool {
+    path.starts_with("/docs/")
+        || path.starts_with("/data/")
+        || path.starts_with("/examples/")
+        || path == "/README.md"
+        || path == "/LICENSE.md"
+}
+
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+fn repo_text(path: &str) -> Vec<u8> {
+    let relative = path.trim_start_matches('/');
+    if relative
+        .split('/')
+        .any(|part| part.is_empty() || part == "." || part == "..")
+    {
+        return bytes("404 Not Found", "text/plain; charset=utf-8", b"not found\n");
+    }
+
+    let target = repo_root().join(relative);
+    if !target.is_file() {
+        return bytes("404 Not Found", "text/plain; charset=utf-8", b"not found\n");
+    }
+
+    match fs::read(&target) {
+        Ok(body) => bytes("200 OK", text_content_type(&target), &body),
+        Err(err) => bytes(
+            "500 Internal Server Error",
+            "text/plain; charset=utf-8",
+            format!("failed to read repository file: {err}\n").as_bytes(),
+        ),
+    }
+}
+
+fn text_content_type(path: &Path) -> &'static str {
+    match path.extension().and_then(|extension| extension.to_str()) {
+        Some("csv") => "text/csv; charset=utf-8",
+        Some("json") => "application/json; charset=utf-8",
+        Some("md") => "text/markdown; charset=utf-8",
+        Some("toml") => "text/plain; charset=utf-8",
+        Some("yaml") | Some("yml") => "text/yaml; charset=utf-8",
+        _ => "text/plain; charset=utf-8",
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -324,6 +419,281 @@ struct AuditEvidence {
     evidence_path: String,
     owner: String,
     cadence: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SiteSelectionCriterion {
+    criterion_id: String,
+    domain: String,
+    criterion: String,
+    minimum_expectation: String,
+    preferred_expectation: String,
+    weight: u8,
+    red_flag: String,
+    next_evidence: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct PhysicalSecurityControl {
+    control_id: String,
+    zone: String,
+    control: String,
+    minimum_expectation: String,
+    evidence: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SustainabilityMetric {
+    metric_id: String,
+    metric: String,
+    boundary: String,
+    cadence: String,
+    evidence: String,
+    stage: String,
+    owner: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AiRackClass {
+    rack_class_id: String,
+    power_kw_range: String,
+    cooling_mode: String,
+    network_target: String,
+    storage_target: String,
+    facility_requirements: String,
+    evidence_required: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct EngineeringEvidence {
+    evidence_id: String,
+    domain: String,
+    evidence_name: String,
+    evidence_path: String,
+    owner: String,
+    stage: String,
+    priority: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct OperationsProcedure {
+    procedure_id: String,
+    procedure_type: String,
+    procedure_name: String,
+    doc_path: String,
+    owner: String,
+    review_cadence: String,
+    criticality: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ProjectGate {
+    gate_id: String,
+    phase: String,
+    gate_name: String,
+    exit_criteria: String,
+    required_evidence: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AuthorityPermit {
+    permit_id: String,
+    authority_area: String,
+    permit_or_approval: String,
+    applies: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeliveryRisk {
+    risk_id: String,
+    domain: String,
+    risk: String,
+    impact: String,
+    likelihood: String,
+    treatment: String,
+    owner: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeliveryAction {
+    action_id: String,
+    source: String,
+    action: String,
+    owner: String,
+    due_phase: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CommissioningEvidence {
+    evidence_id: String,
+    level: String,
+    test_name: String,
+    evidence_path: String,
+    owner: String,
+    acceptance: String,
+    criticality: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleOverview {
+    metrics: Vec<LifecycleMetric>,
+    stages: Vec<LifecycleStage>,
+    work_items: Vec<LifecycleWorkItem>,
+    evidence: Vec<LifecycleEvidenceItem>,
+    services: Vec<LifecycleServiceItem>,
+    documents: Vec<LifecycleDocument>,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleMetric {
+    label: String,
+    value: String,
+    detail: String,
+    kind: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleStage {
+    phase: &'static str,
+    gate_id: String,
+    gate_name: String,
+    owner: String,
+    status: String,
+    status_kind: &'static str,
+    evidence_path: String,
+    focus: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleWorkItem {
+    item_type: &'static str,
+    id: String,
+    phase: String,
+    title: String,
+    owner: String,
+    priority: String,
+    status: String,
+    status_kind: &'static str,
+    evidence_path: String,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleEvidenceItem {
+    source: &'static str,
+    id: String,
+    domain: String,
+    title: String,
+    owner: String,
+    status: String,
+    status_kind: &'static str,
+    artifact: String,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleServiceItem {
+    service_id: String,
+    category: String,
+    interface: String,
+    implementation: String,
+    workflow: String,
+    status: String,
+    status_kind: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct LifecycleDocument {
+    area: &'static str,
+    title: &'static str,
+    path: &'static str,
+    purpose: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct DeveloperPlatform {
+    metrics: Vec<LifecycleMetric>,
+    services: Vec<DeveloperPlatformService>,
+    templates: Vec<DeveloperTemplate>,
+    environments: Vec<DeploymentEnvironment>,
+    promotion_gates: Vec<DeveloperPromotionGate>,
+    vscode_workflows: Vec<VsCodeWorkflow>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeveloperPlatformService {
+    service_id: String,
+    function: String,
+    default_stack: String,
+    operator_surface: String,
+    developer_surface: String,
+    vs_code_integration: String,
+    control: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeveloperTemplate {
+    template_id: String,
+    name: String,
+    language: String,
+    repo_path: String,
+    devcontainer_path: String,
+    pipeline_path: String,
+    deploy_path: String,
+    runtime: String,
+    owner: String,
+    status: String,
+    vscode_clone_uri: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeploymentEnvironment {
+    environment_id: String,
+    name: String,
+    cluster: String,
+    namespace_pattern: String,
+    gitops_tool: String,
+    approval_policy: String,
+    rollback_policy: String,
+    observability_url: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeveloperPromotionGate {
+    gate_id: String,
+    from_environment: String,
+    to_environment: String,
+    required_checks: String,
+    approver: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct VsCodeWorkflow {
+    workflow_id: String,
+    action: String,
+    vs_code_surface: String,
+    command_or_uri: String,
+    artifact_path: String,
+    portal_action: String,
     status: String,
 }
 
@@ -1698,6 +2068,616 @@ fn audit_evidence() -> Vec<AuditEvidence> {
     csv_rows(AUDIT_EVIDENCE_CSV, "data/commercial/audit-evidence.csv")
 }
 
+fn site_selection_scorecard() -> Vec<SiteSelectionCriterion> {
+    csv_rows(
+        SITE_SELECTION_SCORECARD_CSV,
+        "data/site-selection/site-selection-scorecard.csv",
+    )
+}
+
+fn physical_security_controls() -> Vec<PhysicalSecurityControl> {
+    csv_rows(
+        PHYSICAL_SECURITY_CONTROLS_CSV,
+        "data/security/physical-security-controls.csv",
+    )
+}
+
+fn sustainability_metrics() -> Vec<SustainabilityMetric> {
+    csv_rows(
+        SUSTAINABILITY_METRICS_CSV,
+        "data/sustainability/sustainability-metrics.csv",
+    )
+}
+
+fn ai_rack_classes() -> Vec<AiRackClass> {
+    csv_rows(
+        AI_RACK_CLASSES_CSV,
+        "data/ai-ready/high-density-rack-classes.csv",
+    )
+}
+
+fn engineering_evidence() -> Vec<EngineeringEvidence> {
+    csv_rows(
+        ENGINEERING_EVIDENCE_CSV,
+        "data/engineering/engineering-evidence-register.csv",
+    )
+}
+
+fn operations_procedures() -> Vec<OperationsProcedure> {
+    csv_rows(
+        OPERATIONS_PROCEDURES_CSV,
+        "data/operations/procedure-catalogue.csv",
+    )
+}
+
+fn project_gates() -> Vec<ProjectGate> {
+    csv_rows(PROJECT_GATES_CSV, "data/delivery/project-gates.csv")
+}
+
+fn authority_permits() -> Vec<AuthorityPermit> {
+    csv_rows(AUTHORITY_PERMITS_CSV, "data/delivery/authority-permits.csv")
+}
+
+fn delivery_risks() -> Vec<DeliveryRisk> {
+    csv_rows(DELIVERY_RISKS_CSV, "data/delivery/risk-register.csv")
+}
+
+fn delivery_actions() -> Vec<DeliveryAction> {
+    csv_rows(DELIVERY_ACTIONS_CSV, "data/delivery/action-tracker.csv")
+}
+
+fn commissioning_evidence() -> Vec<CommissioningEvidence> {
+    csv_rows(
+        COMMISSIONING_EVIDENCE_CSV,
+        "data/commissioning/commissioning-evidence-register.csv",
+    )
+}
+
+fn developer_platform_services() -> Vec<DeveloperPlatformService> {
+    csv_rows(
+        DEVELOPER_PLATFORM_SERVICES_CSV,
+        "data/software/developer-platform-services.csv",
+    )
+}
+
+fn developer_templates() -> Vec<DeveloperTemplate> {
+    csv_rows(
+        DEVELOPER_TEMPLATES_CSV,
+        "data/software/developer-templates.csv",
+    )
+}
+
+fn deployment_environments() -> Vec<DeploymentEnvironment> {
+    csv_rows(
+        DEPLOYMENT_ENVIRONMENTS_CSV,
+        "data/software/deployment-environments.csv",
+    )
+}
+
+fn developer_promotion_gates() -> Vec<DeveloperPromotionGate> {
+    csv_rows(
+        DEVELOPER_PROMOTION_GATES_CSV,
+        "data/software/developer-promotion-gates.csv",
+    )
+}
+
+fn vscode_workflows() -> Vec<VsCodeWorkflow> {
+    csv_rows(VSCODE_WORKFLOWS_CSV, "data/software/vscode-workflows.csv")
+}
+
+fn developer_platform() -> DeveloperPlatform {
+    let services = developer_platform_services();
+    let templates = developer_templates();
+    let environments = deployment_environments();
+    let promotion_gates = developer_promotion_gates();
+    let vscode_workflows = vscode_workflows();
+
+    let production_ready = services
+        .iter()
+        .filter(|service| service.status == "production-baseline")
+        .count();
+
+    DeveloperPlatform {
+        metrics: vec![
+            LifecycleMetric {
+                label: "Developer services".to_string(),
+                value: services.len().to_string(),
+                detail: "forge CI registry GitOps IaC".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Templates".to_string(),
+                value: templates.len().to_string(),
+                detail: "VS Code ready starters".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Environments".to_string(),
+                value: environments.len().to_string(),
+                detail: "dev staging prod edge IaC".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Production baselines".to_string(),
+                value: production_ready.to_string(),
+                detail: "registry GitOps IaC controls".to_string(),
+                kind: "info",
+            },
+        ],
+        services,
+        templates,
+        environments,
+        promotion_gates,
+        vscode_workflows,
+    }
+}
+
+fn is_closed_status(status: &str) -> bool {
+    matches!(
+        status.to_ascii_lowercase().as_str(),
+        "approved" | "baseline" | "closed" | "complete" | "implemented" | "ready" | "retired"
+    )
+}
+
+fn status_kind(status: &str) -> &'static str {
+    match status.to_ascii_lowercase().as_str() {
+        "blocked" | "danger" | "failed" => "danger",
+        "open" | "pending" | "scheduled" | "template" => "warn",
+        "draft" | "in-progress" | "pilot" | "preview" | "review" | "testing" => "info",
+        _ => "normal",
+    }
+}
+
+fn priority_kind(priority: &str) -> &'static str {
+    match priority.to_ascii_lowercase().as_str() {
+        "critical" | "high" => "danger",
+        "medium" => "warn",
+        "low" => "info",
+        _ => "normal",
+    }
+}
+
+fn stage_from_gate(
+    gates: &[ProjectGate],
+    gate_id: &str,
+    phase: &'static str,
+    focus: &'static str,
+) -> LifecycleStage {
+    let gate = gates
+        .iter()
+        .find(|gate| gate.gate_id == gate_id)
+        .unwrap_or_else(|| panic!("lifecycle gate {gate_id} must exist"));
+
+    LifecycleStage {
+        phase,
+        gate_id: gate.gate_id.clone(),
+        gate_name: gate.gate_name.clone(),
+        owner: gate.owner.clone(),
+        status: gate.status.clone(),
+        status_kind: status_kind(&gate.status),
+        evidence_path: gate.required_evidence.clone(),
+        focus,
+    }
+}
+
+fn lifecycle_documents() -> Vec<LifecycleDocument> {
+    vec![
+        LifecycleDocument {
+            area: "strategy",
+            title: "Sovereign datacentre mission",
+            path: "docs/strategy/sovereign-datacentre-mission.md",
+            purpose: "national scope and project boundary",
+        },
+        LifecycleDocument {
+            area: "planning",
+            title: "Country site profile guide",
+            path: "docs/deployment/country-site-profile-guide.md",
+            purpose: "country pack and site-planning fields",
+        },
+        LifecycleDocument {
+            area: "delivery",
+            title: "Project lifecycle gates",
+            path: "docs/delivery/project-lifecycle-gates.md",
+            purpose: "phase gate control from concept to handover",
+        },
+        LifecycleDocument {
+            area: "delivery",
+            title: "Authority permit register",
+            path: "docs/delivery/authority-permit-register.md",
+            purpose: "approval and authority tracking",
+        },
+        LifecycleDocument {
+            area: "design",
+            title: "Design freeze readiness",
+            path: "docs/delivery/design-freeze-readiness.md",
+            purpose: "minimum evidence before procurement and construction",
+        },
+        LifecycleDocument {
+            area: "engineering",
+            title: "Electrical single-line",
+            path: "docs/engineering/electrical-single-line-250kw.md",
+            purpose: "first electrical design evidence target",
+        },
+        LifecycleDocument {
+            area: "engineering",
+            title: "Thermal design basis",
+            path: "docs/engineering/thermal-design-basis.md",
+            purpose: "cooling and rack heat-capture basis",
+        },
+        LifecycleDocument {
+            area: "commissioning",
+            title: "Commissioning overview",
+            path: "docs/commissioning/commissioning-overview.md",
+            purpose: "L1-L5 commissioning model",
+        },
+        LifecycleDocument {
+            area: "commissioning",
+            title: "Commissioning evidence register",
+            path: "docs/commissioning/commissioning-evidence-register.md",
+            purpose: "test evidence and acceptance record",
+        },
+        LifecycleDocument {
+            area: "operations",
+            title: "Operational readiness review",
+            path: "docs/delivery/operational-readiness-review.md",
+            purpose: "run-state acceptance gate",
+        },
+        LifecycleDocument {
+            area: "operations",
+            title: "Handover to operations",
+            path: "docs/delivery/handover-to-operations.md",
+            purpose: "as-built evidence and open-risk transfer",
+        },
+        LifecycleDocument {
+            area: "software",
+            title: "Unified portal integration model",
+            path: "docs/software/unified-portal-integration-model.md",
+            purpose: "Rust workflow layer over open systems",
+        },
+        LifecycleDocument {
+            area: "security",
+            title: "Sovereign edge security stack",
+            path: "docs/security/sovereign-edge-security-stack.md",
+            purpose: "Edge Shield DNS TLS WAF access and audit fabric",
+        },
+        LifecycleDocument {
+            area: "commercial",
+            title: "Commercial readiness",
+            path: "docs/commercial-readiness/README.md",
+            purpose: "customer, SLA, audit, and standards readiness",
+        },
+    ]
+}
+
+fn lifecycle_overview() -> LifecycleOverview {
+    let gates = project_gates();
+    let permits = authority_permits();
+    let risks = delivery_risks();
+    let actions = delivery_actions();
+    let gaps = commercial_gaps();
+    let engineering = engineering_evidence();
+    let commissioning = commissioning_evidence();
+    let operations = operations_procedures();
+    let audit = audit_evidence();
+    let standards = commercial_standards();
+    let site = site_selection_scorecard();
+    let physical = physical_security_controls();
+    let sustainability = sustainability_metrics();
+    let ai = ai_rack_classes();
+    let sovereign = sovereign_cloud_services();
+    let core = core_cloud_services();
+    let config = config_scripts();
+    let documents = lifecycle_documents();
+
+    let open_work_count = risks
+        .iter()
+        .filter(|item| !is_closed_status(&item.status))
+        .count()
+        + actions
+            .iter()
+            .filter(|item| !is_closed_status(&item.status))
+            .count()
+        + gaps
+            .iter()
+            .filter(|item| !is_closed_status(&item.status))
+            .count();
+    let evidence_count =
+        engineering.len() + commissioning.len() + operations.len() + audit.len() + standards.len();
+
+    let metrics = vec![
+        LifecycleMetric {
+            label: "Lifecycle gates".to_string(),
+            value: gates.len().to_string(),
+            detail: "concept to handover".to_string(),
+            kind: "normal",
+        },
+        LifecycleMetric {
+            label: "Open work".to_string(),
+            value: open_work_count.to_string(),
+            detail: "risks actions gaps".to_string(),
+            kind: if open_work_count > 0 {
+                "warn"
+            } else {
+                "normal"
+            },
+        },
+        LifecycleMetric {
+            label: "Evidence records".to_string(),
+            value: evidence_count.to_string(),
+            detail: "engineering commissioning operations audit".to_string(),
+            kind: "normal",
+        },
+        LifecycleMetric {
+            label: "Managed services".to_string(),
+            value: sovereign.len().to_string(),
+            detail: "sovereign service catalogue".to_string(),
+            kind: "normal",
+        },
+    ];
+
+    let stages = vec![
+        stage_from_gate(
+            &gates,
+            "GATE_00",
+            "1. Initiate",
+            "mission boundary funding certification scope",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_01",
+            "2. Select Site",
+            "flood seismic geotechnical utility fibre authority due diligence",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_03",
+            "3. Freeze Design",
+            "MEP evidence fire security controls network cost and risk baseline",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_05",
+            "4. Build",
+            "permits procurement method statements and inspection test plan",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_06",
+            "5. Commission",
+            "L1-L5 tests integrated systems tests and defect closeout",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_07",
+            "6. Operate",
+            "staffing MOP SOP EOP monitoring spares incident command",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_08",
+            "7. Serve Tenants",
+            "SLA onboarding services responsibility matrix and support",
+        ),
+        stage_from_gate(
+            &gates,
+            "GATE_09",
+            "8. Handover",
+            "as-builts evidence registers training and open-risk transfer",
+        ),
+    ];
+
+    let mut work_items = Vec::new();
+    for risk in risks {
+        work_items.push(LifecycleWorkItem {
+            item_type: "risk",
+            id: risk.risk_id,
+            phase: risk.domain,
+            title: risk.risk,
+            owner: risk.owner,
+            priority: risk.impact,
+            status_kind: status_kind(&risk.status),
+            status: risk.status,
+            evidence_path: risk.evidence_path,
+        });
+    }
+    for action in actions {
+        work_items.push(LifecycleWorkItem {
+            item_type: "action",
+            id: action.action_id,
+            phase: action.due_phase,
+            title: action.action,
+            owner: action.owner,
+            priority: action.source,
+            status_kind: status_kind(&action.status),
+            status: action.status,
+            evidence_path: action.evidence_path,
+        });
+    }
+    for gap in gaps {
+        work_items.push(LifecycleWorkItem {
+            item_type: "commercial-gap",
+            id: gap.gap_id,
+            phase: gap.domain,
+            title: gap.commercial_expectation,
+            owner: "commercial-readiness".to_string(),
+            priority: gap.priority,
+            status_kind: status_kind(&gap.status),
+            status: gap.status,
+            evidence_path: gap.next_artifact,
+        });
+    }
+
+    let mut evidence = Vec::new();
+    for item in engineering {
+        evidence.push(LifecycleEvidenceItem {
+            source: "engineering",
+            id: item.evidence_id,
+            domain: item.domain,
+            title: item.evidence_name,
+            owner: item.owner,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_path,
+        });
+    }
+    for item in commissioning {
+        evidence.push(LifecycleEvidenceItem {
+            source: "commissioning",
+            id: item.evidence_id,
+            domain: item.level,
+            title: item.test_name,
+            owner: item.owner,
+            status_kind: priority_kind(&item.criticality),
+            status: item.status,
+            artifact: item.evidence_path,
+        });
+    }
+    for item in operations {
+        evidence.push(LifecycleEvidenceItem {
+            source: "operations",
+            id: item.procedure_id,
+            domain: item.procedure_type,
+            title: item.procedure_name,
+            owner: item.owner,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.doc_path,
+        });
+    }
+    for item in audit {
+        evidence.push(LifecycleEvidenceItem {
+            source: "audit",
+            id: item.evidence_id,
+            domain: item.domain,
+            title: item.evidence_name,
+            owner: item.owner,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_path,
+        });
+    }
+    for item in standards {
+        evidence.push(LifecycleEvidenceItem {
+            source: "standards",
+            id: item.requirement_id,
+            domain: item.standard_family,
+            title: item.control_area,
+            owner: item.responsible_party,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_file,
+        });
+    }
+    for item in permits {
+        evidence.push(LifecycleEvidenceItem {
+            source: "permit",
+            id: item.permit_id,
+            domain: item.authority_area,
+            title: item.permit_or_approval,
+            owner: item.owner,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_path,
+        });
+    }
+    for item in site {
+        evidence.push(LifecycleEvidenceItem {
+            source: "site",
+            id: item.criterion_id,
+            domain: item.domain,
+            title: item.criterion,
+            owner: "owner-engineer".to_string(),
+            status: "template".to_string(),
+            status_kind: "warn",
+            artifact: item.next_evidence,
+        });
+    }
+    for item in physical {
+        evidence.push(LifecycleEvidenceItem {
+            source: "physical-security",
+            id: item.control_id,
+            domain: item.zone,
+            title: item.control,
+            owner: item.owner,
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence,
+        });
+    }
+    for item in sustainability {
+        evidence.push(LifecycleEvidenceItem {
+            source: "sustainability",
+            id: item.metric_id,
+            domain: item.stage,
+            title: item.metric,
+            owner: item.owner,
+            status: "measurement".to_string(),
+            status_kind: "info",
+            artifact: item.evidence,
+        });
+    }
+    for item in ai {
+        evidence.push(LifecycleEvidenceItem {
+            source: "ai-ready",
+            id: item.rack_class_id,
+            domain: item.power_kw_range,
+            title: item.cooling_mode,
+            owner: "facility-and-platform".to_string(),
+            status_kind: status_kind(&item.status),
+            status: item.status,
+            artifact: item.evidence_required,
+        });
+    }
+
+    let mut services = Vec::new();
+    for service in core {
+        services.push(LifecycleServiceItem {
+            service_id: service.id.to_string(),
+            category: service.priority.to_string(),
+            interface: if service.tenant_visible {
+                "tenant+operator".to_string()
+            } else {
+                "operator".to_string()
+            },
+            implementation: service.open_source_stack.to_string(),
+            workflow: service.default_shape.to_string(),
+            status: service.status.to_string(),
+            status_kind: service.status_kind,
+        });
+    }
+    for service in sovereign {
+        services.push(LifecycleServiceItem {
+            service_id: service.id,
+            category: service.category,
+            interface: service.ui_surface,
+            implementation: service.open_equivalent,
+            workflow: service.workflow,
+            status_kind: status_kind(&service.maturity),
+            status: service.maturity,
+        });
+    }
+    for script in config {
+        services.push(LifecycleServiceItem {
+            service_id: script.id.to_string(),
+            category: "config-script".to_string(),
+            interface: script.rollout_target.to_string(),
+            implementation: format!("{} {}", script.tool, script.path),
+            workflow: script.validation_command.to_string(),
+            status: script.edit_mode.to_string(),
+            status_kind: priority_kind(script.risk),
+        });
+    }
+
+    LifecycleOverview {
+        metrics,
+        stages,
+        work_items,
+        evidence,
+        services,
+        documents,
+    }
+}
+
 fn upgrade_policy() -> Vec<UpgradePolicy> {
     vec![
         UpgradePolicy {
@@ -2311,6 +3291,8 @@ mod tests {
         let operator = body(&route_response("GET", "/operator"));
         let edge = body(&route_response("GET", "/edge"));
         let planner = body(&route_response("GET", "/planner"));
+        let lifecycle = body(&route_response("GET", "/lifecycle"));
+        let developer = body(&route_response("GET", "/developer"));
 
         assert!(user.contains("Tenant Cloud"));
         assert!(user.contains("tenant-service-filter"));
@@ -2324,6 +3306,14 @@ mod tests {
         assert!(planner.contains("Cost Planner"));
         assert!(planner.contains("planner-scenarios"));
         assert!(planner.contains("planner-price-basis"));
+        assert!(lifecycle.contains("Lifecycle Console"));
+        assert!(lifecycle.contains("lifecycle-stages"));
+        assert!(lifecycle.contains("lifecycle-evidence"));
+        assert!(lifecycle.contains("lifecycle-services"));
+        assert!(developer.contains("Developer Console"));
+        assert!(developer.contains("developer-templates"));
+        assert!(developer.contains("developer-vscode"));
+        assert!(developer.contains("Forgejo"));
     }
 
     #[test]
@@ -2560,6 +3550,164 @@ mod tests {
     }
 
     #[test]
+    fn exposes_facility_readiness_catalogues() {
+        let site = json_body("/api/site-selection/scorecard");
+        let physical = json_body("/api/security/physical-controls");
+        let sustainability = json_body("/api/sustainability/metrics");
+        let ai = json_body("/api/ai-ready/rack-classes");
+        let engineering = json_body("/api/engineering/evidence");
+        let operations = json_body("/api/operations/procedures");
+        let gates = json_body("/api/delivery/gates");
+        let permits = json_body("/api/delivery/permits");
+        let risks = json_body("/api/delivery/risks");
+        let actions = json_body("/api/delivery/actions");
+        let commissioning = json_body("/api/commissioning/evidence");
+
+        assert!(site.as_array().unwrap().iter().any(|criterion| {
+            criterion["criterion_id"] == "SITE_FIBRE"
+                && criterion["next_evidence"]
+                    == "docs/site-selection/fibre-route-diversity-checklist.md"
+        }));
+        assert!(physical
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|control| control["control_id"] == "PHY_MANTRAP"));
+        assert!(sustainability
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|metric| metric["metric_id"] == "SUS_PUE"));
+        assert!(ai.as_array().unwrap().iter().any(|rack| {
+            rack["rack_class_id"] == "AI_RACK_80KW"
+                && rack["cooling_mode"] == "direct-to-chip-liquid"
+        }));
+        assert!(engineering.as_array().unwrap().iter().any(|evidence| {
+            evidence["evidence_id"] == "ENG_SELECTIVITY"
+                && evidence["evidence_path"] == "docs/engineering/breaker-fuse-coordination.md"
+        }));
+        assert!(operations.as_array().unwrap().iter().any(|procedure| {
+            procedure["procedure_id"] == "OPS_LOTO"
+                && procedure["doc_path"] == "docs/operations/lockout-tagout.md"
+        }));
+        assert!(gates.as_array().unwrap().iter().any(|gate| {
+            gate["gate_id"] == "GATE_06"
+                && gate["required_evidence"]
+                    == "docs/commissioning/commissioning-evidence-register.md"
+        }));
+        assert!(permits
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|permit| permit["permit_id"] == "PERMIT_FIRE"));
+        assert!(risks
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|risk| risk["risk_id"] == "RISK_DC_ARC"));
+        assert!(actions
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|action| action["action_id"] == "ACT_005"));
+        assert!(commissioning.as_array().unwrap().iter().any(|evidence| {
+            evidence["evidence_id"] == "COM_GRID_LOSS"
+                && evidence["evidence_path"] == "docs/commissioning/grid-loss-test.md"
+        }));
+    }
+
+    #[test]
+    fn exposes_unified_lifecycle_overview() {
+        let overview = json_body("/api/lifecycle/overview");
+
+        assert!(overview["metrics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|metric| metric["label"] == "Lifecycle gates"));
+        assert!(overview["stages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|stage| stage["gate_id"] == "GATE_06" && stage["phase"] == "5. Commission"));
+        assert!(overview["work_items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["id"] == "RISK_DC_ARC"
+                && item["evidence_path"] == "docs/engineering/dc-protection-and-arc-flash.md"));
+        assert!(overview["evidence"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["id"] == "COM_GRID_LOSS"
+                && item["artifact"] == "docs/commissioning/grid-loss-test.md"));
+        assert!(overview["services"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|service| service["service_id"] == "identity"
+                && service["implementation"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("Keycloak")));
+        assert!(overview["documents"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|document| document["path"] == "docs/delivery/project-lifecycle-gates.md"));
+    }
+
+    #[test]
+    fn exposes_developer_platform_for_gitops_and_vscode() {
+        let platform = json_body("/api/developer/platform");
+
+        assert!(platform["services"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|service| {
+                service["service_id"] == "dev_forge"
+                    && service["default_stack"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("Forgejo")
+            }));
+        assert!(platform["templates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|template| {
+                template["template_id"] == "rust_axum_api"
+                    && template["devcontainer_path"]
+                        == "examples/developer-platform/rust-api/.devcontainer/devcontainer.json"
+                    && template["vscode_clone_uri"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .starts_with("vscode://")
+            }));
+        assert!(platform["environments"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|environment| environment["environment_id"] == "prod"
+                && environment["gitops_tool"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("Argo CD")));
+        assert!(platform["promotion_gates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|gate| gate["gate_id"] == "PROMOTE_STAGING_PROD"));
+        assert!(platform["vscode_workflows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|workflow| workflow["workflow_id"] == "VSCODE_DEVCONTAINER"));
+    }
+
+    #[test]
     fn static_assets_have_content_types_and_unknown_routes_404() {
         let css = response_text(&route_response("GET", "/styles.css"));
         let png = response_text(&route_response(
@@ -2571,5 +3719,27 @@ mod tests {
         assert!(css.contains("Content-Type: text/css; charset=utf-8"));
         assert!(png.contains("Content-Type: image/png"));
         assert!(missing.starts_with("HTTP/1.1 404 Not Found"));
+    }
+
+    #[test]
+    fn serves_repository_text_artifacts_for_lifecycle_links() {
+        let doc = response_text(&route_response(
+            "GET",
+            "/docs/delivery/project-lifecycle-gates.md",
+        ));
+        let csv = response_text(&route_response("GET", "/data/delivery/project-gates.csv"));
+        let devcontainer = response_text(&route_response(
+            "GET",
+            "/examples/developer-platform/rust-api/.devcontainer/devcontainer.json",
+        ));
+        let escaped = response_text(&route_response("GET", "/docs/../Cargo.toml"));
+
+        assert!(doc.contains("Content-Type: text/markdown; charset=utf-8"));
+        assert!(doc.contains("Project Lifecycle Gates"));
+        assert!(csv.contains("Content-Type: text/csv; charset=utf-8"));
+        assert!(csv.contains("GATE_06"));
+        assert!(devcontainer.contains("Content-Type: application/json; charset=utf-8"));
+        assert!(devcontainer.contains("OSDC Rust API"));
+        assert!(escaped.starts_with("HTTP/1.1 404 Not Found"));
     }
 }

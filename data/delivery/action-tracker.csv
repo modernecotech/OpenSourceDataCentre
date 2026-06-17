@@ -1,0 +1,9 @@
+action_id,source,action,owner,due_phase,evidence_path,status
+ACT_001,commercial-gap-register,Complete standards compliance matrix first pass,owner-engineer,concept-design,docs/commercial-readiness/standards-compliance-matrix.md,open
+ACT_002,engineering-register,Produce DC protection and coordination study templates,electrical-engineer,design-freeze,docs/engineering/breaker-fuse-coordination.md,open
+ACT_003,site-scorecard,Complete flood seismic utility and fibre reviews,owner-engineer,site-selection,docs/site-selection/site-selection-scorecard.md,open
+ACT_004,operations-catalogue,Run first grid-loss cooling-failure and fire drill schedule,operations-owner,operational-readiness,docs/operations/drill-calendar.md,open
+ACT_005,commissioning-register,Create defects and retest log before integrated testing,commissioning-authority,commissioning,docs/commissioning/defects-and-retest-log.md,open
+ACT_006,commercial-products,Attach customer responsibility matrix to onboarding pack,commercial-owner,customer-readiness,docs/commercial-readiness/customer-responsibility-matrix.md,open
+ACT_007,compliance-pack,Create risk register and control evidence register,security-owner,concept-design,docs/compliance/risk-register-template.md,open
+ACT_008,software-prototype,Expose delivery and commissioning registers through portal API,platform-owner,concept-design,docs/architecture/portal-api.md,open

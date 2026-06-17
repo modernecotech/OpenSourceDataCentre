@@ -1,0 +1,21 @@
+evidence_id,domain,evidence_name,evidence_path,owner,stage,priority,status
+ENG_ELEC_SLD,electrical,250 kW electrical single-line design basis,docs/engineering/electrical-single-line-250kw.md,electrical-engineer,design-basis,critical,template
+ENG_DC_ARC,electrical,DC protection and arc-flash study,docs/engineering/dc-protection-and-arc-flash.md,electrical-engineer,design-basis,critical,template
+ENG_SELECTIVITY,electrical,Breaker and fuse coordination study,docs/engineering/breaker-fuse-coordination.md,electrical-engineer,design-basis,critical,template
+ENG_EARTHING,electrical,Earthing lightning and surge protection,docs/engineering/earthing-lightning-surge-protection.md,electrical-engineer,design-basis,critical,template
+ENG_EPO,electrical,Emergency power-off and isolation,docs/engineering/emergency-power-off-and-isolation.md,electrical-engineer,design-basis,critical,template
+ENG_GEN_FUEL,electrical,Generator fuel and refuelling plan,docs/engineering/generator-fuel-and-refuelling-plan.md,facilities-engineer,design-basis,high,template
+ENG_BESS_FIRE,life-safety,Battery safety and fire strategy,docs/engineering/battery-safety-and-fire-strategy.md,life-safety-engineer,design-basis,critical,template
+ENG_PANDID,cooling,Cooling piping and instrumentation,docs/engineering/cooling-piping-and-instrumentation.md,mechanical-engineer,design-basis,critical,template
+ENG_LEAK_WATER,cooling,Leak detection and water treatment,docs/engineering/leak-detection-and-water-treatment.md,mechanical-engineer,design-basis,high,template
+ENG_SOO,controls,Sequence of operations,docs/engineering/sequence-of-operations.md,controls-engineer,design-basis,critical,template
+ENG_THERMAL,cooling,Thermal design basis,docs/engineering/thermal-design-basis.md,mechanical-engineer,design-basis,critical,template
+ENG_CLIMATE,cooling,Climate-specific cooling selection,docs/engineering/climate-specific-cooling-selection.md,mechanical-engineer,design-basis,high,template
+ENG_ASHRAE,cooling,ASHRAE envelope compliance plan,docs/engineering/ashrae-envelope-compliance.md,mechanical-engineer,design-basis,high,template
+ENG_CFD,cooling,CFD and airflow validation,docs/engineering/cfd-and-airflow-validation.md,mechanical-engineer,validation,medium,template
+ENG_LIQUID,cooling,Liquid cooling loop specification,docs/engineering/liquid-cooling-loop-specification.md,mechanical-engineer,design-basis,high,template
+ENG_RDHX,cooling,Rear-door heat exchanger specification,docs/engineering/rear-door-heat-exchanger-specification.md,mechanical-engineer,design-basis,high,template
+ENG_DTC,cooling,Direct-to-chip readiness,docs/engineering/direct-to-chip-readiness.md,mechanical-engineer,design-basis,high,template
+ENG_RUNAWAY,cooling,Cooling failure thermal runaway test,docs/engineering/cooling-failure-thermal-runway-test.md,commissioning-authority,commissioning,critical,template
+ENG_EPMS_BMS,controls,EPMS and BMS architecture,docs/engineering/epms-bms-architecture.md,controls-engineer,design-basis,high,template
+ENG_FIRE,life-safety,Fire strategy,docs/engineering/fire-strategy.md,life-safety-engineer,design-basis,critical,template

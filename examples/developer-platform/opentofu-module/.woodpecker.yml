@@ -1,0 +1,14 @@
+steps:
+  validate:
+    image: ghcr.io/opentofu/opentofu:latest
+    commands:
+      - tofu fmt -check
+      - tofu init -backend=false
+      - tofu validate
+  plan:
+    image: ghcr.io/opentofu/opentofu:latest
+    commands:
+      - tofu plan -out=tfplan
+when:
+  event:
+    - pull_request

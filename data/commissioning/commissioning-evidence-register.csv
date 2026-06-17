@@ -1,0 +1,11 @@
+evidence_id,level,test_name,evidence_path,owner,acceptance,criticality,status
+COM_L1_COMPONENT,L1,component inspection,docs/commissioning/commissioning-evidence-register.md,commissioning-authority,all critical equipment inspected and defects logged,critical,template
+COM_L2_PREFUNCTION,L2,pre-functional checks,docs/commissioning/commissioning-evidence-register.md,commissioning-authority,controls point-to-point checks complete,critical,template
+COM_L3_FUNCTION,L3,functional tests,docs/commissioning/commissioning-evidence-register.md,commissioning-authority,system functional tests complete,critical,template
+COM_GRID_LOSS,L4,grid loss test,docs/commissioning/grid-loss-test.md,commissioning-authority,IT load rides through or sheds according to sequence,critical,template
+COM_DCBUS,L4,DC bus ride-through test,docs/commissioning/dc-bus-ride-through-test.md,commissioning-authority,DC bus remains within accepted limits,critical,template
+COM_COOLING,L4,cooling failover test,docs/commissioning/cooling-failover-test.md,commissioning-authority,cooling failover meets thermal acceptance,critical,template
+COM_GENERATOR,L4,generator start test,docs/commissioning/generator-start-test.md,commissioning-authority,generator starts transfers and stabilizes within accepted window,critical,template
+COM_BACKUP,L4,backup restore test,docs/commissioning/backup-restore-test.md,platform-owner,restore objective proven from backup,critical,template
+COM_THERMAL,L4,cooling failure thermal runaway test,docs/engineering/cooling-failure-thermal-runway-test.md,commissioning-authority,ride-through and workload response measured,critical,template
+COM_L5_READINESS,L5,production readiness review,docs/delivery/operational-readiness-review.md,operations-owner,staff tools procedures monitoring and evidence accepted,critical,template

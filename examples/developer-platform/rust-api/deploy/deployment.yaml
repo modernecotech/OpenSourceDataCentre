@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rust-axum-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rust-axum-api
+  template:
+    metadata:
+      labels:
+        app: rust-axum-api
+    spec:
+      containers:
+        - name: app
+          image: harbor.osdc.local/apps/rust-axum-api:replace-me
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

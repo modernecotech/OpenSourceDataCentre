@@ -1,0 +1,5 @@
+rack_class_id,power_kw_range,cooling_mode,network_target,storage_target,facility_requirements,evidence_required,status
+AI_RACK_25KW,15-25,rear-door-heat-exchanger-or-contained-air,100G-200G,shared-ceph-or-nvme-cache,standard high-density row with measured airflow and rack power,thermal-test and rack-power-capacity-plan,baseline
+AI_RACK_50KW,25-50,rear-door-plus-direct-to-chip-ready,200G-400G,local-nvme-cache-plus-ceph,liquid-ready loop leak detection and higher floor loading,liquid-loop-spec and failure-test,pilot
+AI_RACK_80KW,50-80,direct-to-chip-liquid,400G-800G,high-throughput parallel storage,liquid CDU redundancy water treatment and emergency procedures,CFD liquid-test and MOP,advanced
+AI_RACK_120KW,80-120,direct-to-chip-or-immersion-special,400G-800G-or-infiniband,training-storage-fabric,dedicated electrical cooling fire and leak response design,third-party-engineering-review,experimental

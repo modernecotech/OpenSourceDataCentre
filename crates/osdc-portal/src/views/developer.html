@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Developer Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="developer">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Developer</strong>
+          <span>forge to production</span>
+        </div>
+        <nav class="nav-list" aria-label="Developer navigation">
+          <a class="active" href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+        </nav>
+        <small>forge: forgejo.osdc.local</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Developer Console</h1>
+            <p>Forgejo, Woodpecker, Harbor, GitOps, OpenTofu, VS Code</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="developer-refresh" aria-label="Refresh developer data">R</button>
+            <button id="developer-export-templates">Export templates</button>
+            <button class="primary" id="developer-create-service">Create service</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="developer-metrics">
+            <div class="metric"><span>Developer services</span><strong>8</strong><em>forge CI registry GitOps IaC</em></div>
+            <div class="metric"><span>Templates</span><strong>6</strong><em>VS Code ready starters</em></div>
+            <div class="metric"><span>Environments</span><strong>5</strong><em>dev staging prod edge IaC</em></div>
+            <div class="metric"><span>Production baselines</span><strong>3</strong><em>registry GitOps IaC controls</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Developer Platform Stack</h2>
+              <div class="panel-tools">
+                <input id="developer-service-filter" type="search" placeholder="Filter services">
+                <select id="developer-service-status" aria-label="Developer service status filter">
+                  <option value="">All status</option>
+                  <option value="pilot">pilot</option>
+                  <option value="production-baseline">production-baseline</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Function</th><th>Stack</th><th>VS Code</th><th>Control</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="developer-services">
+                <tr><td>dev_forge</td><td>source repositories</td><td>Forgejo</td><td>git clone</td><td>branch protection</td><td><span class="status info">pilot</span></td><td>docs/software/developer-platform.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Service Templates</h2>
+              <div class="panel-tools">
+                <input id="developer-template-filter" type="search" placeholder="Filter templates">
+                <select id="developer-template-status" aria-label="Template status filter">
+                  <option value="">All status</option>
+                  <option value="pilot">pilot</option>
+                  <option value="template">template</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Template</th><th>Language</th><th>Runtime</th><th>Devcontainer</th><th>Pipeline</th><th>Deploy</th><th>VS Code</th><th>Status</th></tr>
+              </thead>
+              <tbody id="developer-templates">
+                <tr><td>Rust API</td><td>Rust</td><td>Kubernetes service</td><td>.devcontainer/devcontainer.json</td><td>.woodpecker.yml</td><td>deploy/kustomization.yaml</td><td>Clone</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Deployment Environments</h2>
+                <div class="panel-tools">
+                  <input id="developer-environment-filter" type="search" placeholder="Filter environments">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Environment</th><th>Cluster</th><th>Namespace</th><th>GitOps</th><th>Approval</th><th>Status</th></tr>
+                </thead>
+                <tbody id="developer-environments">
+                  <tr><td>dev</td><td>k8s-dev</td><td>tenant-dev</td><td>Flux</td><td>owner</td><td><span class="status info">pilot</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Promotion Gates</h2>
+                <div class="panel-tools">
+                  <input id="developer-gate-filter" type="search" placeholder="Filter gates">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Gate</th><th>From</th><th>To</th><th>Checks</th><th>Approver</th><th>Status</th></tr>
+                </thead>
+                <tbody id="developer-gates">
+                  <tr><td>PROMOTE_DEV_STAGING</td><td>dev</td><td>staging</td><td>tests scan SBOM</td><td>owner</td><td><span class="status info">pilot</span></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>VS Code Workflows</h2>
+              <div class="panel-tools">
+                <input id="developer-vscode-filter" type="search" placeholder="Filter VS Code">
+                <button id="developer-export-vscode">Export VS Code</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Workflow</th><th>Action</th><th>Surface</th><th>Command</th><th>Artifact</th><th>Portal Action</th><th>Status</th></tr>
+              </thead>
+              <tbody id="developer-vscode">
+                <tr><td>VSCODE_CLONE_TEMPLATE</td><td>clone generated repo</td><td>Command Palette</td><td>vscode://</td><td>.devcontainer</td><td>create service</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Developer Actions</h2>
+              <div class="button-row">
+                <button id="developer-create-repo">Create repo</button>
+                <button id="developer-run-pipeline">Run pipeline</button>
+                <button id="developer-open-gitops">Open GitOps PR</button>
+                <button id="developer-open-vscode">Open VS Code</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="action-output" id="developer-action-output">Developer workflow actions are staged as prototype events.</div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

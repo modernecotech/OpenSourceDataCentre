@@ -1,0 +1,7 @@
+workflow_id,action,vs_code_surface,command_or_uri,artifact_path,portal_action,status
+VSCODE_CLONE_TEMPLATE,clone generated repo,Command Palette Git Clone,vscode://vscode.git/clone?url=ssh://git@forgejo.osdc.local/apps/example.git,examples/developer-platform/rust-api/.devcontainer/devcontainer.json,create service from template,pilot
+VSCODE_DEVCONTAINER,reopen in dev container,Dev Containers,Dev Containers: Reopen in Container,examples/developer-platform/rust-api/.devcontainer/devcontainer.json,open development environment,pilot
+VSCODE_SOURCE_CONTROL,commit and push changes,Source Control,Source Control: Commit and Sync,examples/developer-platform/rust-api/.woodpecker.yml,submit code change,pilot
+VSCODE_PIPELINE_EDIT,edit CI pipeline,Explorer and Source Control,edit .woodpecker.yml,examples/developer-platform/rust-api/.woodpecker.yml,update pipeline and run checks,pilot
+VSCODE_GITOPS_EDIT,edit deployment manifest,Explorer and Source Control,edit deploy/kustomization.yaml,examples/developer-platform/rust-api/deploy/kustomization.yaml,open GitOps change,pilot
+VSCODE_OPENTOFU_PLAN,review infrastructure plan,Terminal and Source Control,opentofu plan,examples/developer-platform/opentofu-module/deploy/main.tf,approve infrastructure plan,template

@@ -1,0 +1,14 @@
+procedure_id,procedure_type,procedure_name,doc_path,owner,review_cadence,criticality,status
+OPS_MOP_TEMPLATE,MOP,Method of procedure template,docs/operations/mop-template.md,operations-owner,quarterly,critical,template
+OPS_SOP_TEMPLATE,SOP,Standard operating procedure template,docs/operations/sop-template.md,operations-owner,quarterly,high,template
+OPS_EOP_TEMPLATE,EOP,Emergency operating procedure template,docs/operations/eop-template.md,operations-owner,quarterly,critical,template
+OPS_SHIFT,SOP,Shift handover,docs/operations/shift-handover.md,operations-owner,monthly,high,template
+OPS_PERMIT,permit,Permit to work,docs/operations/permit-to-work.md,operations-owner,quarterly,critical,template
+OPS_LOTO,safety,Lockout tagout,docs/operations/lockout-tagout.md,facilities-owner,quarterly,critical,template
+OPS_INCIDENT,incident,Incident command,docs/operations/incident-command.md,operations-owner,quarterly,critical,template
+OPS_ESCALATION,incident,Escalation matrix,docs/operations/escalation-matrix.md,operations-owner,monthly,high,template
+OPS_REVIEW,incident,Post-incident review,docs/operations/post-incident-review.md,operations-owner,quarterly,high,template
+OPS_DRILLS,training,Drill calendar,docs/operations/drill-calendar.md,operations-owner,quarterly,high,template
+OPS_ALARM,SOP,Alarm philosophy,docs/operations/alarm-philosophy.md,facilities-owner,quarterly,high,template
+OPS_TELEMETRY,SOP,Telemetry retention,docs/operations/telemetry-retention.md,platform-owner,quarterly,medium,template
+OPS_CAPACITY,SOP,Capacity management,docs/operations/capacity-management.md,operations-owner,monthly,high,template

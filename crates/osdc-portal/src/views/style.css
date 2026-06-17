@@ -416,6 +416,44 @@ tr.selected-row td {
   font-size: 12px;
 }
 
+.lifecycle-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.lifecycle-stage {
+  min-height: 138px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--surface-2);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.lifecycle-stage strong {
+  font-size: 14px;
+}
+
+.lifecycle-stage span,
+.lifecycle-stage small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lifecycle-stage a {
+  color: var(--blue);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+td a {
+  color: var(--blue);
+  overflow-wrap: anywhere;
+}
+
 .split {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -489,7 +527,8 @@ tr.selected-row td {
 
   .dashboard-grid,
   .split,
-  .editor-grid {
+  .editor-grid,
+  .lifecycle-stage-grid {
     grid-template-columns: 1fr;
   }
 

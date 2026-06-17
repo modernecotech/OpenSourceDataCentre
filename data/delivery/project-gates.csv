@@ -1,0 +1,11 @@
+gate_id,phase,gate_name,exit_criteria,required_evidence,owner,status
+GATE_00,initiation,mission and boundary approved,scope audience site class and certification boundary agreed,docs/delivery/project-lifecycle-gates.md,project-sponsor,template
+GATE_01,site-selection,site due diligence accepted,no unresolved critical red flags in scorecard,docs/site-selection/site-selection-scorecard.md,owner-engineer,template
+GATE_02,concept-design,concept design basis approved,power cooling fire security software and commercial assumptions reviewed,docs/delivery/design-freeze-readiness.md,owner-engineer,template
+GATE_03,design-freeze,design freeze approved,MEP evidence register critical items assigned and review path agreed,docs/delivery/design-freeze-readiness.md,owner-engineer,template
+GATE_04,procurement,procurement release approved,critical suppliers reviewed second-source and safety evidence recorded,docs/procurement/supplier-audit-checklist.md,procurement-owner,template
+GATE_05,construction,construction readiness approved,permits method statements safety plan and inspection test plan accepted,docs/delivery/authority-permit-register.md,project-manager,template
+GATE_06,commissioning,L1-L5 commissioning complete,critical defects closed and integrated systems test accepted,docs/commissioning/commissioning-evidence-register.md,commissioning-authority,template
+GATE_07,operational-readiness,operations ready,staffing procedures monitoring spares access and incident command accepted,docs/delivery/operational-readiness-review.md,operations-owner,template
+GATE_08,customer-readiness,commercial service launch ready,SLA products onboarding demarcation and customer support accepted,docs/commercial/customer-onboarding.md,commercial-owner,template
+GATE_09,handover,handover to operations complete,as-built docs evidence registers training and open risks transferred,docs/delivery/handover-to-operations.md,project-manager,template

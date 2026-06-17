@@ -1,0 +1,8 @@
+metric_id,metric,boundary,cadence,evidence,stage,owner
+SUS_PUE,power usage effectiveness,total facility energy divided by IT equipment energy,monthly,EPMS meter report,operating-measurement,sustainability-owner
+SUS_WUE,water usage effectiveness,water used for cooling and facility operation divided by IT energy,monthly,water meter and cooling report,operating-measurement,sustainability-owner
+SUS_CUE,carbon usage effectiveness,carbon emissions attributed to facility energy divided by IT energy,monthly,energy source and emissions factor record,operating-measurement,sustainability-owner
+SUS_RENEWABLE,renewable energy fraction,onsite plus contracted renewable energy divided by facility energy,monthly,PV meter and procurement record,operating-measurement,sustainability-owner
+SUS_HEAT_REUSE,heat reuse fraction,useful exported or reused heat divided by captured recoverable heat,quarterly,heat meter and off-taker record,pilot-measurement,facilities-owner
+SUS_EWASTE,e-waste and circularity,decommissioned equipment handled through approved reuse recycling or disposal path,quarterly,asset disposal record,audit-reporting,operations-owner
+SUS_BATTERY,battery lifecycle,BESS warranty health safety and recycling path,quarterly,BMS health report and supplier recycling record,audit-reporting,facilities-owner

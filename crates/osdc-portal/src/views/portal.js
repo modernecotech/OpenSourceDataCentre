@@ -122,11 +122,16 @@ function wireActionButton(buttonId, message, outputId) {
 function downloadTableCsv(tbodyId, filename) {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
-  const rows = [...tbody.querySelectorAll("tr:not([hidden])")].map((row) =>
+  let rows = [...tbody.querySelectorAll("tr:not([hidden])")].map((row) =>
     [...row.children]
       .map((cell) => `"${cell.textContent.trim().replaceAll('"', '""')}"`)
       .join(",")
   );
+  if (!rows.length) {
+    rows = [...tbody.children]
+      .filter((child) => !child.hidden)
+      .map((child) => `"${child.textContent.trim().replace(/\s+/g, " ").replaceAll('"', '""')}"`);
+  }
   if (!rows.length) return;
   const url = URL.createObjectURL(new Blob([`${rows.join("\n")}\n`], { type: "text/csv" }));
   const link = document.createElement("a");
@@ -143,6 +148,30 @@ function wireDownloadButton(buttonId, tbodyId, filename) {
     event.preventDefault();
     downloadTableCsv(tbodyId, filename);
   });
+}
+
+function attachColumnFilter({ textInputId, selectId, tbodyId, columnIndex }) {
+  const textInput = document.getElementById(textInputId);
+  const select = document.getElementById(selectId);
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody || (!textInput && !select)) return;
+
+  const apply = () => {
+    const query = (textInput?.value ?? "").trim().toLowerCase();
+    const selected = (select?.value ?? "").trim().toLowerCase();
+    for (const row of tbody.querySelectorAll("tr")) {
+      const rowText = row.textContent.toLowerCase();
+      const columnText = row.children[columnIndex]?.textContent.trim().toLowerCase() ?? "";
+      row.hidden =
+        Boolean(query && !rowText.includes(query)) ||
+        Boolean(selected && columnText !== selected);
+    }
+  };
+
+  textInput?.addEventListener("input", apply);
+  select?.addEventListener("change", apply);
+  apply();
+  return apply;
 }
 
 function statusCell(label, kind) {
@@ -241,6 +270,318 @@ function renderEdgeServices(targetId, services) {
       tr.append(td);
     }
     tr.append(statusCell(service.status, service.status_kind));
+    target.append(tr);
+  }
+}
+
+function repoHref(value) {
+  if (typeof value !== "string") return null;
+  if (
+    value.startsWith("docs/") ||
+    value.startsWith("data/") ||
+    value.startsWith("examples/") ||
+    value === "README.md" ||
+    value === "LICENSE.md"
+  ) {
+    return `/${value}`;
+  }
+  return null;
+}
+
+function appendValueOrRepoLink(td, value) {
+  if (typeof value === "string" && value.startsWith("vscode://")) {
+    const link = document.createElement("a");
+    link.href = value;
+    link.append(text("Open in VS Code"));
+    td.append(link);
+    return;
+  }
+  if (typeof value === "string" && value.startsWith("https://")) {
+    const link = document.createElement("a");
+    link.href = value;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.append(text(value));
+    td.append(link);
+    return;
+  }
+
+  const href = repoHref(value);
+  if (!href) {
+    td.append(text(value));
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = href;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.append(text(value));
+  td.append(link);
+}
+
+function renderLifecycleStages(targetId, stages) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const stage of stages) {
+    const card = document.createElement("div");
+    card.className = "lifecycle-stage";
+    const title = document.createElement("strong");
+    title.append(text(stage.phase));
+    const gate = document.createElement("span");
+    gate.append(text(`${stage.gate_id} - ${stage.gate_name}`));
+    const owner = document.createElement("small");
+    owner.append(text(stage.owner));
+    const focus = document.createElement("small");
+    focus.append(text(stage.focus));
+    const status = document.createElement("em");
+    status.className = statusClass(stage.status_kind);
+    status.append(text(stage.status));
+    const evidence = document.createElement("a");
+    evidence.href = repoHref(stage.evidence_path) ?? "#";
+    evidence.target = "_blank";
+    evidence.rel = "noreferrer";
+    evidence.append(text(stage.evidence_path));
+    card.append(title, gate, owner, focus, status, evidence);
+    target.append(card);
+  }
+}
+
+function renderDeveloperServices(targetId, services, compact = false) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const service of services) {
+    const tr = document.createElement("tr");
+    const fields = compact
+      ? [
+          service.service_id,
+          service.function,
+          service.default_stack,
+          service.vs_code_integration,
+        ]
+      : [
+          service.service_id,
+          service.function,
+          service.default_stack,
+          service.vs_code_integration,
+          service.control,
+        ];
+    for (const field of fields) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(service.status, statusClassFromStatus(service.status)));
+    if (!compact) {
+      const evidence = document.createElement("td");
+      appendValueOrRepoLink(evidence, service.evidence_path);
+      tr.append(evidence);
+    }
+    target.append(tr);
+  }
+}
+
+function statusClassFromStatus(status) {
+  const value = String(status ?? "").toLowerCase();
+  if (value === "production-baseline" || value === "implemented") return "normal";
+  if (value === "pilot" || value === "template" || value === "preview") return "info";
+  if (value === "blocked") return "danger";
+  return "warn";
+}
+
+function renderDeveloperTemplates(targetId, templates) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const template of templates) {
+    const tr = document.createElement("tr");
+    for (const field of [template.name, template.language, template.runtime]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    for (const field of [
+      template.devcontainer_path,
+      template.pipeline_path,
+      template.deploy_path,
+      template.vscode_clone_uri,
+    ]) {
+      const td = document.createElement("td");
+      appendValueOrRepoLink(td, field);
+      tr.append(td);
+    }
+    tr.append(statusCell(template.status, statusClassFromStatus(template.status)));
+    target.append(tr);
+  }
+}
+
+function renderDeveloperEnvironments(targetId, environments) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const environment of environments) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      environment.name,
+      environment.cluster,
+      environment.namespace_pattern,
+      environment.gitops_tool,
+      environment.approval_policy,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(environment.status, statusClassFromStatus(environment.status)));
+    target.append(tr);
+  }
+}
+
+function renderDeveloperPromotionGates(targetId, gates) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const gate of gates) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      gate.gate_id,
+      gate.from_environment,
+      gate.to_environment,
+      gate.required_checks,
+      gate.approver,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(gate.status, statusClassFromStatus(gate.status)));
+    target.append(tr);
+  }
+}
+
+function renderVsCodeWorkflows(targetId, workflows) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const workflow of workflows) {
+    const tr = document.createElement("tr");
+    for (const field of [workflow.workflow_id, workflow.action, workflow.vs_code_surface]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    for (const field of [workflow.command_or_uri, workflow.artifact_path]) {
+      const td = document.createElement("td");
+      appendValueOrRepoLink(td, field);
+      tr.append(td);
+    }
+    const action = document.createElement("td");
+    action.append(text(workflow.portal_action));
+    tr.append(action);
+    tr.append(statusCell(workflow.status, statusClassFromStatus(workflow.status)));
+    target.append(tr);
+  }
+}
+
+function attachCardFilter(inputId, containerId) {
+  const input = document.getElementById(inputId);
+  const container = document.getElementById(containerId);
+  if (!input || !container) return;
+
+  const apply = () => {
+    const query = input.value.trim().toLowerCase();
+    for (const card of container.children) {
+      card.hidden = Boolean(query && !card.textContent.toLowerCase().includes(query));
+    }
+  };
+
+  input.addEventListener("input", apply);
+  apply();
+}
+
+function renderLifecycleWorkItems(targetId, items) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of items) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      item.item_type,
+      item.id,
+      item.phase,
+      item.title,
+      item.owner,
+      item.priority,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, item.status_kind));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, item.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderLifecycleEvidence(targetId, items) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of items) {
+    const tr = document.createElement("tr");
+    for (const field of [item.source, item.id, item.domain, item.title, item.owner]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, item.status_kind));
+    const artifact = document.createElement("td");
+    appendValueOrRepoLink(artifact, item.artifact);
+    tr.append(artifact);
+    target.append(tr);
+  }
+}
+
+function renderLifecycleServices(targetId, services) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const service of services) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      service.service_id,
+      service.category,
+      service.interface,
+      service.implementation,
+      service.workflow,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(service.status, service.status_kind));
+    target.append(tr);
+  }
+}
+
+function renderLifecycleDocuments(targetId, documents) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const documentItem of documents) {
+    const tr = document.createElement("tr");
+    for (const field of [documentItem.area, documentItem.title, documentItem.purpose]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    const path = document.createElement("td");
+    appendValueOrRepoLink(path, documentItem.path);
+    tr.append(path);
     target.append(tr);
   }
 }
@@ -759,6 +1100,160 @@ async function hydrateOperator() {
   wireDownloadButton("operator-export-log", "operator-operations", "osdc-operations.csv");
 }
 
+async function hydrateLifecycle() {
+  const [overview, developer] = await Promise.all([
+    api("/api/lifecycle/overview"),
+    api("/api/developer/platform"),
+  ]);
+
+  renderMetrics("lifecycle-metrics", overview.metrics);
+  renderLifecycleStages("lifecycle-stages", overview.stages);
+  renderLifecycleWorkItems("lifecycle-work", overview.work_items);
+  renderLifecycleEvidence("lifecycle-evidence", overview.evidence);
+  renderLifecycleServices("lifecycle-services", overview.services);
+  renderLifecycleDocuments("lifecycle-documents", overview.documents);
+  renderDeveloperServices("lifecycle-developer", developer.services, true);
+
+  attachCardFilter("lifecycle-stage-filter", "lifecycle-stages");
+  attachTableFilters({
+    textInputId: "lifecycle-work-filter",
+    statusSelectId: "lifecycle-work-status",
+    tbodyId: "lifecycle-work",
+  });
+  attachColumnFilter({
+    textInputId: "lifecycle-evidence-filter",
+    selectId: "lifecycle-evidence-source",
+    tbodyId: "lifecycle-evidence",
+    columnIndex: 0,
+  });
+  attachTableFilters({
+    textInputId: "lifecycle-service-filter",
+    statusSelectId: "lifecycle-service-status",
+    tbodyId: "lifecycle-services",
+  });
+  attachTableFilters({
+    textInputId: "lifecycle-doc-filter",
+    tbodyId: "lifecycle-documents",
+  });
+  attachTableFilters({
+    textInputId: "lifecycle-developer-filter",
+    tbodyId: "lifecycle-developer",
+  });
+
+  wireActionButton(
+    "lifecycle-refresh",
+    "Lifecycle data refreshed.",
+    "lifecycle-action-output"
+  );
+  wireActionButton(
+    "lifecycle-open-change",
+    "Lifecycle change request staged.",
+    "lifecycle-action-output"
+  );
+  wireActionButton(
+    "lifecycle-stage-gate",
+    "Gate review bundle staged.",
+    "lifecycle-action-output"
+  );
+  wireActionButton(
+    "lifecycle-create-evidence",
+    "Evidence request staged.",
+    "lifecycle-action-output"
+  );
+  wireActionButton(
+    "lifecycle-commissioning-pack",
+    "Commissioning pack assembled.",
+    "lifecycle-action-output"
+  );
+  wireActionButton(
+    "lifecycle-handover-pack",
+    "Handover pack assembled.",
+    "lifecycle-action-output"
+  );
+
+  wireDownloadButton("lifecycle-export-stages", "lifecycle-stages", "osdc-lifecycle-stages.csv");
+  wireDownloadButton("lifecycle-export-work", "lifecycle-work", "osdc-lifecycle-work.csv");
+  wireDownloadButton(
+    "lifecycle-export-evidence",
+    "lifecycle-evidence",
+    "osdc-lifecycle-evidence.csv"
+  );
+  wireDownloadButton(
+    "lifecycle-export-services",
+    "lifecycle-services",
+    "osdc-lifecycle-services.csv"
+  );
+  wireDownloadButton("lifecycle-export-docs", "lifecycle-documents", "osdc-lifecycle-docs.csv");
+}
+
+async function hydrateDeveloper() {
+  const platform = await api("/api/developer/platform");
+
+  renderMetrics("developer-metrics", platform.metrics);
+  renderDeveloperServices("developer-services", platform.services);
+  renderDeveloperTemplates("developer-templates", platform.templates);
+  renderDeveloperEnvironments("developer-environments", platform.environments);
+  renderDeveloperPromotionGates("developer-gates", platform.promotion_gates);
+  renderVsCodeWorkflows("developer-vscode", platform.vscode_workflows);
+
+  attachTableFilters({
+    textInputId: "developer-service-filter",
+    statusSelectId: "developer-service-status",
+    tbodyId: "developer-services",
+  });
+  attachTableFilters({
+    textInputId: "developer-template-filter",
+    statusSelectId: "developer-template-status",
+    tbodyId: "developer-templates",
+  });
+  attachTableFilters({
+    textInputId: "developer-environment-filter",
+    tbodyId: "developer-environments",
+  });
+  attachTableFilters({
+    textInputId: "developer-gate-filter",
+    tbodyId: "developer-gates",
+  });
+  attachTableFilters({
+    textInputId: "developer-vscode-filter",
+    tbodyId: "developer-vscode",
+  });
+
+  wireActionButton(
+    "developer-refresh",
+    "Developer platform data refreshed.",
+    "developer-action-output"
+  );
+  wireActionButton(
+    "developer-create-service",
+    "Service template request staged.",
+    "developer-action-output"
+  );
+  wireActionButton(
+    "developer-create-repo",
+    "Forgejo repository request staged.",
+    "developer-action-output"
+  );
+  wireActionButton(
+    "developer-run-pipeline",
+    "Pipeline run request staged.",
+    "developer-action-output"
+  );
+  wireActionButton(
+    "developer-open-gitops",
+    "GitOps pull request staged.",
+    "developer-action-output"
+  );
+  wireActionButton(
+    "developer-open-vscode",
+    "Use any VS Code link in the templates or workflows table.",
+    "developer-action-output"
+  );
+
+  wireDownloadButton("developer-export-templates", "developer-templates", "osdc-dev-templates.csv");
+  wireDownloadButton("developer-export-vscode", "developer-vscode", "osdc-vscode-workflows.csv");
+}
+
 async function hydrateEdge() {
   const [status, config, scripts] = await Promise.all([
     api("/api/edge/status"),
@@ -819,6 +1314,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (document.body.dataset.portal === "operator") {
     hydrateOperator().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "lifecycle") {
+    hydrateLifecycle().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "developer") {
+    hydrateDeveloper().catch((error) => console.error(error));
   }
   if (document.body.dataset.portal === "edge") {
     hydrateEdge().catch((error) => console.error(error));

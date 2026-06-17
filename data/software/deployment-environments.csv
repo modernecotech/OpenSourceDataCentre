@@ -1,0 +1,6 @@
+environment_id,name,cluster,namespace_pattern,gitops_tool,approval_policy,rollback_policy,observability_url,status
+dev,developer sandbox,k8s-dev,tenant-{tenant}-dev,Flux auto sync from protected branch,developer owner approval,previous image tag rollback,https://grafana.osdc.local/d/dev,pilot
+staging,shared staging,k8s-staging,tenant-{tenant}-staging,Argo CD manual sync,service owner approval with passing checks,Argo CD rollback to last healthy revision,https://grafana.osdc.local/d/staging,pilot
+prod,production,k8s-prod,tenant-{tenant}-prod,Argo CD sync window,service owner plus operations approval,tagged release rollback and database restore check,https://grafana.osdc.local/d/prod,production-baseline
+edge,edge public services,edge-cluster,edge-{service},Flux with canary policy,edge and security owner approval,previous Caddy route and image digest rollback,https://grafana.osdc.local/d/edge,pilot
+iac,platform infrastructure,platform-control,platform-system,OpenTofu plan through Forgejo PR,owner engineer and platform owner approval,state backup plus targeted rollback,https://grafana.osdc.local/d/platform,production-baseline

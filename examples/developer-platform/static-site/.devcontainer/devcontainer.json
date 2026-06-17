@@ -1,0 +1,14 @@
+{
+  "name": "OSDC Static Site",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+control_id,zone,control,minimum_expectation,evidence,owner,status
+PHY_PERIMETER,perimeter,fence gate lighting and vehicle control,controlled boundary with visitor gate and lighting,perimeter inspection record,security-owner,template
+PHY_GATEHOUSE,entry,guard or controlled reception process,visitor identity check and escort workflow,visitor log and badge record,security-owner,template
+PHY_MANTRAP,building-entry,anti-tailgating entry control,dual-door or equivalent supervised entry for critical areas,access-control log,security-owner,template
+PHY_CCTV,monitoring,CCTV coverage and retention,cameras covering entrances corridors MMR loading and cages,CCTV retention policy and review log,security-owner,template
+PHY_LOADING,loading-dock,chain-of-custody for deliveries,shipping receiving staging and media handling process,delivery record and chain-of-custody log,operations-owner,template
+PHY_CAGE,cage-rack-suite,customer cage rack and suite access,least-privilege access list and periodic review,access review evidence,security-owner,template
+PHY_BREAKGLASS,emergency-access,break-glass physical access,emergency access with incident commander approval and audit,incident record and post-review,security-owner,template

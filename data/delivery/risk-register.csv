@@ -1,0 +1,9 @@
+risk_id,domain,risk,impact,likelihood,treatment,owner,evidence_path,status
+RISK_DC_ARC,electrical,400 VDC protection or arc risk is not accepted by reviewer,high,medium,produce fault selectivity and arc-flash studies,electrical-engineer,docs/engineering/dc-protection-and-arc-flash.md,open
+RISK_BESS_FIRE,life-safety,BESS supplier lacks acceptable safety evidence,high,medium,require supplier fire data emergency response and authority review,life-safety-engineer,docs/engineering/battery-safety-and-fire-strategy.md,open
+RISK_FIBRE_SINGLE,network,site has only one fibre route or carrier,high,medium,complete fibre route diversity plan and carrier onboarding,network-owner,docs/site-selection/fibre-route-diversity-checklist.md,open
+RISK_WATER,climate,cooling design depends on scarce water,high,medium,select dry or hybrid cooling and drought mode,mechanical-engineer,docs/sustainability/water-strategy.md,open
+RISK_OPS_SKILL,operations,local operators are not ready for 24/7 procedure discipline,high,medium,complete training drills MOP SOP EOP and staffing plan,operations-owner,docs/delivery/operational-readiness-review.md,open
+RISK_VENDOR_LOCK,procurement,critical components have no second source,medium,medium,run supplier audit and second-source plan,procurement-owner,docs/procurement/second-source-requirements.md,open
+RISK_COMPLIANCE,compliance,audit evidence is insufficient for public-sector buyer,high,medium,maintain control evidence register and management review,security-owner,docs/compliance/control-evidence-register.md,open
+RISK_INTEGRATION,software,portal adapters remain static prototypes,medium,medium,implement staged adapter stubs and integration tests,platform-owner,docs/software/unified-portal-integration-model.md,open

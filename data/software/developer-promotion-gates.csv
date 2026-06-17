@@ -1,0 +1,6 @@
+gate_id,from_environment,to_environment,required_checks,approver,evidence_path,status
+PROMOTE_DEV_STAGING,dev,staging,unit tests container build vulnerability scan SBOM signed image,service-owner,docs/software/developer-platform.md,pilot
+PROMOTE_STAGING_PROD,staging,prod,integration tests policy checks backup impact review rollback plan,service-owner-and-operations,docs/software/developer-platform.md,production-baseline
+PROMOTE_EDGE,staging,edge,WAF detection check DNS route review TLS certificate check cache policy review,edge-security-owner,docs/security/sovereign-edge-security-stack.md,pilot
+PROMOTE_IAC_PLAN,review,apply,OpenTofu plan approval drift check state backup cost estimate,platform-owner,docs/software/developer-platform.md,production-baseline
+PROMOTE_MODEL,staging,prod,model license check safety review GPU capacity thermal headroom rollback endpoint,ai-platform-owner,docs/software/data-and-ai-platform.md,pilot

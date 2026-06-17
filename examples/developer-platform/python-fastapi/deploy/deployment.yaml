@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-fastapi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-fastapi
+  template:
+    metadata:
+      labels:
+        app: python-fastapi
+    spec:
+      containers:
+        - name: app
+          image: harbor.osdc.local/apps/python-fastapi:replace-me
+          ports:
+            - containerPort: 8000

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Lifecycle Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="lifecycle">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Lifecycle</strong>
+          <span>design to run</span>
+        </div>
+        <nav class="nav-list" aria-label="Lifecycle navigation">
+          <a class="active" href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+        </nav>
+        <small>scope: regional-pilot-01</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Lifecycle Console</h1>
+            <p>Project gates, evidence, services, commissioning, operations, and tenant launch</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="lifecycle-refresh" aria-label="Refresh lifecycle data">R</button>
+            <button id="lifecycle-export-work">Export work</button>
+            <button class="primary" id="lifecycle-open-change">Open change</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="lifecycle-metrics">
+            <div class="metric"><span>Lifecycle gates</span><strong>10</strong><em>concept to handover</em></div>
+            <div class="metric"><span>Open work</span><strong>0</strong><em>risks actions gaps</em></div>
+            <div class="metric"><span>Evidence records</span><strong>0</strong><em>engineering commissioning operations audit</em></div>
+            <div class="metric"><span>Managed services</span><strong>0</strong><em>sovereign service catalogue</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>End-to-End Gate Flow</h2>
+              <div class="panel-tools">
+                <input id="lifecycle-stage-filter" type="search" placeholder="Filter stages">
+                <button id="lifecycle-export-stages">Export stages</button>
+              </div>
+            </div>
+            <div class="panel-body lifecycle-stage-grid" id="lifecycle-stages">
+              <div class="lifecycle-stage">
+                <strong>Freeze Design</strong>
+                <span>GATE_03</span>
+                <em>template</em>
+              </div>
+            </div>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Open Work Register</h2>
+                <div class="panel-tools">
+                  <input id="lifecycle-work-filter" type="search" placeholder="Filter work">
+                  <select id="lifecycle-work-status" aria-label="Work status filter">
+                    <option value="">All status</option>
+                    <option value="open">open</option>
+                    <option value="in-progress">in-progress</option>
+                    <option value="blocked">blocked</option>
+                    <option value="review">review</option>
+                    <option value="closed">closed</option>
+                  </select>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Type</th><th>ID</th><th>Phase</th><th>Title</th><th>Owner</th><th>Priority</th><th>Status</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="lifecycle-work">
+                  <tr><td>risk</td><td>RISK_DC_ARC</td><td>electrical</td><td>DC protection review</td><td>electrical</td><td>high</td><td><span class="status warn">open</span></td><td>docs/engineering/dc-protection-and-arc-flash.md</td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Document and Data Index</h2>
+                <div class="panel-tools">
+                  <input id="lifecycle-doc-filter" type="search" placeholder="Filter docs">
+                  <button id="lifecycle-export-docs">Export docs</button>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Area</th><th>Document</th><th>Purpose</th><th>Path</th></tr>
+                </thead>
+                <tbody id="lifecycle-documents">
+                  <tr><td>delivery</td><td>Project lifecycle gates</td><td>phase gate control</td><td>docs/delivery/project-lifecycle-gates.md</td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Evidence Control Plane</h2>
+              <div class="panel-tools">
+                <input id="lifecycle-evidence-filter" type="search" placeholder="Filter evidence">
+                <select id="lifecycle-evidence-source" aria-label="Evidence source filter">
+                  <option value="">All sources</option>
+                  <option value="engineering">engineering</option>
+                  <option value="commissioning">commissioning</option>
+                  <option value="operations">operations</option>
+                  <option value="audit">audit</option>
+                  <option value="standards">standards</option>
+                  <option value="permit">permit</option>
+                  <option value="site">site</option>
+                  <option value="physical-security">physical-security</option>
+                  <option value="sustainability">sustainability</option>
+                  <option value="ai-ready">ai-ready</option>
+                </select>
+                <button id="lifecycle-export-evidence">Export evidence</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Source</th><th>ID</th><th>Domain</th><th>Evidence</th><th>Owner</th><th>Status</th><th>Artifact</th></tr>
+              </thead>
+              <tbody id="lifecycle-evidence">
+                <tr><td>commissioning</td><td>COM_GRID_LOSS</td><td>L4</td><td>grid loss test</td><td>commissioning</td><td><span class="status warn">template</span></td><td>docs/commissioning/grid-loss-test.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Service and Config Catalogue</h2>
+              <div class="panel-tools">
+                <input id="lifecycle-service-filter" type="search" placeholder="Filter services">
+                <select id="lifecycle-service-status" aria-label="Service status filter">
+                  <option value="">All status</option>
+                  <option value="implemented">implemented</option>
+                  <option value="production-baseline">production-baseline</option>
+                  <option value="pilot">pilot</option>
+                  <option value="preview">preview</option>
+                  <option value="optional">optional</option>
+                </select>
+                <button id="lifecycle-export-services">Export services</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Category</th><th>Interface</th><th>Implementation</th><th>Workflow</th><th>Status</th></tr>
+              </thead>
+              <tbody id="lifecycle-services">
+                <tr><td>identity</td><td>foundation</td><td>tenant+operator</td><td>Keycloak OPA</td><td>project.small</td><td><span class="status">implemented</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Developer Deployment Path</h2>
+              <div class="panel-tools">
+                <input id="lifecycle-developer-filter" type="search" placeholder="Filter developer stack">
+                <a class="button primary" href="/developer">Developer console</a>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Function</th><th>Stack</th><th>VS Code</th><th>Status</th></tr>
+              </thead>
+              <tbody id="lifecycle-developer">
+                <tr><td>dev_forge</td><td>source repositories</td><td>Forgejo</td><td>git clone</td><td><span class="status info">pilot</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Lifecycle Actions</h2>
+              <div class="button-row">
+                <button id="lifecycle-stage-gate">Stage gate review</button>
+                <button id="lifecycle-create-evidence">Create evidence request</button>
+                <button id="lifecycle-commissioning-pack">Commissioning pack</button>
+                <button id="lifecycle-handover-pack">Handover pack</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="action-output" id="lifecycle-action-output">Lifecycle control actions are staged as prototype workflow events.</div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

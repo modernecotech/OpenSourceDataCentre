@@ -72,7 +72,9 @@ for path in repo_files("*.json"):
         fail(f"{path}: invalid JSON: {exc}")
 
 unique_columns = {
+    Path("data/ai-ready/high-density-rack-classes.csv"): "rack_class_id",
     Path("data/bom/bom-250kw-open-regional.csv"): "line_id",
+    Path("data/commissioning/commissioning-evidence-register.csv"): "evidence_id",
     Path("data/commercial/audit-evidence.csv"): "evidence_id",
     Path("data/commercial/colocation-products.csv"): "product_id",
     Path("data/commercial/commercial-gap-register.csv"): "gap_id",
@@ -82,9 +84,21 @@ unique_columns = {
     Path("data/commercial/standards-control-matrix.csv"): "requirement_id",
     Path("data/costing/marketplace-price-basis-2026.csv"): "item_family",
     Path("data/costing/scenario-costs-2026.csv"): "scenario_id",
+    Path("data/delivery/action-tracker.csv"): "action_id",
+    Path("data/delivery/authority-permits.csv"): "permit_id",
+    Path("data/delivery/project-gates.csv"): "gate_id",
+    Path("data/delivery/risk-register.csv"): "risk_id",
+    Path("data/engineering/engineering-evidence-register.csv"): "evidence_id",
     Path("data/hardware/compute-baseline-2026.csv"): "profile_id",
+    Path("data/operations/procedure-catalogue.csv"): "procedure_id",
+    Path("data/security/physical-security-controls.csv"): "control_id",
+    Path("data/site-selection/site-selection-scorecard.csv"): "criterion_id",
     Path("data/software/config-script-catalogue.csv"): "script_id",
     Path("data/software/core-cloud-services.csv"): "service_id",
+    Path("data/software/developer-platform-services.csv"): "service_id",
+    Path("data/software/developer-promotion-gates.csv"): "gate_id",
+    Path("data/software/developer-templates.csv"): "template_id",
+    Path("data/software/deployment-environments.csv"): "environment_id",
     Path("data/software/edge-shield-service-map.csv"): "service_id",
     Path("data/software/edge-shield-services.csv"): "service_id",
     Path("data/software/proprietary-open-source-equivalents.csv"): "proprietary_service",
@@ -93,6 +107,8 @@ unique_columns = {
     Path("data/software/security-controls.csv"): "control_id",
     Path("data/software/service-catalogue-v1.csv"): "service_id",
     Path("data/software/upgrade-policy.csv"): "update_class",
+    Path("data/software/vscode-workflows.csv"): "workflow_id",
+    Path("data/sustainability/sustainability-metrics.csv"): "metric_id",
 }
 
 for path in repo_files("*.csv"):
@@ -125,6 +141,34 @@ for path in repo_files("*.csv"):
                 fail(f"{path}:{number} duplicates {unique_column} {value!r} from line {seen[value]}")
             else:
                 seen[value] = number
+
+path_like_columns = {
+    "doc_path",
+    "evidence_file",
+    "evidence_path",
+    "next_artifact",
+    "next_evidence",
+    "required_evidence",
+}
+for path in repo_files("*.csv"):
+    if "data" not in path.relative_to(ROOT).parts:
+        continue
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames:
+            continue
+        columns = path_like_columns.intersection(reader.fieldnames)
+        if not columns:
+            continue
+        for number, row in enumerate(reader, start=2):
+            for column in sorted(columns):
+                value = row.get(column, "")
+                if not value or value.startswith(("http://", "https://")):
+                    continue
+                if "/" not in value:
+                    continue
+                if not (ROOT / value).exists():
+                    fail(f"{path}:{number} column {column} points at missing path {value}")
 
 catalog_path = ROOT / "data/software/service-catalogue-v1.csv"
 allowed_maturity = {"experimental", "pilot", "production-baseline", "optional", "deprecated"}
@@ -195,23 +239,88 @@ if commercial_gap_register.exists():
                 fail(
                     f"{commercial_gap_register}:{number} has unsupported status {row.get('status')!r}"
                 )
-            artifact = row.get("next_artifact", "")
-            if artifact and not (ROOT / artifact).exists():
-                fail(f"{commercial_gap_register}:{number} points at missing artifact {artifact}")
+site_scorecard = ROOT / "data/site-selection/site-selection-scorecard.csv"
+if site_scorecard.exists():
+    with site_scorecard.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            try:
+                weight = int(row.get("weight", ""))
+            except ValueError:
+                fail(f"{site_scorecard}:{number} has non-integer weight {row.get('weight')!r}")
+                continue
+            if not 1 <= weight <= 10:
+                fail(f"{site_scorecard}:{number} weight must be between 1 and 10")
 
+physical_controls = ROOT / "data/security/physical-security-controls.csv"
+if physical_controls.exists():
+    with physical_controls.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            if row.get("status") not in {"template", "implemented", "review", "retired"}:
+                fail(
+                    f"{physical_controls}:{number} has unsupported status {row.get('status')!r}"
+                )
+
+sustainability_metrics = ROOT / "data/sustainability/sustainability-metrics.csv"
+allowed_metric_stages = {
+    "design-estimate",
+    "commissioning-measurement",
+    "operating-measurement",
+    "pilot-measurement",
+    "audit-reporting",
+}
+if sustainability_metrics.exists():
+    with sustainability_metrics.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            if row.get("stage") not in allowed_metric_stages:
+                fail(
+                    f"{sustainability_metrics}:{number} has unsupported stage {row.get('stage')!r}"
+                )
+
+engineering_evidence = ROOT / "data/engineering/engineering-evidence-register.csv"
+allowed_engineering_status = {"template", "draft", "review", "approved", "retired"}
+if engineering_evidence.exists():
+    with engineering_evidence.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            if row.get("priority") not in allowed_gap_priorities:
+                fail(
+                    f"{engineering_evidence}:{number} has unsupported priority {row.get('priority')!r}"
+                )
+            if row.get("status") not in allowed_engineering_status:
+                fail(
+                    f"{engineering_evidence}:{number} has unsupported status {row.get('status')!r}"
+                )
+
+operations_procedures = ROOT / "data/operations/procedure-catalogue.csv"
+if operations_procedures.exists():
+    with operations_procedures.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            if row.get("criticality") not in allowed_gap_priorities:
+                fail(
+                    f"{operations_procedures}:{number} has unsupported criticality {row.get('criticality')!r}"
+                )
+            if row.get("status") not in {"template", "draft", "implemented", "review", "retired"}:
+                fail(
+                    f"{operations_procedures}:{number} has unsupported status {row.get('status')!r}"
+                )
+
+delivery_status_values = {"template", "open", "in-progress", "blocked", "review", "closed", "approved"}
 for relative in [
-    Path("data/commercial/standards-control-matrix.csv"),
-    Path("data/commercial/audit-evidence.csv"),
+    Path("data/delivery/project-gates.csv"),
+    Path("data/delivery/authority-permits.csv"),
+    Path("data/delivery/risk-register.csv"),
+    Path("data/delivery/action-tracker.csv"),
+    Path("data/commissioning/commissioning-evidence-register.csv"),
 ]:
     path = ROOT / relative
     if not path.exists():
         continue
-    evidence_column = "evidence_file" if relative.name == "standards-control-matrix.csv" else "evidence_path"
+    status_column = "status"
     with path.open(newline="", encoding="utf-8") as handle:
         for number, row in enumerate(csv.DictReader(handle), start=2):
-            evidence = row.get(evidence_column, "")
-            if evidence and not (ROOT / evidence).exists():
-                fail(f"{path}:{number} points at missing evidence path {evidence}")
+            if row.get(status_column) not in delivery_status_values:
+                fail(f"{path}:{number} has unsupported status {row.get(status_column)!r}")
+            if "criticality" in row and row.get("criticality") not in allowed_gap_priorities:
+                fail(f"{path}:{number} has unsupported criticality {row.get('criticality')!r}")
 
 link_pattern = re.compile(r"!?\[[^\]]*]\(([^)]+)\)")
 for path in repo_files("*.md"):
@@ -249,7 +358,7 @@ if portal_doc.exists() and portal_source.exists():
         route
         for route in source_routes
         if route.startswith("/api/")
-        or route in {"/user", "/operator", "/edge", "/planner", "/health"}
+        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/developer", "/health"}
     }
     for route in sorted(doc_routes - source_routes):
         fail(f"{portal_doc}: documents missing portal route {route}")

@@ -1,0 +1,24 @@
+steps:
+  test:
+    image: rust:1-bookworm
+    commands:
+      - cargo fmt --check
+      - cargo test
+  build-image:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: harbor.osdc.local/apps/rust-axum-api
+      tags:
+        - ${CI_COMMIT_SHA}
+      registry: harbor.osdc.local
+      username:
+        from_secret: harbor_robot_user
+      password:
+        from_secret: harbor_robot_token
+  gitops-update:
+    image: alpine/git
+    commands:
+      - echo "open GitOps change for deploy/image tag ${CI_COMMIT_SHA}"
+when:
+  branch:
+    - main
