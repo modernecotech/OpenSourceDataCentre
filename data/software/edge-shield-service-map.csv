@@ -1,0 +1,12 @@
+service_id,service_category,default_stack,production_stack,simple_stack,operator_owned_state,sovereignty_note
+dns_authoritative,DNS,PowerDNS Authoritative plus dnsdist,PowerDNS PostgreSQL backend plus dnsdist plus DNSSEC,PowerDNS zone files plus dnsdist,zones DNSSEC keys health records,zone control and audit stay local
+tls_reverse_proxy,TLS reverse proxy,Caddy,Envoy or HAProxy with Caddy optional,Caddy,Caddyfile routes certificates origin pools,certificate issuance tied to route ownership
+cdn_cache,CDN cache,Varnish or Vinyl Cache,Varnish or Vinyl Cache plus regional purge API,Nginx cache,cache rules purge records object policy,public data cache only by policy
+waf_api,WAF API protection,Coraza plus OWASP CRS,Coraza with staged CRS tuning and exception workflow,Coraza detection mode,rule sets exceptions block decisions,locally reviewable WAF behavior
+abuse_response,Rate limit abuse response,CrowdSec plus nftables,CrowdSec plus HAProxy stick tables or Envoy rate limit,nftables plus proxy limits,decisions blocklists thresholds,local private intelligence mode supported
+origin_tunnel,Private origin tunnel,WireGuard plus Headscale or NetBird,NetBird or OpenZiti,plain WireGuard,tunnel peers keys routes,origins avoid public inbound ports
+zero_trust_access,Zero trust access,Keycloak plus OPA,Keycloak plus OPA plus Authentik or Authelia,Keycloak plus Caddy forward auth,groups policies sessions audit,admin access remains locally controlled
+load_balancing,Regional load balancing,HAProxy or dnsdist,Envoy plus HAProxy plus dnsdist,HAProxy,origin pools health checks failover policy,health aware routing without opaque provider state
+edge_functions,Edge functions,Wasmtime or Spin,Spin or wasmCloud with signed modules,Wasmtime signed modules,wasm modules resource limits signing policy,small transforms only under local review
+observability,Observability,OpenTelemetry plus Prometheus plus Loki plus Grafana,OpenTelemetry plus VictoriaMetrics plus Loki plus Tempo plus Grafana,Prometheus plus Loki plus Grafana,metrics logs traces dashboards,logs follow residency policy
+config_gitops,Config GitOps,osdc-edge plus Forgejo plus Ansible,osdc-edge plus Forgejo plus Woodpecker plus OpenTofu plus Flux,osdc-edge plus Git plus Ansible,generated configs rollout history audit,changes are reviewable and rollbackable

@@ -59,6 +59,28 @@ The first deployable catalog should contain:
 
 The broader first implementation baseline is captured in [Core Cloud Services Baseline](core-cloud-services.md) and `data/software/core-cloud-services.csv`.
 
+## Sovereign Edge and Security Fabric
+
+OSDC Edge Shield extends the open cloud map to the public edge and security control plane. It is documented in:
+
+- [OSDC Edge Shield](edge-shield-cloudflare-alternative.md)
+- [Sovereign Edge Security Stack](../security/sovereign-edge-security-stack.md)
+- [Cloudflare Equivalent Open Tooling](../security/cloudflare-equivalent-open-tooling.md)
+- [DDoS Realistic Threat Model](../security/ddos-realistic-threat-model.md)
+
+The associated data files are:
+
+- `data/software/edge-shield-services.csv`
+- `data/software/edge-shield-service-map.csv`
+- `data/software/security-control-map.csv`
+- `data/software/proprietary-to-open-source-map.csv`
+
+The Rust layer is split deliberately:
+
+- `osdc-edge`: local status and config-preview service for an edge node.
+- `osdc-edge-config`: typed Edge Shield deployment profiles and validation.
+- `osdc-edge-policy`: route cache policy, zero-trust policy signals, and DDoS claim guardrails.
+
 ## Source Notes
 
 - OpenStack describes itself as open-source cloud infrastructure with services for compute, storage, and networking managed through APIs and dashboards: https://www.openstack.org/

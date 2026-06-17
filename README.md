@@ -1,6 +1,14 @@
 # Open Source Data Centre
 
-Open Source Data Centre is a reference architecture and implementation path for sustainable, vendor-neutral datacentres that can be built and operated from 2027 onward without tying operators to proprietary hardware, licensing, or management platforms.
+Open Source Data Centre is a reference architecture, software stack, mechanical design system, and procurement toolkit for countries that need sovereign, sustainable, affordable datacentres.
+
+The project is designed for developing-world governments, universities, public-sector clouds, national AI programmes, hospitals, telecom operators, and regional infrastructure companies that need to host sensitive data locally without becoming permanently dependent on hyperscalers, proprietary datacentre vendors, or closed management platforms.
+
+The goal is not to build a fragile "cheap datacentre."
+
+The goal is to make reliable, maintainable, auditable datacentre infrastructure that can be built in stages, operated by local engineers, repaired with documented parts, powered partly by local renewable energy, and expanded from a 50 kW edge site to a national AI-ready sovereign cloud.
+
+**Mission:** build sovereign cloud capacity that countries can own, understand, repair, expand, and power sustainably.
 
 The project combines:
 
@@ -11,8 +19,102 @@ The project combines:
 - Open-source infrastructure stacks for bare metal, Kubernetes, storage, networking, monitoring, identity, AI serving, and job queueing.
 - Test harnesses and operational guidance for building systems, IT systems, AI workloads, and cost calculators.
 
+## What This Project Is
+
+- A reference architecture for sovereign, sustainable datacentres.
+- A practical build path from 50 kW edge sites to national AI-ready infrastructure.
+- A set of open BOMs, calculators, software adapters, mechanical designs, and commissioning tests.
+- A way for countries to reduce dependency on closed cloud platforms and proprietary datacentre management stacks.
+
+## What This Project Is Not
+
+- It is not a certified datacentre design.
+- It is not a substitute for licensed local engineers, fire engineers, electrical engineers, code approval, or authority review.
+- It is not a promise that marketplace parts are safe, compliant, or suitable for life-safety and critical-power systems.
+- It is not a hyperscaler clone.
+- It is not a reason to skip commissioning, documentation, training, spare parts, security review, or disaster recovery.
+
+## Design Principles for Sovereign Datacentres
+
+1. **Sovereignty first** - data, encryption keys, logs, backups, identity, and admin control must remain under national or institutional control.
+2. **Open where possible** - use open-source software, open standards, documented APIs, and exportable data models.
+3. **Local maintainability** - every critical system needs a local spares plan, local training path, and second-source plan.
+4. **Simplify topology, not safety** - reduce unnecessary vendor complexity, but do not reduce fire, electrical, commissioning, or operational safety.
+5. **Energy-aware by design** - power availability, solar integration, storage, cooling efficiency, and workload scheduling are core design inputs.
+6. **Upgradeable path** - start with 19-inch commodity racks and grow toward Open19, OCP Open Rack V3, or Open Rack Wide where the supply chain can support it.
+7. **No false certification claims** - describe Tier II/Tier III-like design intent, but do not claim Uptime Tier certification unless formally audited.
+
+## Deployment Ladder
+
+| Stage | Use case | Main goal |
+| --- | --- | --- |
+| **50 kW edge micro** | University, hospital group, ministry edge, ISP edge | Prove local operation and sovereign services. |
+| **250 kW regional pilot** | First serious public-sector cloud | Validate power, cooling, cloud stack, operators, costs, and commissioning discipline. |
+| **1 MW regional production** | National health, education, government apps, research | Deliver reliable sovereign cloud capacity. |
+| **5 MW national/AI-ready** | National AI, HPC, larger public cloud | Build strategic compute infrastructure. |
+
+The flagship developing-world pilot is the 250 kW regional design: 10 racks at 25 kW average, N+1 pumps and controls, DC-first solar sodium-ion microgrid, fallback generator path, open-source management stack, and local fabrication where safe.
+
+## Local Maintainability Doctrine
+
+A sovereign datacentre is not sovereign if it cannot be repaired locally.
+
+Every critical component must have:
+
+- a documented function;
+- wiring or interface drawings;
+- at least one second-source option;
+- local spare-part classification;
+- maintenance interval;
+- failure symptom list;
+- safe replacement procedure;
+- commissioning or post-replacement test.
+
+## Software Position
+
+The software goal is a sovereign cloud user experience over open infrastructure, not a new AWS clone.
+
+```text
+User experience:
+  AWS-like portal and API
+
+Underneath:
+  OpenStack
+  Ceph
+  Kubernetes
+  Kueue
+  Slurm
+  Keycloak
+  OPA
+  NetBox/openDCIM
+  OpenTelemetry
+  Grafana
+  Rust adapters
+```
+
+Rust owns APIs, adapters, calculators, workflow automation, policy checks, and the unified interface. Mature infrastructure projects own the low-level cloud, storage, identity, telemetry, and scheduling systems.
+
+## Sovereign Edge and Security Fabric
+
+OSDC Edge Shield is the repository's open-source edge and security pillar. It provides a nationally operated regional equivalent for the same classes of service commonly bought from Cloudflare, Akamai, Fastly, Okta, Datadog, Splunk, Vault, Terraform Cloud, and similar proprietary infrastructure platforms.
+
+It is not a claim to replace Cloudflare's global anycast network, global DDoS absorption, commercial threat intelligence, or 24/7 managed security operations. It is a sovereign fabric for DNS, TLS, CDN cache, WAF, rate limiting, private tunnels, identity-aware access, secrets, logs, metrics, policies, keys, audit trails, and GitOps-controlled rollout.
+
 ## Repository Map
 
+- [Sovereign Datacentre Mission](docs/strategy/sovereign-datacentre-mission.md) - mission, audience, and national implementation outputs.
+- [Developing-World Deployment Model](docs/strategy/developing-world-deployment-model.md) - adoption ladder and planning assumptions.
+- [What This Is and Is Not](docs/strategy/what-this-is-and-is-not.md) - scope guardrails and safety boundaries.
+- [Sovereign Edge Security Stack](docs/security/sovereign-edge-security-stack.md) - OSDC Edge Shield as the security fabric around sovereign datacentres.
+- [Cloudflare Equivalent Open Tooling](docs/security/cloudflare-equivalent-open-tooling.md) - open-source mapping for DNS, CDN, WAF, access, tunnels, telemetry, secrets, IaC, and SOC tools.
+- [DDoS Realistic Threat Model](docs/security/ddos-realistic-threat-model.md) - what Edge Shield can and cannot absorb locally.
+- [Zero Trust Access](docs/security/zero-trust-access.md), [WAF and API Protection](docs/security/waf-and-api-protection.md), and [SIEM/SOC Open Source Stack](docs/security/siem-soc-open-source-stack.md) - operating guides for the edge/security pillar.
+- [Country Site Profile Guide](docs/deployment/country-site-profile-guide.md) - country-pack schema, planning fields, and profile examples.
+- [50 kW Edge Micro](docs/deployment/50kw-edge-micro.md), [250 kW Regional Pilot](docs/deployment/250kw-regional-pilot.md), [1 MW Regional Production](docs/deployment/1mw-regional-production.md), and [5 MW National AI-Ready](docs/deployment/5mw-national-ai-ready.md) - staged reference deployment patterns.
+- [Commissioning Overview](docs/commissioning/commissioning-overview.md) - L1-L5 commissioning model and critical integrated tests.
+- [Data Residency](docs/sovereignty/data-residency.md), [Key Management](docs/sovereignty/key-management.md), and [Backup and Disaster Recovery](docs/sovereignty/backup-and-disaster-recovery.md) - sovereignty controls for public infrastructure.
+- [Local Fabrication Guide](docs/procurement/local-fabrication-guide.md) and [Second-Source Requirements](docs/procurement/second-source-requirements.md) - maintainability and procurement doctrine.
+- [Operator Training](docs/operations/operator-training.md), [Spares and Tools](docs/operations/spares-and-tools.md), and [Emergency Runbooks](docs/operations/emergency-runbooks.md) - local operations pack.
 - [Technology Stack Research](docs/research/technology-stack-2027.md) - sourced recommendations for 2027+ builds.
 - [Compute Hardware Baseline](docs/research/compute-hardware-baseline-2026.md) - default SBC/GPU choices for open Linux, low-cost, low-power deployments.
 - [Reference Architecture](docs/architecture/reference-architecture.md) - system layers and integration boundaries.
@@ -36,6 +138,7 @@ The project combines:
 - [Costing Data](data/costing/) - current marketplace price basis and scenario cost ranges.
 - [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
 - [Software Service Data](data/software/) - open cloud service catalogue mappings.
+- [Country Profiles](data/country-profiles/) - example country-planning packs for grid, climate, energy, procurement, and sovereignty assumptions.
 
 ## Initial Technical Position
 

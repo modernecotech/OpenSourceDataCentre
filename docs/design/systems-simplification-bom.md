@@ -51,6 +51,21 @@ The first reference BOM is a 250 kW IT-load regional pilot:
 8. Avoid components that need a single foreign technician to restart the site.
 9. Every BOM line should have a second-source plan or a local substitution note.
 
+## Local Maintainability Doctrine
+
+A sovereign datacentre is not sovereign if it cannot be repaired locally.
+
+Every critical component must have:
+
+- a documented function;
+- wiring or interface drawings;
+- at least one second-source option;
+- local spare-part classification;
+- maintenance interval;
+- failure symptom list;
+- safe replacement procedure;
+- commissioning or post-replacement test.
+
 ## BOM Files
 
 - [Component catalogue](../../data/bom/component-catalog.csv): full system catalogue mapping state-of-the-art components to simplified choices.

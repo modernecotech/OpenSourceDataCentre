@@ -42,6 +42,9 @@ The next production step is to replace the in-process sample data with adapters:
 - Open cloud service catalog from `data/software/open-cloud-service-map.csv`.
 - Core AWS/Azure-like service catalog from `data/software/core-cloud-services.csv`.
 - Edge Shield service catalog from `data/software/edge-shield-services.csv`.
+- Edge Shield deployment catalog from `data/software/edge-shield-service-map.csv`.
+- Security control catalog from `data/software/security-control-map.csv`.
+- Proprietary-to-open-source replacement catalog from `data/software/proprietary-to-open-source-map.csv`.
 - Inventory and rack truth from NetBox/openDCIM.
 - VM and bare-metal state from OpenStack Nova/Ironic.
 - Storage state from Ceph.

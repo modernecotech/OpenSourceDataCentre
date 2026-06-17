@@ -1,0 +1,73 @@
+{
+  "profile_id": "ministry-public-service-edge",
+  "name": "Ministry public service protection edge",
+  "region": "capital-region-01",
+  "deployment_class": "public-sector",
+  "nodes": [
+    {
+      "id": "edge-a",
+      "role": "active-proxy-cache-dns",
+      "board": "Radxa ROCK 5B+",
+      "services": [
+        "dns_authoritative",
+        "tls_reverse_proxy",
+        "cdn_cache",
+        "waf_api",
+        "abuse_response",
+        "origin_tunnel",
+        "zero_trust_access",
+        "load_balancing",
+        "observability"
+      ]
+    },
+    {
+      "id": "edge-b",
+      "role": "active-proxy-cache-dns",
+      "board": "Radxa ROCK 5B+",
+      "services": [
+        "dns_authoritative",
+        "tls_reverse_proxy",
+        "cdn_cache",
+        "waf_api",
+        "abuse_response",
+        "origin_tunnel",
+        "zero_trust_access",
+        "load_balancing",
+        "observability"
+      ]
+    },
+    {
+      "id": "edge-c",
+      "role": "management-secondary-dns-cold-failover",
+      "board": "Radxa ROCK 5B+",
+      "services": [
+        "dns_authoritative",
+        "config_gitops",
+        "observability",
+        "zero_trust_access"
+      ]
+    }
+  ],
+  "origin_tunnel": {
+    "mode": "openziti",
+    "private_origins_required": true
+  },
+  "threat_model": {
+    "upstream_ddos_provider_required": true,
+    "volumetric_ddos_claim_allowed": false,
+    "community_intelligence_mode": "community-enabled"
+  },
+  "cache_policy": {
+    "default_mode": "no-store",
+    "public_static_ttl_seconds": 3600,
+    "cache_authenticated_responses": false
+  },
+  "required_evidence": [
+    "dnssec-check",
+    "certificate-revocation-test",
+    "waf-detection-mode-report",
+    "tunnel-key-rotation-test",
+    "soc-alert-test",
+    "bypass-route-test"
+  ]
+}

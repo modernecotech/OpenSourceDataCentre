@@ -22,5 +22,31 @@
     "auxiliary_cooling_load_kw": 80.0,
     "displaced_electric_chiller_cop": 4.0,
     "pump_and_controls_kw": 4.0
+  },
+  "resilience": {
+    "required_autonomy_hours": 4.0,
+    "battery_autonomy_hours": 1.0,
+    "generator_autonomy_hours": 24.0,
+    "grid_outage_risk": "medium",
+    "fallback_generator_required": true,
+    "diesel_price_per_liter": 1.1
+  },
+  "procurement": {
+    "import_duty_percent": 15.0,
+    "shipping_multiplier": 1.25,
+    "local_labour_multiplier": 0.55,
+    "spare_parts_locality_score": 62.0,
+    "vendor_lock_in_score": 25.0
+  },
+  "sovereignty": {
+    "data_residency_required": true,
+    "national_key_management": true,
+    "offline_backup_required": true,
+    "sovereign_control_score": 82.0
+  },
+  "operations": {
+    "maintainability_score": 76.0,
+    "backup_restore_maturity": "pilot-tested",
+    "operator_skill_requirement": "regional operator team with cloud and facilities leads"
   }
 }

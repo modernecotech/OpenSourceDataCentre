@@ -27,6 +27,15 @@ The project needs test harnesses for both code and real-world systems. A datacen
 - Thermal-load tests using staged IT load banks before production deployment.
 - Rack thermal-spine tests for capture fraction, hot-loop temperature, two-phase stability where used, sorption chiller COP, bypass behavior, and final heat-rejection capacity.
 
+The required commissioning pack is in `docs/commissioning/`:
+
+- [Commissioning overview](../commissioning/commissioning-overview.md)
+- [Grid-loss test](../commissioning/grid-loss-test.md)
+- [DC-bus ride-through test](../commissioning/dc-bus-ride-through-test.md)
+- [Cooling-failover test](../commissioning/cooling-failover-test.md)
+- [Generator-start test](../commissioning/generator-start-test.md)
+- [Backup-restore test](../commissioning/backup-restore-test.md)
+
 ## Rack and Mechanical Tests
 
 - Static load and tip-risk tests for racks and adapters.

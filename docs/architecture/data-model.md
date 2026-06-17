@@ -16,6 +16,35 @@ Represents a datacentre campus, building, room, or pilot container.
 - `water_price_per_m3`
 - `latitude`
 - `longitude`
+- optional `resilience`
+- optional `procurement`
+- optional `sovereignty`
+- optional `operations`
+
+## Country Profile
+
+Represents country-specific planning assumptions used by cost, resilience, and sovereignty calculators. These are planning inputs, not official datasets unless a deployment team replaces placeholders with measured or cited values.
+
+- `country`
+- `currency`
+- `grid_reliability`
+- `climate`
+- `energy`
+- `procurement`
+- `sovereignty`
+
+## Grid Reliability
+
+- `average_outage_hours_per_month`
+- `voltage_stability`
+- `generator_required`
+- `grid_outage_risk`
+
+## Climate
+
+- `design_dry_bulb_c`
+- `water_stress`
+- `dust_filtration_required`
 
 ## Energy Profile
 
@@ -29,6 +58,44 @@ Used by cost and sustainability calculators.
 - `water_liters_per_facility_kwh`
 - `grid_carbon_kg_per_kwh`
 - `electricity_price_per_kwh`
+
+## Resilience Profile
+
+Used to model autonomy and fallback-power assumptions for country-specific deployments.
+
+- `required_autonomy_hours`
+- `battery_autonomy_hours`
+- `generator_autonomy_hours`
+- `grid_outage_risk`
+- `fallback_generator_required`
+- `diesel_price_per_liter`
+
+## Procurement Profile
+
+Used to model landed cost, local maintainability, and vendor dependency.
+
+- `import_duty_percent`
+- `shipping_multiplier`
+- `local_labour_multiplier`
+- `spare_parts_locality_score`
+- `vendor_lock_in_score`
+
+## Sovereignty Profile
+
+Used to describe whether a deployment can keep data, keys, backups, and administrative control local.
+
+- `data_residency_required`
+- `national_key_management`
+- `offline_backup_required`
+- `sovereign_control_score`
+
+## Operations Profile
+
+Used to capture local operating maturity.
+
+- `maintainability_score`
+- `backup_restore_maturity`
+- `operator_skill_requirement`
 
 ## Rack
 

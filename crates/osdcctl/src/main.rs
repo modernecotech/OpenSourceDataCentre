@@ -63,6 +63,75 @@ fn main() -> Result<()> {
         );
     }
 
+    if let Some(resilience) = &profile.resilience {
+        println!(
+            "required_autonomy_hours: {:.2}",
+            resilience.required_autonomy_hours
+        );
+        print_optional_f64("battery_autonomy_hours", resilience.battery_autonomy_hours);
+        print_optional_f64(
+            "generator_autonomy_hours",
+            resilience.generator_autonomy_hours,
+        );
+        print_optional_text("grid_outage_risk", resilience.grid_outage_risk.as_deref());
+        print_optional_bool(
+            "fallback_generator_required",
+            resilience.fallback_generator_required,
+        );
+        print_optional_f64("diesel_price_per_liter", resilience.diesel_price_per_liter);
+    }
+
+    if let Some(procurement) = &profile.procurement {
+        println!(
+            "import_duty_percent: {:.2}",
+            procurement.import_duty_percent
+        );
+        println!(
+            "shipping_multiplier: {:.3}",
+            procurement.shipping_multiplier
+        );
+        println!(
+            "local_labour_multiplier: {:.3}",
+            procurement.local_labour_multiplier
+        );
+        print_optional_f64(
+            "spare_parts_locality_score",
+            procurement.spare_parts_locality_score,
+        );
+        print_optional_f64("vendor_lock_in_score", procurement.vendor_lock_in_score);
+    }
+
+    if let Some(sovereignty) = &profile.sovereignty {
+        println!(
+            "data_residency_required: {}",
+            sovereignty.data_residency_required
+        );
+        println!(
+            "national_key_management: {}",
+            sovereignty.national_key_management
+        );
+        println!(
+            "offline_backup_required: {}",
+            sovereignty.offline_backup_required
+        );
+        print_optional_f64(
+            "sovereign_control_score",
+            sovereignty.sovereign_control_score,
+        );
+    }
+
+    if let Some(operations) = &profile.operations {
+        print_optional_f64("maintainability_score", operations.maintainability_score);
+        print_optional_text(
+            "backup_restore_maturity",
+            operations.backup_restore_maturity.as_deref(),
+        );
+        print_optional_text(
+            "operator_skill_requirement",
+            operations.operator_skill_requirement.as_deref(),
+        );
+    }
+
     Ok(())
 }
 
@@ -71,4 +140,22 @@ fn read_profile(path: &PathBuf) -> Result<SiteProfile> {
         .with_context(|| format!("failed to read profile {}", path.display()))?;
     serde_json::from_str(&raw)
         .with_context(|| format!("failed to parse profile {}", path.display()))
+}
+
+fn print_optional_f64(label: &str, value: Option<f64>) {
+    if let Some(value) = value {
+        println!("{label}: {value:.2}");
+    }
+}
+
+fn print_optional_bool(label: &str, value: Option<bool>) {
+    if let Some(value) = value {
+        println!("{label}: {value}");
+    }
+}
+
+fn print_optional_text(label: &str, value: Option<&str>) {
+    if let Some(value) = value {
+        println!("{label}: {value}");
+    }
 }

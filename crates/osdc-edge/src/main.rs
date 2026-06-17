@@ -41,7 +41,7 @@ const EDGE_HTML: &str = r##"<!doctype html>
     <header>
       <div>
         <h1>OSDC Edge Node</h1>
-        <p>Radxa/RK3588 local edge controller for DNS, cache, WAF, tunnel, and access services</p>
+        <p>Radxa/RK3588 local edge controller for DNS, cache, WAF, tunnel, access, and telemetry services</p>
       </div>
       <div class="links">
         <a href="/api/status">JSON status</a>
@@ -274,7 +274,7 @@ fn edge_services() -> Vec<EdgeService> {
         EdgeService {
             id: "edge_cache",
             name: "CDN cache",
-            stack: "Varnish Cache or Nginx cache",
+            stack: "Varnish/Vinyl Cache or Nginx cache",
             port: "local",
             status: "ready",
         },
@@ -295,14 +295,14 @@ fn edge_services() -> Vec<EdgeService> {
         EdgeService {
             id: "edge_tunnel",
             name: "Origin tunnel",
-            stack: "WireGuard + Headscale/NetBird",
+            stack: "WireGuard + NetBird/OpenZiti",
             port: "udp",
             status: "ready",
         },
         EdgeService {
             id: "edge_access",
             name: "Zero-trust access",
-            stack: "Authelia/Authentik + Keycloak + OPA",
+            stack: "Keycloak + OPA + Authelia/Authentik",
             port: "443",
             status: "ready",
         },
@@ -340,6 +340,11 @@ fn config_preview() -> ConfigPreview {
                 owner: "root",
                 purpose: "private origin tunnel",
             },
+            GeneratedFile {
+                path: "/etc/osdc-edge/policy.json",
+                owner: "osdc-edge",
+                purpose: "route cache WAF access and DDoS claim policy",
+            },
         ],
         rollout_checks: vec![
             "validate generated configs",
@@ -347,6 +352,7 @@ fn config_preview() -> ConfigPreview {
             "run WAF in detection mode before blocking",
             "confirm tunnel key rotation",
             "confirm emergency bypass route",
+            "confirm no volumetric DDoS claim without upstream plan",
         ],
     }
 }
@@ -416,7 +422,7 @@ mod tests {
             .unwrap()
             .iter()
             .any(|file| file["path"] == "/etc/wireguard/osdc-edge.conf"));
-        assert!(config["rollout_checks"].as_array().unwrap().len() >= 5);
+        assert!(config["rollout_checks"].as_array().unwrap().len() >= 6);
     }
 
     #[test]

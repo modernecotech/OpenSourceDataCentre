@@ -1,0 +1,16 @@
+proprietary_system,proprietary_category,osdc_replacement,primary_osdc_doc,notes
+Cloudflare DNS,DNS,PowerDNS Authoritative plus dnsdist,docs/security/dns-and-certificate-authority.md,sovereign authoritative DNS and DNSSEC
+Cloudflare CDN,CDN,Varnish or Vinyl Cache plus Caddy or Envoy,docs/security/cloudflare-equivalent-open-tooling.md,regional cache not global anycast
+Cloudflare WAF,WAF,Coraza plus OWASP CRS,docs/security/waf-and-api-protection.md,local rule review and staged blocking
+Cloudflare Access,Zero trust access,Keycloak plus OPA plus proxy auth middleware,docs/security/zero-trust-access.md,identity aware access for admin and tenant apps
+Cloudflare Tunnel,Private origin tunnels,WireGuard plus NetBird or OpenZiti,docs/security/zero-trust-access.md,private origins without public inbound ports
+Cloudflare Workers,Edge functions,Wasmtime Spin wasmCloud,docs/security/sovereign-edge-security-stack.md,small signed transforms only
+Okta Auth0,Identity,Keycloak plus Authentik or Authelia,docs/security/zero-trust-access.md,local identity and policy control
+Vault Enterprise,Secrets,OpenBao,docs/security/secrets-and-key-management.md,local secrets leasing revocation and transit encryption
+Terraform Cloud,IaC,OpenTofu plus GitOps runner plus Ceph state,docs/security/supply-chain-security.md,reviewable plans and local state
+DockerHub ECR Artifactory,Registry,Harbor plus cosign plus Syft plus Grype,docs/security/supply-chain-security.md,signed images and SBOMs
+Datadog New Relic,Observability,OpenTelemetry plus Prometheus plus VictoriaMetrics plus Grafana plus Loki plus Tempo,docs/security/siem-soc-open-source-stack.md,local telemetry and dashboards
+Splunk Sentinel,SIEM,Wazuh plus OpenSearch plus Zeek plus Suricata plus MISP,docs/security/siem-soc-open-source-stack.md,local SOC with optional community intelligence
+GitHub Enterprise GitLab SaaS,Source and CI,Forgejo plus Woodpecker CI plus Renovate,docs/security/supply-chain-security.md,local repos and pipelines
+AWS KMS Secrets Manager,Keys and secrets,OpenBao plus Barbican,docs/security/secrets-and-key-management.md,local key custody
+AWS CloudWatch,Observability,OpenTelemetry plus Prometheus plus Loki plus Grafana,docs/security/siem-soc-open-source-stack.md,local logs metrics and alerts

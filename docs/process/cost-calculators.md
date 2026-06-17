@@ -25,6 +25,9 @@ The calculators should help communities decide whether a design is affordable, o
 7. Sustainability
    - PUE, WUE, CUE, renewable fraction, grid import, water stress, embodied carbon, heat reuse, and autonomy during outage.
 
+8. Country-specific sovereignty and maintainability
+   - Autonomy hours, grid outage risk, diesel and fallback cost, import duty, local labour factor, spare-parts locality score, vendor lock-in score, maintainability score, sovereign-control score, backup/restore maturity, and operator skill requirement.
+
 ## Baseline Formulas
 
 ```text
@@ -43,6 +46,11 @@ Recovered cooling kW = Captured rack heat kW * thermal COP
 Avoided compressor power kW = Cooling offset kW / displaced electric chiller COP
 Net electric savings kW = Avoided compressor power kW - pump and controls kW
 Sorption heat rejection kW ~= Captured rack heat kW + recovered cooling kW
+Base cost = quantity * unit price
+Shipping cost = base cost * (shipping multiplier - 1)
+Import duty = (base cost + shipping cost) * import duty percent / 100
+Local labour cost = baseline labour cost * local labour multiplier
+Fallback fuel cost = generator liters per hour * outage hours * diesel price per liter
 ```
 
 ## Validation Rules
@@ -64,6 +72,10 @@ Prefer open and auditable inputs:
 - Local solar irradiance datasets.
 - Local water price and water-stress factors.
 - Local grid carbon factors.
+- Country profiles from `data/country-profiles/`.
+- Grid outage data, voltage-quality observations, and generator test data.
+- Import duty, customs fees, shipping multipliers, and local labour multipliers.
+- Spare-parts locality, second-source status, and vendor lock-in assessments.
 - Equipment BOMs from FreeCAD/CSV exports.
 - Telemetry from meters and monitoring systems.
 - Procurement quotes with date, vendor, country, warranty, and currency.
@@ -80,6 +92,9 @@ The initial `osdc-calc` crate implements the baseline annual site calculator. It
 - CAPEX and replacement-cycle model.
 - BOM landed-cost model with shipping, import duty, local labour, commissioning, maintenance, and replacement intervals.
 - Scale scenario calculator based on `data/costing/scenario-costs-2026.csv` and `data/costing/marketplace-price-basis-2026.csv`.
+- Country-profile ingestion from `data/country-profiles/*.json`.
+- Sovereign-control, maintainability, spare-parts-locality, and vendor-lock-in scoring.
+- Diesel fallback and outage-risk sensitivity analysis.
 - Sensitivity-analysis output as CSV.
 
 The code should remain boring and auditable. Operators should be able to check every formula.

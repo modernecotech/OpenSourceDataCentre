@@ -2,6 +2,8 @@
 
 `osdc-edge` is the Radxa-local Edge Shield node service. It is intended to run on low-cost RK3588 boards such as Radxa ROCK 5B+ and expose enough local status/config information for DNS, reverse proxy, cache, WAF, rate limiting, tunnels, zero-trust access, and observability.
 
+It is the local control/status layer for the sovereign edge fabric. It does not replace mature edge software or claim global DDoS absorption.
+
 ## APIs
 
 - `/` - local HTML dashboard.
@@ -27,4 +29,9 @@ The tests verify dashboard routing, JSON status, generated config paths, rollout
 
 ## Deployment Note
 
-This crate does not replace mature edge software. It is the local Rust control/status layer that should coordinate open-source components such as PowerDNS, Caddy or Traefik, Varnish or Nginx cache, Coraza, CrowdSec, WireGuard, Authelia or Authentik, Keycloak, OPA, Prometheus, Loki, and OpenTelemetry.
+This crate should coordinate open-source components such as PowerDNS, dnsdist, Caddy, Envoy, HAProxy, Varnish/Vinyl Cache, Coraza, CrowdSec, WireGuard, NetBird, OpenZiti, Keycloak, OPA, Prometheus, Loki, Grafana, and OpenTelemetry.
+
+Related crates:
+
+- `osdc-edge-config` validates deployment profiles from `examples/edge-shield/`.
+- `osdc-edge-policy` models cache, access, and DDoS claim policy decisions.

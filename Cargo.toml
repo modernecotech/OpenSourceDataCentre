@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "crates/osdc-calc",
+    "crates/osdc-edge-config",
+    "crates/osdc-edge-policy",
     "crates/osdc-edge",
     "crates/osdc-models",
     "crates/osdc-portal",

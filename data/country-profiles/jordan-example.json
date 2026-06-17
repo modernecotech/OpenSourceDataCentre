@@ -1,0 +1,30 @@
+{
+  "country": "Jordan",
+  "currency": "USD",
+  "grid_reliability": {
+    "average_outage_hours_per_month": 0,
+    "voltage_stability": "unknown",
+    "generator_required": true,
+    "grid_outage_risk": "medium"
+  },
+  "climate": {
+    "design_dry_bulb_c": 43,
+    "water_stress": "high",
+    "dust_filtration_required": true
+  },
+  "energy": {
+    "electricity_price_per_kwh": 0.14,
+    "diesel_price_per_liter": 1.0,
+    "solar_capacity_factor": 0.21
+  },
+  "procurement": {
+    "import_duty_percent": 12,
+    "shipping_multiplier": 1.22,
+    "local_labour_multiplier": 0.62
+  },
+  "sovereignty": {
+    "data_residency_required": true,
+    "national_key_management": true,
+    "offline_backup_required": true
+  }
+}

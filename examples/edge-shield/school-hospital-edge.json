@@ -1,0 +1,41 @@
+{
+  "profile_id": "school-hospital-edge",
+  "name": "School and hospital public services edge",
+  "region": "community-edge-01",
+  "deployment_class": "community",
+  "nodes": [
+    {
+      "id": "edge-a",
+      "role": "proxy-cache-dns",
+      "board": "Radxa ROCK 5B+",
+      "services": [
+        "dns_authoritative",
+        "tls_reverse_proxy",
+        "cdn_cache",
+        "waf_api",
+        "origin_tunnel",
+        "zero_trust_access",
+        "observability"
+      ]
+    }
+  ],
+  "origin_tunnel": {
+    "mode": "wireguard",
+    "private_origins_required": true
+  },
+  "threat_model": {
+    "upstream_ddos_provider_required": false,
+    "volumetric_ddos_claim_allowed": false,
+    "community_intelligence_mode": "local-private"
+  },
+  "cache_policy": {
+    "default_mode": "no-store",
+    "public_static_ttl_seconds": 43200,
+    "cache_authenticated_responses": false
+  },
+  "required_evidence": [
+    "waf-detection-mode-report",
+    "tunnel-key-rotation-test",
+    "bypass-route-test"
+  ]
+}

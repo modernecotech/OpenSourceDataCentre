@@ -2,6 +2,8 @@
 
 The project is organized as a layered system. The key idea is to keep hazardous or highly specialized control close to the field device, while using Rust services for integration, policy, observability, cost, and user workflows.
 
+The architecture is optimized for sovereign public infrastructure: data, keys, logs, backup, identity, procurement records, operating procedures, and commissioning evidence must remain understandable and controllable by the country or institution operating the site.
+
 ```mermaid
 flowchart TB
   users[Admins, operators, tenants, researchers]
@@ -89,7 +91,7 @@ The Rust control plane is a set of narrow services:
 - `telemetry-adapter`: queries metrics and events.
 - `facility-adapter`: integrates OT gateways without bypassing safety controls.
 - `scheduler-adapter`: allocates compute and AI workloads through Kueue, Slurm, and Kubernetes APIs.
-- `calculator`: energy, water, carbon, CAPEX, OPEX, rack-power, storage, AI-job, and autonomy calculations.
+- `calculator`: energy, water, carbon, CAPEX, OPEX, rack-power, storage, AI-job, autonomy, landed-cost, outage-risk, and sovereignty/maintainability calculations.
 - `policy`: OPA-backed access, quota, safety, and procurement policy.
 
 ## Layer 7: Portal Surfaces
@@ -110,5 +112,7 @@ The first workflows should be intentionally mundane:
 - Submit AI inference/training jobs to an open queue.
 - Show fair-share queue position, estimated start time, energy cost, and carbon estimate.
 - Produce a bill-of-materials and operating-cost summary for a target country/currency.
+- Generate a country planning profile with grid reliability, climate, energy, procurement, sovereignty, maintainability, and operator-skill assumptions.
+- Track commissioning evidence for grid-loss, DC-bus ride-through, cooling-failover, generator-start, and backup-restore tests.
 
 The interface should be operational, not marketing-shaped: dense, clear, auditable, and quick for repeated use.

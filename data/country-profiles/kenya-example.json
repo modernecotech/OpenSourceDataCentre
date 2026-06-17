@@ -1,0 +1,30 @@
+{
+  "country": "Kenya",
+  "currency": "USD",
+  "grid_reliability": {
+    "average_outage_hours_per_month": 0,
+    "voltage_stability": "unknown",
+    "generator_required": true,
+    "grid_outage_risk": "medium"
+  },
+  "climate": {
+    "design_dry_bulb_c": 35,
+    "water_stress": "medium",
+    "dust_filtration_required": true
+  },
+  "energy": {
+    "electricity_price_per_kwh": 0.14,
+    "diesel_price_per_liter": 1.1,
+    "solar_capacity_factor": 0.2
+  },
+  "procurement": {
+    "import_duty_percent": 15,
+    "shipping_multiplier": 1.25,
+    "local_labour_multiplier": 0.55
+  },
+  "sovereignty": {
+    "data_residency_required": true,
+    "national_key_management": true,
+    "offline_backup_required": true
+  }
+}

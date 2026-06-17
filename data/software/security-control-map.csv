@@ -1,0 +1,13 @@
+control_id,control_area,default_tools,required_evidence,notes
+sec_identity,Identity and access,Keycloak OPA Authentik Authelia,realm export access review break glass test,no shared admin accounts
+sec_dns,DNS control,PowerDNS dnsdist DNSSEC,zone inventory change log DNSSEC check,zone changes must be reviewed
+sec_tls,Certificate control,Caddy cert-manager Smallstep OpenBao,certificate inventory issuance log revocation test,route ownership gates issuance
+sec_waf,WAF and API protection,Coraza OWASP CRS,rule version false positive review block log,start in detection mode
+sec_rate_limit,Rate limiting and abuse,CrowdSec nftables HAProxy Envoy,thresholds block decisions bypass record,support local private intelligence
+sec_tunnel,Tunnel control,WireGuard Headscale NetBird OpenZiti,peer list key rotation route inventory,no unapproved origin exposure
+sec_secrets,Secrets and keys,OpenBao Barbican,initialization record rotation log recovery test,root keys under local control
+sec_registry,Registry and artifacts,Harbor cosign Syft Grype,signed image SBOM vulnerability scan,platform images signed before rollout
+sec_iac,IaC and GitOps,OpenTofu Ansible Forgejo Woodpecker Flux,plan diff approval rollout log,all production changes reviewed
+sec_observability,Logs metrics traces,OpenTelemetry Prometheus VictoriaMetrics Loki Tempo Grafana,retention matrix dashboard alert test,logs follow residency policy
+sec_soc,SIEM and SOC,Wazuh OpenSearch Zeek Suricata MISP,alert catalogue drill report analyst access review,community feeds optional by policy
+sec_backup,Backup and restore,Velero Restic Kopia Borgmatic Ceph snapshots,restore report recovery time recovery point,sovereign restore without external dependency
