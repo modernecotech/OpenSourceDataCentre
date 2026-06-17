@@ -221,6 +221,102 @@ function renderRows(targetId, rows, columns) {
   }
 }
 
+function renderHardwarePipeline(targetId, stages) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const stage of stages) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      stage.stage_name,
+      stage.purpose,
+      stage.primary_system,
+      stage.ui_action,
+      stage.automation_hook,
+      stage.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(stage.status, statusClassFromStatus(stage.status)));
+    target.append(tr);
+  }
+}
+
+function renderHardwareProfiles(targetId, profiles) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const profile of profiles) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      profile.profile_id,
+      profile.workload_class,
+      profile.node_role,
+      profile.provisioner,
+      profile.os_image,
+      profile.network_profile,
+      profile.target_pool,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(profile.status, statusClassFromStatus(profile.status)));
+    target.append(tr);
+  }
+}
+
+function renderHardwareRequests(targetId, requests) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const request of requests) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      request.request_id,
+      request.requester,
+      request.profile_id,
+      request.count,
+      request.site,
+      request.approval_gate,
+      request.current_stage,
+      request.target_environment,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(request.status, statusClassFromStatus(request.status)));
+    target.append(tr);
+  }
+}
+
+function renderSystemConnectors(targetId, connectors) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const connector of connectors) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      connector.system_name,
+      connector.capability,
+      connector.adapter_pattern,
+      connector.endpoint_pattern,
+      connector.auth_model,
+      connector.write_mode,
+      connector.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(connector.status, statusClassFromStatus(connector.status)));
+    target.append(tr);
+  }
+}
+
 function renderCoreServiceRows(targetId, services, mode) {
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -2116,6 +2212,98 @@ async function hydrateDataPlatform() {
   wireDownloadButton("data-export-templates", "data-templates", "osdc-data-templates.csv");
 }
 
+function populateHardwareProfileSelect(profiles) {
+  const select = document.getElementById("hardware-profile-select");
+  if (!select) return;
+  clear(select);
+  for (const profile of profiles) {
+    const option = document.createElement("option");
+    option.value = profile.profile_id;
+    option.append(text(`${profile.profile_id} - ${profile.node_role}`));
+    select.append(option);
+  }
+}
+
+function selectedHardwareProfile(profiles) {
+  const select = document.getElementById("hardware-profile-select");
+  return profiles.find((profile) => profile.profile_id === select?.value) ?? profiles[0];
+}
+
+function renderHardwareRequestPreview(profiles) {
+  const profile = selectedHardwareProfile(profiles);
+  const count = document.getElementById("hardware-count")?.value || "1";
+  const site = document.getElementById("hardware-site")?.value || "site";
+  const network = document.getElementById("hardware-network-zone")?.value || profile?.network_profile;
+  const rackPolicy = document.getElementById("hardware-rack-policy")?.value || "rack-policy";
+  const target = document.getElementById("hardware-target")?.value || profile?.target_pool;
+  const output = document.getElementById("hardware-action-output");
+  if (!profile || !output) return;
+
+  output.textContent = [
+    `Preview: ${count} x ${profile.node_role}`,
+    `via ${profile.provisioner}`,
+    `at ${site}`,
+    `for ${target}.`,
+    `Reserve in NetBox, validate BMC with Redfish/OpenBMC, deploy ${profile.os_image}, attach ${network}, use ${rackPolicy}, enroll security, then hand off to ${profile.target_pool}.`,
+  ].join(" ");
+}
+
+async function hydrateHardware() {
+  const overview = await api("/api/hardware/provisioning");
+
+  renderMetrics("hardware-metrics", overview.metrics);
+  renderHardwarePipeline("hardware-pipeline", overview.pipeline);
+  renderHardwareProfiles("hardware-profiles", overview.profiles);
+  renderHardwareRequests("hardware-requests", overview.requests);
+  renderSystemConnectors("hardware-connectors", overview.connectors);
+  populateHardwareProfileSelect(overview.profiles);
+  renderHardwareRequestPreview(overview.profiles);
+
+  for (const id of [
+    "hardware-profile-select",
+    "hardware-count",
+    "hardware-site",
+    "hardware-network-zone",
+    "hardware-rack-policy",
+    "hardware-target",
+  ]) {
+    document
+      .getElementById(id)
+      ?.addEventListener("change", () => renderHardwareRequestPreview(overview.profiles));
+  }
+
+  attachTableFilters({
+    textInputId: "hardware-pipeline-filter",
+    tbodyId: "hardware-pipeline",
+  });
+  attachTableFilters({
+    textInputId: "hardware-profile-filter",
+    tbodyId: "hardware-profiles",
+  });
+  attachTableFilters({
+    textInputId: "hardware-request-filter",
+    tbodyId: "hardware-requests",
+  });
+  attachTableFilters({
+    textInputId: "hardware-connector-filter",
+    tbodyId: "hardware-connectors",
+  });
+
+  wireActionButton("hardware-refresh", "Hardware provisioning data refreshed.", "hardware-action-output");
+  wireActionButton(
+    "hardware-preview-request",
+    "Hardware request preview refreshed. NetBox reservation and BMC validation are the first actions.",
+    "hardware-action-output"
+  );
+  wireActionButton(
+    "hardware-open-change",
+    "GitOps hardware provisioning change staged with source-of-truth reservation.",
+    "hardware-action-output"
+  );
+  wireDownloadButton("hardware-export-requests", "hardware-requests", "osdc-hardware-requests.csv");
+  wireDownloadButton("hardware-export-profiles", "hardware-profiles", "osdc-hardware-profiles.csv");
+}
+
 async function hydrateEdge() {
   const [status, config, scripts] = await Promise.all([
     api("/api/edge/status"),
@@ -2179,6 +2367,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (document.body.dataset.portal === "lifecycle") {
     hydrateLifecycle().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "hardware") {
+    hydrateHardware().catch((error) => console.error(error));
   }
   if (document.body.dataset.portal === "developer") {
     hydrateDeveloper().catch((error) => console.error(error));

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Hardware Provisioning</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="hardware">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Hardware</strong>
+          <span>rack to running</span>
+        </div>
+        <nav class="nav-list" aria-label="Hardware navigation">
+          <a class="active" href="/hardware"><span class="nav-icon">H</span>Hardware</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/assurance"><span class="nav-icon">A</span>Assurance</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/data-platform"><span class="nav-icon">A</span>Data</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+        </nav>
+        <small>mode: source-of-truth first</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Hardware Provisioning</h1>
+            <p>Request, reserve, commission, image, secure, and hand off physical nodes</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="hardware-refresh" aria-label="Refresh hardware data">R</button>
+            <button id="hardware-export-requests">Export requests</button>
+            <a class="button primary" href="/docs/hardware/hardware-provisioning.md" target="_blank" rel="noreferrer">Provisioning docs</a>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="hardware-metrics">
+            <div class="metric"><span>Profiles</span><strong>7</strong><em>edge cloud storage gpu data ot</em></div>
+            <div class="metric"><span>Provisioners</span><strong>4</strong><em>MAAS Ironic Metal3 Tinkerbell</em></div>
+            <div class="metric"><span>Active requests</span><strong>3</strong><em>review pilot in-progress</em></div>
+            <div class="metric"><span>Guarded actions</span><strong>2</strong><em>power firmware scan controls</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Provision Hardware</h2>
+              <div class="button-row">
+                <button class="primary" id="hardware-preview-request">Preview request</button>
+                <button id="hardware-open-change">Open GitOps change</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <form class="form-grid">
+                <label>Profile<select id="hardware-profile-select"></select></label>
+                <label>Quantity<input id="hardware-count" type="number" min="1" max="128" value="2"></label>
+                <label>Site
+                  <select id="hardware-site">
+                    <option>regional-site-a</option>
+                    <option>national-site-1</option>
+                    <option>school-region-north</option>
+                  </select>
+                </label>
+                <label>Network zone
+                  <select id="hardware-network-zone">
+                    <option>tenant-private</option>
+                    <option>storage-backend</option>
+                    <option>rdma-ai-backend</option>
+                    <option>edge-public</option>
+                    <option>facility-ot</option>
+                  </select>
+                </label>
+                <label>Rack policy
+                  <select id="hardware-rack-policy">
+                    <option>spread-across-racks</option>
+                    <option>same-row-power-balanced</option>
+                    <option>liquid-cooling-row</option>
+                    <option>edge-site-local</option>
+                  </select>
+                </label>
+                <label>Target
+                  <select id="hardware-target">
+                    <option>openstack-compute</option>
+                    <option>ai-kubernetes</option>
+                    <option>ceph-storage</option>
+                    <option>edge-shield</option>
+                    <option>data-platform</option>
+                    <option>facility-ot</option>
+                  </select>
+                </label>
+              </form>
+              <div class="action-output" id="hardware-action-output">Select a profile to preview provisioner, gates, and evidence.</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Provisioning Pipeline</h2>
+              <div class="panel-tools">
+                <input id="hardware-pipeline-filter" type="search" placeholder="Filter stages">
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Stage</th><th>Purpose</th><th>System</th><th>UI action</th><th>Automation</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="hardware-pipeline"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Provisioning Profiles</h2>
+              <div class="panel-tools">
+                <input id="hardware-profile-filter" type="search" placeholder="Filter profiles">
+                <button id="hardware-export-profiles">Export profiles</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Profile</th><th>Class</th><th>Role</th><th>Provisioner</th><th>OS</th><th>Network</th><th>Target</th><th>Status</th></tr>
+              </thead>
+              <tbody id="hardware-profiles"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Request Queue</h2>
+              <div class="panel-tools">
+                <input id="hardware-request-filter" type="search" placeholder="Filter requests">
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Request</th><th>Requester</th><th>Profile</th><th>Count</th><th>Site</th><th>Gate</th><th>Stage</th><th>Target</th><th>Status</th></tr>
+              </thead>
+              <tbody id="hardware-requests"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>UI Connectors</h2>
+              <div class="panel-tools">
+                <input id="hardware-connector-filter" type="search" placeholder="Filter connectors">
+                <a class="button" href="/docs/architecture/system-ui-connectors.md" target="_blank" rel="noreferrer">Connector docs</a>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>System</th><th>Capability</th><th>Adapter</th><th>Endpoint</th><th>Auth</th><th>Write mode</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="hardware-connectors"></tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

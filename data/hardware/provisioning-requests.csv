@@ -1,0 +1,6 @@
+request_id,requester,profile_id,count,site,rack_policy,network_zone,approval_gate,current_stage,target_environment,evidence_path,status
+HREQ_001,ministry-health,HP_COMPUTE_GENERAL,4,regional-site-a,spread-across-racks,tenant-private,GATE_STAGING,HP_STAGE_IMAGE,openstack-compute,docs/hardware/hardware-provisioning.md,in-progress
+HREQ_002,education-edge,HP_EDGE_RADXA,12,school-region-north,edge-site-local,edge-public,GATE_APPROVAL,HP_STAGE_SOURCE_OF_TRUTH,edge-shield,docs/hardware/hardware-provisioning.md,review
+HREQ_003,national-ai-lab,HP_GPU_AI,8,national-site-1,liquid-cooling-row,rdma-ai-backend,GATE_POSTURE,HP_STAGE_COMMISSIONING,ai-kubernetes,docs/hardware/hardware-provisioning.md,template
+HREQ_004,platform-team,HP_STORAGE_CEPH,6,regional-site-a,same-row-power-balanced,storage-backend,GATE_STATE,HP_STAGE_NETWORK,ceph-storage,docs/hardware/hardware-provisioning.md,template
+HREQ_005,facility-ops,HP_FACILITY_GATEWAY,2,regional-site-a,ot-cabinet,facility-ot,GATE_APPROVAL,HP_STAGE_SECURITY,facility-ot,docs/security/ot-security-zones-and-conduits.md,pilot

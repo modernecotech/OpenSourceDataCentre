@@ -24,6 +24,7 @@ The project needs test harnesses for both code and real-world systems. A datacen
 - delivery and commissioning catalogue IDs, statuses, criticalities, and evidence/document references.
 - developer-platform catalogue IDs, template IDs, environment IDs, promotion-gate IDs, and VS Code workflow IDs.
 - data-platform service, product, pipeline, ontology, access-policy, and template IDs.
+- system UI connector IDs plus hardware provisioning pipeline, profile, and request IDs.
 - local Markdown link validity.
 - portal route documentation against the Rust route table.
 - config-script catalogue risk, validation command, and sample artifact presence.
@@ -102,6 +103,7 @@ The required commissioning pack is in `docs/commissioning/`:
 - Break-glass access tests with auditable logs.
 - Dependency and container image scanning.
 - Source, dependency, container image, IaC, Kubernetes, endpoint, network, runtime, compliance, and OT scan coverage through the open threat-management pipeline.
+- Connector contract tests for NetBox, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, DefectDojo, Dependency-Track, Wazuh, and other UI-backed systems.
 
 The open-source threat-management model is described in [Open Threat Management and Scanner Platform](../security/open-threat-management-and-scanner.md).
 

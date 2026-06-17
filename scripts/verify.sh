@@ -92,6 +92,9 @@ unique_columns = {
     Path("data/delivery/risk-register.csv"): "risk_id",
     Path("data/engineering/engineering-evidence-register.csv"): "evidence_id",
     Path("data/hardware/compute-baseline-2026.csv"): "profile_id",
+    Path("data/hardware/provisioning-pipeline.csv"): "stage_id",
+    Path("data/hardware/provisioning-profiles.csv"): "profile_id",
+    Path("data/hardware/provisioning-requests.csv"): "request_id",
     Path("data/operations/procedure-catalogue.csv"): "procedure_id",
     Path("data/security/physical-security-controls.csv"): "control_id",
     Path("data/security/scanner-coverage.csv"): "scanner_id",
@@ -117,6 +120,7 @@ unique_columns = {
     Path("data/software/security-control-map.csv"): "control_id",
     Path("data/software/security-controls.csv"): "control_id",
     Path("data/software/service-catalogue-v1.csv"): "service_id",
+    Path("data/software/system-ui-connectors.csv"): "connector_id",
     Path("data/software/test-harness-catalogue.csv"): "test_id",
     Path("data/software/upgrade-rings.csv"): "ring_id",
     Path("data/software/upgrade-test-gates.csv"): "gate_id",
@@ -372,7 +376,7 @@ if portal_doc.exists() and portal_source.exists():
         route
         for route in source_routes
         if route.startswith("/api/")
-        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/developer", "/data-platform", "/health"}
+        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/hardware", "/developer", "/data-platform", "/health"}
     }
     for route in sorted(doc_routes - source_routes):
         fail(f"{portal_doc}: documents missing portal route {route}")

@@ -9,6 +9,7 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `proprietary-to-open-source-map.csv` is the older security/edge-specific comparison view. Keep it for existing docs until generated views replace it.
 - `security-controls.csv` is the compliance/control catalogue for UI surfaces, tools, and evidence.
 - `security-control-map.csv` is the older control-map view. Keep it aligned with `security-controls.csv` or mark rows for migration.
+- `system-ui-connectors.csv` defines the portal connector contract for each backend system and whether the UI should read, open a GitOps change, ingest evidence, or perform a guarded API action.
 - `upgrade-policy.csv` and `config-script-catalogue.csv` are operational source files, not derived views.
 - `developer-platform-services.csv`, `developer-templates.csv`, `deployment-environments.csv`, `developer-promotion-gates.csv`, and `vscode-workflows.csv` define the Forgejo/CI/Harbor/GitOps/OpenTofu/VS Code developer platform.
 - `data-platform-services.csv`, `data-products.csv`, `data-pipelines.csv`, `data-ontology-objects.csv`, `data-access-policies.csv`, and `data-platform-templates.csv` define the optional open-source data platform service.
@@ -32,6 +33,7 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 - `proprietary-open-source-equivalents.csv` maps Google/Microsoft/AWS-style service classes to OSDC open-source equivalents.
 - `upgrade-policy.csv` defines update classes, cadence, gates, owners, and rollback requirements.
 - `security-controls.csv` maps managed security controls to tools, evidence, UI surfaces, and service bundles.
+- `system-ui-connectors.csv` maps portal surfaces to backend systems, connector patterns, auth models, write modes, owners, and evidence.
 - `config-script-catalogue.csv` lists tool config scripts exposed through the browser editor workflow.
 - `developer-platform-services.csv` lists the developer platform components and controls.
 - `developer-templates.csv` lists VS Code-ready starter templates.

@@ -14,6 +14,7 @@ const OPERATOR_HTML: &str = include_str!("views/operator.html");
 const EDGE_HTML: &str = include_str!("views/edge.html");
 const PLANNER_HTML: &str = include_str!("views/planner.html");
 const LIFECYCLE_HTML: &str = include_str!("views/lifecycle.html");
+const HARDWARE_HTML: &str = include_str!("views/hardware.html");
 const DEVELOPER_HTML: &str = include_str!("views/developer.html");
 const DATA_PLATFORM_HTML: &str = include_str!("views/data-platform.html");
 const COMMERCIAL_HTML: &str = include_str!("views/commercial.html");
@@ -55,6 +56,12 @@ const SUSTAINABILITY_METRICS_CSV: &str =
     include_str!("../../../data/sustainability/sustainability-metrics.csv");
 const AI_RACK_CLASSES_CSV: &str =
     include_str!("../../../data/ai-ready/high-density-rack-classes.csv");
+const HARDWARE_PROVISIONING_PIPELINE_CSV: &str =
+    include_str!("../../../data/hardware/provisioning-pipeline.csv");
+const HARDWARE_PROVISIONING_PROFILES_CSV: &str =
+    include_str!("../../../data/hardware/provisioning-profiles.csv");
+const HARDWARE_PROVISIONING_REQUESTS_CSV: &str =
+    include_str!("../../../data/hardware/provisioning-requests.csv");
 const ENGINEERING_EVIDENCE_CSV: &str =
     include_str!("../../../data/engineering/engineering-evidence-register.csv");
 const OPERATIONS_PROCEDURES_CSV: &str =
@@ -86,6 +93,8 @@ const DATA_PLATFORM_TEMPLATES_CSV: &str =
     include_str!("../../../data/software/data-platform-templates.csv");
 const ASSURANCE_AUTOMATION_JOBS_CSV: &str =
     include_str!("../../../data/software/assurance-automation-jobs.csv");
+const SYSTEM_UI_CONNECTORS_CSV: &str =
+    include_str!("../../../data/software/system-ui-connectors.csv");
 const TEST_HARNESS_CATALOGUE_CSV: &str =
     include_str!("../../../data/software/test-harness-catalogue.csv");
 const UPGRADE_RINGS_CSV: &str = include_str!("../../../data/software/upgrade-rings.csv");
@@ -106,6 +115,7 @@ fn main() -> std::io::Result<()> {
     println!("edge shield console: http://{addr}/edge");
     println!("planning console: http://{addr}/planner");
     println!("lifecycle console: http://{addr}/lifecycle");
+    println!("hardware provisioning console: http://{addr}/hardware");
     println!("commercial console: http://{addr}/commercial");
     println!("assurance console: http://{addr}/assurance");
     println!("developer console: http://{addr}/developer");
@@ -157,6 +167,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/edge") => html(EDGE_HTML),
         ("GET", "/planner") => html(PLANNER_HTML),
         ("GET", "/lifecycle") => html(LIFECYCLE_HTML),
+        ("GET", "/hardware") => html(HARDWARE_HTML),
         ("GET", "/developer") => html(DEVELOPER_HTML),
         ("GET", "/data-platform") => html(DATA_PLATFORM_HTML),
         ("GET", "/commercial") => html(COMMERCIAL_HTML),
@@ -168,6 +179,11 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
             PORTAL_JS.as_bytes(),
         ),
         ("GET", "/api/catalog/hardware") => json(&hardware_catalog()),
+        ("GET", "/api/connectors/systems") => json(&system_ui_connectors()),
+        ("GET", "/api/hardware/provisioning") => json(&hardware_provisioning_overview()),
+        ("GET", "/api/hardware/provisioning-pipeline") => json(&hardware_provisioning_pipeline()),
+        ("GET", "/api/hardware/provisioning-profiles") => json(&hardware_provisioning_profiles()),
+        ("GET", "/api/hardware/provisioning-requests") => json(&hardware_provisioning_requests()),
         ("GET", "/api/catalog/services") => json(&service_catalog()),
         ("GET", "/api/catalog/core-services") => json(&core_cloud_services()),
         ("GET", "/api/catalog/sovereign-services") => json(&sovereign_cloud_services()),
@@ -327,6 +343,76 @@ struct HardwareProfile {
     price_low_usd: u16,
     price_high_usd: u16,
     default_use: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct HardwareProvisioningOverview {
+    metrics: Vec<LifecycleMetric>,
+    connectors: Vec<SystemUiConnector>,
+    pipeline: Vec<HardwareProvisioningStage>,
+    profiles: Vec<HardwareProvisioningProfile>,
+    requests: Vec<HardwareProvisioningRequest>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SystemUiConnector {
+    connector_id: String,
+    system_name: String,
+    domain: String,
+    portal_surface: String,
+    capability: String,
+    adapter_pattern: String,
+    endpoint_pattern: String,
+    auth_model: String,
+    write_mode: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct HardwareProvisioningStage {
+    stage_id: String,
+    stage_name: String,
+    purpose: String,
+    primary_system: String,
+    ui_action: String,
+    automation_hook: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct HardwareProvisioningProfile {
+    profile_id: String,
+    workload_class: String,
+    node_role: String,
+    hardware_profile: String,
+    provisioner: String,
+    os_image: String,
+    network_profile: String,
+    storage_profile: String,
+    accelerator_profile: String,
+    post_install: String,
+    target_pool: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct HardwareProvisioningRequest {
+    request_id: String,
+    requester: String,
+    profile_id: String,
+    count: String,
+    site: String,
+    rack_policy: String,
+    network_zone: String,
+    approval_gate: String,
+    current_stage: String,
+    target_environment: String,
+    evidence_path: String,
+    status: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -1242,6 +1328,92 @@ fn hardware_catalog() -> Vec<HardwareProfile> {
             default_use: "low-power GPU visualization, media, and inference lane",
         },
     ]
+}
+
+fn system_ui_connectors() -> Vec<SystemUiConnector> {
+    csv_rows(
+        SYSTEM_UI_CONNECTORS_CSV,
+        "data/software/system-ui-connectors.csv",
+    )
+}
+
+fn hardware_provisioning_pipeline() -> Vec<HardwareProvisioningStage> {
+    csv_rows(
+        HARDWARE_PROVISIONING_PIPELINE_CSV,
+        "data/hardware/provisioning-pipeline.csv",
+    )
+}
+
+fn hardware_provisioning_profiles() -> Vec<HardwareProvisioningProfile> {
+    csv_rows(
+        HARDWARE_PROVISIONING_PROFILES_CSV,
+        "data/hardware/provisioning-profiles.csv",
+    )
+}
+
+fn hardware_provisioning_requests() -> Vec<HardwareProvisioningRequest> {
+    csv_rows(
+        HARDWARE_PROVISIONING_REQUESTS_CSV,
+        "data/hardware/provisioning-requests.csv",
+    )
+}
+
+fn hardware_provisioning_overview() -> HardwareProvisioningOverview {
+    let connectors: Vec<SystemUiConnector> = system_ui_connectors()
+        .into_iter()
+        .filter(|connector| {
+            connector.domain == "hardware" || connector.portal_surface.contains("/hardware")
+        })
+        .collect();
+    let pipeline = hardware_provisioning_pipeline();
+    let profiles = hardware_provisioning_profiles();
+    let requests = hardware_provisioning_requests();
+    let active_requests = requests
+        .iter()
+        .filter(|request| !matches!(request.status.as_str(), "closed" | "template"))
+        .count();
+    let guarded_connectors = connectors
+        .iter()
+        .filter(|connector| connector.write_mode.contains("guarded"))
+        .count();
+    let provisioner_count = profiles
+        .iter()
+        .map(|profile| profile.provisioner.as_str())
+        .collect::<std::collections::BTreeSet<_>>()
+        .len();
+
+    HardwareProvisioningOverview {
+        metrics: vec![
+            LifecycleMetric {
+                label: "Profiles".to_string(),
+                value: profiles.len().to_string(),
+                detail: "edge cloud storage gpu data ot".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Provisioners".to_string(),
+                value: provisioner_count.to_string(),
+                detail: "MAAS Ironic Metal3 Tinkerbell".to_string(),
+                kind: "info",
+            },
+            LifecycleMetric {
+                label: "Active requests".to_string(),
+                value: active_requests.to_string(),
+                detail: "review pilot in-progress".to_string(),
+                kind: "warn",
+            },
+            LifecycleMetric {
+                label: "Guarded actions".to_string(),
+                value: guarded_connectors.to_string(),
+                detail: "power firmware scan controls".to_string(),
+                kind: "danger",
+            },
+        ],
+        connectors,
+        pipeline,
+        profiles,
+        requests,
+    }
 }
 
 fn service_catalog() -> Vec<CloudService> {
@@ -3747,6 +3919,7 @@ mod tests {
         let edge = body(&route_response("GET", "/edge"));
         let planner = body(&route_response("GET", "/planner"));
         let lifecycle = body(&route_response("GET", "/lifecycle"));
+        let hardware = body(&route_response("GET", "/hardware"));
         let developer = body(&route_response("GET", "/developer"));
         let data_platform = body(&route_response("GET", "/data-platform"));
         let commercial = body(&route_response("GET", "/commercial"));
@@ -3757,21 +3930,25 @@ mod tests {
         assert!(user.contains("tenant-action-output"));
         assert!(user.contains("href=\"/commercial\""));
         assert!(user.contains("href=\"/assurance\""));
+        assert!(user.contains("href=\"/hardware\""));
         assert!(operator.contains("Operator Console"));
         assert!(operator.contains("operator-service-filter"));
         assert!(operator.contains("href=\"/commercial\""));
         assert!(operator.contains("href=\"/assurance\""));
+        assert!(operator.contains("href=\"/hardware\""));
         assert!(edge.contains("Edge Shield"));
         assert!(edge.contains("edge-service-filter"));
         assert!(edge.contains("edge-config-preview"));
         assert!(edge.contains("edge-script-editor"));
         assert!(edge.contains("href=\"/commercial\""));
         assert!(edge.contains("href=\"/assurance\""));
+        assert!(edge.contains("href=\"/hardware\""));
         assert!(planner.contains("Cost Planner"));
         assert!(planner.contains("planner-scenarios"));
         assert!(planner.contains("planner-price-basis"));
         assert!(planner.contains("href=\"/commercial\""));
         assert!(planner.contains("href=\"/assurance\""));
+        assert!(planner.contains("href=\"/hardware\""));
         assert!(lifecycle.contains("Lifecycle Console"));
         assert!(lifecycle.contains("lifecycle-stages"));
         assert!(lifecycle.contains("lifecycle-evidence"));
@@ -3779,29 +3956,39 @@ mod tests {
         assert!(lifecycle.contains("lifecycle-commercial-gaps"));
         assert!(lifecycle.contains("lifecycle-commercial-remote-hands"));
         assert!(lifecycle.contains("lifecycle-commercial-access"));
+        assert!(lifecycle.contains("href=\"/hardware\""));
+        assert!(hardware.contains("Hardware Provisioning"));
+        assert!(hardware.contains("hardware-profile-select"));
+        assert!(hardware.contains("hardware-pipeline"));
+        assert!(hardware.contains("hardware-connectors"));
+        assert!(hardware.contains("href=\"/assurance\""));
         assert!(developer.contains("Developer Console"));
         assert!(developer.contains("developer-templates"));
         assert!(developer.contains("developer-vscode"));
         assert!(developer.contains("Forgejo"));
         assert!(developer.contains("href=\"/commercial\""));
         assert!(developer.contains("href=\"/assurance\""));
+        assert!(developer.contains("href=\"/hardware\""));
         assert!(data_platform.contains("Data Platform"));
         assert!(data_platform.contains("data-products"));
         assert!(data_platform.contains("data-ontology"));
         assert!(data_platform.contains("Open Data Platform Stack"));
         assert!(data_platform.contains("href=\"/commercial\""));
         assert!(data_platform.contains("href=\"/assurance\""));
+        assert!(data_platform.contains("href=\"/hardware\""));
         assert!(commercial.contains("Commercial Console"));
         assert!(commercial.contains("commercial-standards"));
         assert!(commercial.contains("commercial-pricebook"));
         assert!(commercial.contains("commercial-access"));
         assert!(commercial.contains("href=\"/assurance\""));
+        assert!(commercial.contains("href=\"/hardware\""));
         assert!(assurance.contains("Assurance Console"));
         assert!(assurance.contains("assurance-jobs"));
         assert!(assurance.contains("assurance-tests"));
         assert!(assurance.contains("assurance-gates"));
         assert!(assurance.contains("assurance-threat-stack"));
         assert!(assurance.contains("assurance-scanners"));
+        assert!(assurance.contains("href=\"/hardware\""));
     }
 
     #[test]
@@ -3825,6 +4012,53 @@ mod tests {
                 .as_str()
                 .unwrap_or_default()
                 .contains("Kueue")));
+    }
+
+    #[test]
+    fn exposes_hardware_provisioning_and_system_connectors() {
+        let overview = json_body("/api/hardware/provisioning");
+        let connectors = json_body("/api/connectors/systems");
+        let pipeline = json_body("/api/hardware/provisioning-pipeline");
+        let profiles = json_body("/api/hardware/provisioning-profiles");
+        let requests = json_body("/api/hardware/provisioning-requests");
+
+        assert!(overview["metrics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|metric| metric["label"] == "Guarded actions"));
+        assert!(overview["connectors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|connector| {
+                connector["connector_id"] == "CONN_REDFISH"
+                    && connector["write_mode"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("guarded")
+            }));
+        assert!(connectors.as_array().unwrap().iter().any(|connector| {
+            connector["connector_id"] == "CONN_DEFECTDOJO"
+                && connector["portal_surface"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("/assurance")
+        }));
+        assert!(pipeline.as_array().unwrap().iter().any(|stage| {
+            stage["stage_id"] == "HP_STAGE_SOURCE_OF_TRUTH"
+                && stage["primary_system"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("NetBox")
+        }));
+        assert!(profiles.as_array().unwrap().iter().any(|profile| {
+            profile["profile_id"] == "HP_GPU_AI" && profile["provisioner"] == "Metal3"
+        }));
+        assert!(requests.as_array().unwrap().iter().any(|request| {
+            request["request_id"] == "HREQ_001"
+                && request["target_environment"] == "openstack-compute"
+        }));
     }
 
     #[test]

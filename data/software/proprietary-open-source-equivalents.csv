@@ -32,4 +32,5 @@ BigQuery / Athena / Synapse,Trino + Iceberg + Ceph + Superset,analytics,D,tenant
 SageMaker / Vertex AI / Azure ML,Kubeflow + MLflow + Ray + KServe,ai,D,tenant,ML workspaces
 Bedrock / Azure AI Foundry,vLLM + SGLang + llama.cpp + Ollama,ai,D,tenant,model endpoints
 Cloud asset inventory,NetBox + openDCIM,operations,A,operator,racks IPs circuits servers
+Bare metal cloud provisioning,NetBox + Redfish/OpenBMC + MAAS + Ironic + Metal3 + Tinkerbell,hardware,A,hardware,source of truth bmc commissioning imaging handoff
 Systems Manager / Azure Arc,Ansible/AWX + Uyuni + Foreman,fleet,A,operator,patch status and runbooks

@@ -9,6 +9,7 @@ Last reviewed: 2026-06-17.
 - Edge Shield console: `/edge`
 - Cost planner: `/planner`
 - Lifecycle console: `/lifecycle`
+- Hardware provisioning console: `/hardware`
 - Commercial console: `/commercial`
 - Assurance console: `/assurance`
 - Developer console: `/developer`
@@ -27,11 +28,17 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/edge` | HTML | Edge Shield GUI for DNS, proxy, cache, WAF, tunnels, config scripts, and rollout previews. |
 | `/planner` | HTML | Cost and scale planning GUI for 50 kW to 5 MW scenarios. |
 | `/lifecycle` | HTML | Unified design-to-commission-to-operations console across gates, permits, evidence, work items, services, config scripts, and documents. |
+| `/hardware` | HTML | Hardware provisioning console for source-of-truth reservation, BMC validation, commissioning, imaging, security enrolment, platform handoff, and evidence closeout. |
 | `/commercial` | HTML | Commercial readiness console for gaps, standards, SLA classes, colocation products, cross-connects, remote hands, access roles, and audit evidence. |
 | `/assurance` | HTML | Assurance console for broad test harnesses, automated upgrade rings, blocking gates, threat-management components, and scanner coverage. |
 | `/developer` | HTML | Developer platform console for Forgejo-style repos, CI, Harbor, GitOps, OpenTofu, templates, environments, promotion gates, and VS Code workflows. |
 | `/data-platform` | HTML | Optional open-source data platform console for governed data products, lakehouse, catalog, lineage, ontology, pipelines, dashboards, apps, and AI context. |
 | `/api/catalog/hardware` | JSON | Chosen SBC/GPU hardware baseline. |
+| `/api/connectors/systems` | JSON | Portal connector matrix for backend systems, adapter modes, endpoint patterns, auth models, write modes, owners, and evidence. |
+| `/api/hardware/provisioning` | JSON | Combined hardware provisioning view with metrics, hardware connectors, pipeline stages, provisioning profiles, and request queue. |
+| `/api/hardware/provisioning-pipeline` | JSON | Rack-to-running hardware provisioning stages from request intake through assurance closeout. |
+| `/api/hardware/provisioning-profiles` | JSON | User-facing hardware provisioning profiles mapped to MAAS, Ironic, Metal3, Tinkerbell, target pools, images, and post-install hooks. |
+| `/api/hardware/provisioning-requests` | JSON | Sample hardware request queue with profiles, sites, rack policy, network zone, approval gates, current stage, target environment, and status. |
 | `/api/catalog/services` | JSON | Open cloud service map. |
 | `/api/catalog/core-services` | JSON | Chosen AWS/Azure-like core services and their open-source OSDC implementation. |
 | `/api/catalog/sovereign-services` | JSON | Broad sovereign cloud service catalogue across cloud core, edge, developer, security, data, AI, and operations bundles. |
@@ -86,6 +93,8 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 The next production step is to replace the in-process sample data with adapters:
 
 - Hardware catalog from `data/hardware/compute-baseline-2026.csv`.
+- Hardware provisioning catalogues from `data/hardware/provisioning-pipeline.csv`, `data/hardware/provisioning-profiles.csv`, and `data/hardware/provisioning-requests.csv`.
+- System UI connector catalogue from `data/software/system-ui-connectors.csv`.
 - Open cloud service catalog from `data/software/open-cloud-service-map.csv`.
 - Core AWS/Azure-like service catalog from `data/software/core-cloud-services.csv`.
 - Edge Shield service catalog from `data/software/edge-shield-services.csv`.
@@ -123,12 +132,13 @@ Open:
 - `http://127.0.0.1:8787/edge`
 - `http://127.0.0.1:8787/planner`
 - `http://127.0.0.1:8787/lifecycle`
+- `http://127.0.0.1:8787/hardware`
 - `http://127.0.0.1:8787/commercial`
 - `http://127.0.0.1:8787/assurance`
 - `http://127.0.0.1:8787/developer`
 - `http://127.0.0.1:8787/data-platform`
 
-The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant/planner/lifecycle/commercial/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, commercial, assurance, developer, data, and edge workflows.
+The GUI includes table filtering, tenant provisioning preview recalculation, hardware request preview, CSV export for visible tenant/planner/lifecycle/hardware/commercial/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, hardware, commercial, assurance, developer, data, and edge workflows.
 
 The Radxa-local edge service can be run separately:
 

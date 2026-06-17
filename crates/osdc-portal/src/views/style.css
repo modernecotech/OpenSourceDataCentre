@@ -305,12 +305,15 @@ table {
   border-collapse: collapse;
 }
 
-body[data-portal="assurance"] table {
+body[data-portal="assurance"] table,
+body[data-portal="hardware"] table {
   table-layout: fixed;
 }
 
 body[data-portal="assurance"] th,
-body[data-portal="assurance"] td {
+body[data-portal="assurance"] td,
+body[data-portal="hardware"] th,
+body[data-portal="hardware"] td {
   overflow-wrap: anywhere;
   vertical-align: top;
 }

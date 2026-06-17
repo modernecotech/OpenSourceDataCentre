@@ -31,6 +31,7 @@ The project combines:
 | Commercial readiness pack | Gap register, standards matrix, SLA model, colocation products, cross-connect workflows, audit evidence, and customer responsibility boundaries. |
 | Delivery control pack | Project lifecycle gates, authority permits, owner-engineer review, design freeze, operational readiness, handover, risk, action, and commissioning evidence registers. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
+| Hardware provisioning control plane | Source-of-truth-first rack-to-running workflow using NetBox, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, security enrolment, and assurance closeout. |
 | Sovereign developer platform | Forgejo-style repos, CI, Harbor registry, GitOps deployment, OpenTofu IaC, promotion gates, service templates, and VS Code-ready developer workflows. |
 | Data Platform as a Service | Optional open-source Foundry-like layer for governed data products, lakehouse tables, catalog, lineage, ontology objects, dashboards, apps, notebooks, and AI context. |
 | Assurance and upgrade fabric | Broad test-harness catalogue, automated upgrade rings, blocking gates, scanner coverage, and evidence bundles. |
@@ -102,7 +103,7 @@ The Rust layer does not replace mature infrastructure systems. It provides the u
 
 This repository is currently a strong architecture, planning framework, and working Rust prototype. It is not yet a deployable national cloud platform.
 
-The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended tenant, operator, Edge Shield, config-editor, lifecycle, commercial, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, or MLflow installations.
+The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended tenant, operator, Edge Shield, config-editor, lifecycle, hardware provisioning, commercial, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, or MLflow installations.
 
 The next engineering phase is to continue replacing hardcoded samples with CSV-backed catalogue loading, then add adapter stubs for real infrastructure systems.
 
@@ -120,9 +121,13 @@ The screenshots below are captured from the local Rust portal prototype at `127.
 | --- | --- |
 | ![OSDC developer console showing Forgejo, CI, GitOps, OpenTofu, and VS Code workflow catalogues](docs/assets/screenshots/osdc-developer-console.png) | ![OSDC data platform console showing governed data products, lakehouse services, pipelines, and ontology objects](docs/assets/screenshots/osdc-data-platform-console.png) |
 
-| Edge Shield console | Assurance console |
+| Edge Shield console | Hardware provisioning console |
 | --- | --- |
-| ![OSDC Edge Shield console showing edge service metrics and security gateway controls](docs/assets/screenshots/osdc-edge-console.png) | ![OSDC Assurance console showing test harnesses, upgrade rings, scanner gates, and open threat management coverage](docs/assets/screenshots/osdc-assurance-console.png) |
+| ![OSDC Edge Shield console showing edge service metrics and security gateway controls](docs/assets/screenshots/osdc-edge-console.png) | ![OSDC Hardware Provisioning console showing rack-to-running request controls, provisioning profiles, and hardware pipeline stages](docs/assets/screenshots/osdc-hardware-provisioning-console.png) |
+
+| Assurance console |
+| --- |
+| ![OSDC Assurance console showing test harnesses, upgrade rings, scanner gates, and open threat management coverage](docs/assets/screenshots/osdc-assurance-console.png) |
 
 ## Local Maintainability Doctrine
 
@@ -160,6 +165,20 @@ Commercial datacentres are judged by evidence as much as by architecture. OSDC t
 - AI-ready rack classes, liquid cooling, GPU networking, energy-aware scheduling, model governance, and tenant isolation.
 
 Machine-readable commercial data lives in [data/commercial](data/commercial/). The main entry point is [Commercial Readiness](docs/commercial-readiness/README.md).
+
+## Hardware Provisioning
+
+The portal now treats physical hardware as a user-requestable but evidence-gated resource. The model is source-of-truth first:
+
+- reserve site, rack, power, cable, IPAM, and asset identity in NetBox;
+- validate BMC access, boot mode, firmware inventory, and power actions through Redfish/OpenBMC;
+- commission and burn in nodes through MAAS, Ironic, Metal3, or Tinkerbell;
+- deploy approved OS images and network profiles;
+- enroll Wazuh, OpenBao, monitoring, logging, and scanner controls;
+- hand the node to OpenStack, Kubernetes, Ceph, Edge Shield, the data platform, or facility OT;
+- close the request only after an assurance evidence bundle exists.
+
+The main docs are [Hardware Provisioning](docs/hardware/hardware-provisioning.md) and [System UI Connectors](docs/architecture/system-ui-connectors.md). Machine-readable data lives in [data/hardware](data/hardware/) and [data/software/system-ui-connectors.csv](data/software/system-ui-connectors.csv). The portal exposes it through `/hardware`, `/api/hardware/provisioning`, and `/api/connectors/systems`.
 
 ## Assurance, Upgrades, and Threat Management
 
@@ -451,6 +470,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
 - [Assurance Test and Upgrade Fabric](docs/software/assurance-test-and-upgrade-fabric.md) - broad function tests, upgrade rings, gates, rollback, and evidence bundles.
+- [Hardware Provisioning](docs/hardware/hardware-provisioning.md) and [System UI Connectors](docs/architecture/system-ui-connectors.md) - source-of-truth-first hardware request flow and portal connector contracts.
 - [Developer Platform](docs/software/developer-platform.md), [Data Platform as a Service](docs/software/data-platform-service.md), and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage, including Forgejo, CI, Harbor, GitOps, OpenTofu, governed data products, lakehouse, catalog, lineage, ontology, templates, and VS Code workflows.
 - [Open Threat Management and Scanner Platform](docs/security/open-threat-management-and-scanner.md) - open-source Wiz-like scanner, posture, risk, and remediation fabric.
 - [Commercial Readiness](docs/commercial-readiness/README.md) - gap register, standards matrix, SLA model, commercial service catalogue, audit evidence, and customer responsibility matrix.
@@ -493,7 +513,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Edge Crate](crates/osdc-edge/) - Radxa-local Edge Shield status and config-preview service.
 - [BOM Data](data/bom/) - component catalogue and starter 250 kW bill of materials.
 - [Costing Data](data/costing/) - current marketplace price basis and scenario cost ranges.
-- [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles.
+- [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles plus provisioning stages, profiles, and request queue.
 - [Software Service Data](data/software/) - open cloud service catalogue mappings, developer/data catalogues, upgrade rings, and test-harness coverage.
 - [Developer Platform Examples](examples/developer-platform/) - VS Code devcontainer, CI, GitOps, and OpenTofu starter artifacts.
 - [Data Platform Examples](examples/data-platform/) - Dagster, dbt, Superset, ontology, and data pipeline starter artifacts.
@@ -534,19 +554,20 @@ cargo run -p osdc-edge -- 127.0.0.1:8790
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
 
-The first portal serves nine GUI surfaces:
+The first portal serves ten GUI surfaces:
 
 - Tenant portal: `http://127.0.0.1:8787/user`
 - Operator console: `http://127.0.0.1:8787/operator`
 - Edge Shield console: `http://127.0.0.1:8787/edge`
 - Cost planner: `http://127.0.0.1:8787/planner`
 - Lifecycle console: `http://127.0.0.1:8787/lifecycle`
+- Hardware provisioning console: `http://127.0.0.1:8787/hardware`
 - Commercial console: `http://127.0.0.1:8787/commercial`
 - Assurance console: `http://127.0.0.1:8787/assurance`
 - Developer console: `http://127.0.0.1:8787/developer`
 - Data platform console: `http://127.0.0.1:8787/data-platform`
 
-The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, commercial readiness products and evidence controls, assurance test/upgrade/scanner controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
+The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, hardware provisioning requests and connector controls, commercial readiness products and evidence controls, assurance test/upgrade/scanner controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
 
 Useful portal APIs:
 
@@ -554,6 +575,11 @@ Useful portal APIs:
 - `/api/catalog/sovereign-services`
 - `/api/catalog/upgrade-policy`
 - `/api/catalog/blueprints`
+- `/api/connectors/systems`
+- `/api/hardware/provisioning`
+- `/api/hardware/provisioning-pipeline`
+- `/api/hardware/provisioning-profiles`
+- `/api/hardware/provisioning-requests`
 - `/api/config/scripts`
 - `/api/edge/services`
 - `/api/edge/status`

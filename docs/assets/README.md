@@ -13,6 +13,7 @@ Portal screenshots captured from the local Rust prototype live in `screenshots/`
 - `screenshots/osdc-developer-console.png`: developer console with Forgejo-style services, templates, GitOps, and VS Code workflows.
 - `screenshots/osdc-data-platform-console.png`: data platform console with governed products, pipelines, ontology, policies, and templates.
 - `screenshots/osdc-edge-console.png`: Edge Shield console with open security gateway controls and config-script workflows.
+- `screenshots/osdc-hardware-provisioning-console.png`: hardware provisioning console with request preview, profiles, pipeline stages, and connector controls.
 - `screenshots/osdc-assurance-console.png`: assurance console with test harnesses, upgrade rings, scanner gates, and open threat management coverage.
 
 Prompt themes:

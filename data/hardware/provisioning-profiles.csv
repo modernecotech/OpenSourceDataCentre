@@ -1,0 +1,8 @@
+profile_id,workload_class,node_role,hardware_profile,provisioner,os_image,network_profile,storage_profile,accelerator_profile,post_install,target_pool,status
+HP_EDGE_RADXA,edge-security,edge-gateway,Radxa RK3588 edge node,Tinkerbell,Debian stable,edge-bmc-dmz-public,local-nvme,none,edge-shield-config-bundle,edge-shield,pilot
+HP_CONTROL_PLANE,cloud-core,control-plane,x86 redundant control node,MAAS,Ubuntu LTS,mgmt-storage-api,mirrored-ssd,none,k3s-or-openstack-control-plane,management-cluster,template
+HP_COMPUTE_GENERAL,cloud-core,compute,x86 general compute node,OpenStack Ironic,Ubuntu LTS,tenant-overlay-provider,nvme-ephemeral,none,nova-compute-and-wazuh,openstack-compute,template
+HP_STORAGE_CEPH,storage,ceph-osd,x86 storage node,MAAS,Ubuntu LTS,storage-replication-backend,jbod-osd,none,ceph-osd-bootstrap,ceph-storage,template
+HP_GPU_AI,ai-platform,gpu-worker,x86 gpu node with high-density cooling,Metal3,Ubuntu LTS,rdma-storage-tenant,nvme-cache,NVIDIA-or-AMD-GPU,kubernetes-gpu-operator,ai-kubernetes,template
+HP_DATA_WORKER,data-platform,data-worker,x86 analytics worker,Metal3,Ubuntu LTS,data-lakehouse-backend,nvme-cache,optional-gpu,trino-dagster-agent,data-platform,template
+HP_FACILITY_GATEWAY,facility-ot,ot-gateway,industrial gateway,MAAS,Debian stable,ot-segmented-management,local-ssd,none,wazuh-passive-telemetry,facility-ot,template
