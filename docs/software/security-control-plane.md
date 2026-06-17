@@ -13,6 +13,7 @@ The sovereign cloud service catalogue should make security controls visible as m
 | Runtime security | Falco, Wazuh agent, osquery | Runtime alerts and host inventory. |
 | Network detection | Zeek, Suricata | IDS/NDR detections and packet-derived evidence. |
 | SOC/SIEM | Wazuh, OpenSearch, Sigma rules, MISP/OpenCTI | Security findings, tenant risk, incident workflow. |
+| Threat management and scanners | DefectDojo, Dependency-Track, Trivy, Grype, OSV-Scanner, Kubescape, OpenVAS, OpenSCAP | Wiz-like risk queue, scan coverage, finding ownership, waivers, and remediation workflow. |
 
 ## Evidence
 
@@ -31,5 +32,6 @@ Each control should show:
 
 - [SIEM and SOC Open Source Stack](../security/siem-soc-open-source-stack.md)
 - [Supply Chain Security](../security/supply-chain-security.md)
+- [Open Threat Management and Scanner Platform](../security/open-threat-management-and-scanner.md)
 - [Secrets and Key Management](../security/secrets-and-key-management.md)
 - [Zero Trust Access](../security/zero-trust-access.md)

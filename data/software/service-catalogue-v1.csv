@@ -52,3 +52,7 @@ itsm,ServiceNow-like service catalogue,GLPI + Zammad + OTOBO,operations,A,import
 runbooks,Knowledge base,BookStack + Wiki.js + HedgeDoc,operations,A,important,operator,operator-release-train,review+version+audit,view runbook,pilot
 remote_admin,Remote management,MeshCentral + Guacamole + Cockpit,operations,A,important,operator,operator-release-train,zero-trust+session-audit,open remote console,pilot
 fleet_os,Systems Manager / Azure Arc,Ansible/AWX + Uyuni + Foreman,fleet,A,important,operator,operator-release-train,patch+inventory+audit,run patch playbook,pilot
+assurance_console,Release assurance and evidence gates,OSDC Assurance Console + scripts/verify.sh + Woodpecker + Argo CD,assurance,A,core,assurance,gitops+ci,evidence+approval+audit,review test and upgrade gates,pilot
+upgrade_orchestrator,Managed upgrade service,Renovate + Argo CD + Flux + OpenTofu + OSDC gates,assurance,A,core,assurance,release-train,scan+backup+rollback+audit,promote upgrade ring,pilot
+threat_management,Wiz-like CNAPP and vulnerability management,DefectDojo + Dependency-Track + Wazuh + OpenSearch,security,B,core,assurance,helm+gitops,finding+waiver+owner+audit,triage security finding,pilot
+scanner_coverage,Cloud and workload scanner coverage,Trivy + Grype + OSV-Scanner + Kubescape + OpenVAS + OpenSCAP + Falco,security,B,core,assurance,helm+gitops,sbom+posture+runtime+audit,run scanner bundle,pilot

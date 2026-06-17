@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Assurance Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="assurance">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Assurance</strong>
+          <span>test upgrade scan</span>
+        </div>
+        <nav class="nav-list" aria-label="Assurance navigation">
+          <a class="active" href="/assurance"><span class="nav-icon">A</span>Assurance</a>
+          <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/commercial"><span class="nav-icon">C</span>Commercial</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/data-platform"><span class="nav-icon">A</span>Data</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+        </nav>
+        <small>scope: automated assurance</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Assurance Console</h1>
+            <p>Broad test harnesses, automated upgrade gates, and open-source threat management</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="assurance-refresh" aria-label="Refresh assurance data">R</button>
+            <button id="assurance-export-tests">Export tests</button>
+            <a class="button primary" href="/docs/software/assurance-test-and-upgrade-fabric.md" target="_blank" rel="noreferrer">Assurance docs</a>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="assurance-metrics">
+            <div class="metric"><span>Test harnesses</span><strong>12</strong><em>software security data facility</em></div>
+            <div class="metric"><span>Upgrade rings</span><strong>7</strong><em>dev staging canary prod edge</em></div>
+            <div class="metric"><span>Blocking gates</span><strong>9</strong><em>automated promotion controls</em></div>
+            <div class="metric"><span>Threat coverage</span><strong>10</strong><em>open Wiz-style components</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Automation Jobs</h2>
+              <div class="panel-tools">
+                <input id="assurance-job-filter" type="search" placeholder="Filter jobs">
+                <button id="assurance-export-jobs">Export jobs</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Job</th><th>Purpose</th><th>Command</th><th>Trigger</th><th>Evidence</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="assurance-jobs">
+                <tr><td>JOB_ASSURANCE_RUN</td><td>Run broad assurance gate set</td><td>scripts/assurance-run.sh --ring RING_DEV</td><td>manual</td><td>target/assurance</td><td>platform-owner</td><td><span class="status">implemented</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Function Test Harnesses</h2>
+              <div class="panel-tools">
+                <input id="assurance-test-filter" type="search" placeholder="Filter tests">
+                <select id="assurance-test-status" aria-label="Test status filter">
+                  <option value="">All status</option>
+                  <option value="implemented">implemented</option>
+                  <option value="pilot">pilot</option>
+                  <option value="template">template</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Area</th><th>ID</th><th>Target</th><th>Type</th><th>Tool stack</th><th>Trigger</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="assurance-tests">
+                <tr><td>software-core</td><td>TEST_UNIT_RUST</td><td>crates</td><td>unit-test</td><td>cargo-test</td><td>on-pr</td><td>platform-owner</td><td><span class="status">implemented</span></td><td>docs/process/test-harnesses.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Automated Upgrade Rings</h2>
+              <div class="panel-tools">
+                <input id="assurance-ring-filter" type="search" placeholder="Filter rings">
+                <button id="assurance-export-rings">Export rings</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Ring</th><th>Scope</th><th>Cadence</th><th>Entry</th><th>Automated tests</th><th>Promotion</th><th>Rollback</th><th>Status</th></tr>
+              </thead>
+              <tbody id="assurance-rings">
+                <tr><td>RING_STAGING</td><td>staging</td><td>per-change</td><td>PR approved</td><td>integration smoke posture</td><td>staging-to-canary</td><td>reconcile</td><td><span class="status info">template</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Upgrade Test Gates</h2>
+              <div class="panel-tools">
+                <input id="assurance-gate-filter" type="search" placeholder="Filter gates">
+                <button id="assurance-export-gates">Export gates</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Stage</th><th>Gate</th><th>Applies to</th><th>Checks</th><th>Automation</th><th>Blocking</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="assurance-gates">
+                <tr><td>scan</td><td>GATE_SCAN</td><td>code images clusters</td><td>vulnerability policy</td><td>Trivy Grype OSV</td><td>yes</td><td>security-owner</td><td><span class="status info">template</span></td><td>docs/security/open-threat-management-and-scanner.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Open Threat Management Stack</h2>
+              <div class="panel-tools">
+                <input id="assurance-threat-filter" type="search" placeholder="Filter threat stack">
+                <a class="button" href="/docs/security/open-threat-management-and-scanner.md" target="_blank" rel="noreferrer">Threat docs</a>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Capability</th><th>ID</th><th>Wiz-like function</th><th>Open stack</th><th>Surface</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="assurance-threat-stack">
+                <tr><td>application-security-posture</td><td>THREAT_ASPM</td><td>app risk inventory</td><td>DefectDojo</td><td>portal</td><td><span class="status info">template</span></td><td>docs/security/open-threat-management-and-scanner.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Scanner Coverage</h2>
+              <div class="panel-tools">
+                <input id="assurance-scanner-filter" type="search" placeholder="Filter scanners">
+                <button id="assurance-export-scanners">Export scanners</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Domain</th><th>ID</th><th>Target</th><th>Tool</th><th>Trigger</th><th>Output</th><th>Aggregation</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="assurance-scanners">
+                <tr><td>container-images</td><td>SCAN_IMAGE</td><td>Harbor images</td><td>Trivy Grype</td><td>on-build</td><td>SBOM SARIF</td><td>DefectDojo</td><td><span class="status info">template</span></td><td>docs/security/open-threat-management-and-scanner.md</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Assurance Actions</h2>
+              <div class="button-row">
+                <button id="assurance-run-tests">Run test gate</button>
+                <button id="assurance-open-upgrade">Open upgrade PR</button>
+                <button id="assurance-run-scan">Run scanner bundle</button>
+                <button id="assurance-create-waiver">Create waiver</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="action-output" id="assurance-action-output">Assurance actions are staged as prototype workflow events.</div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

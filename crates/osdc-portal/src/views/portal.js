@@ -1001,6 +1001,159 @@ function renderCommercialAuditEvidence(targetId, evidence) {
   }
 }
 
+function renderAssuranceAutomationJobs(targetId, jobs) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const job of jobs) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      job.job_id,
+      job.purpose,
+      job.command,
+      job.trigger,
+      job.evidence_output,
+      job.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(job.status, statusClassFromStatus(job.status)));
+    target.append(tr);
+  }
+}
+
+function renderAssuranceTests(targetId, tests) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of tests) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      item.function_area,
+      item.test_id,
+      item.target,
+      item.test_type,
+      item.tool_stack,
+      item.trigger,
+      item.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, statusClassFromStatus(item.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, item.required_evidence);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderAssuranceRings(targetId, rings) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const ring of rings) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      ring.ring_id,
+      ring.scope,
+      ring.cadence,
+      ring.entry_criteria,
+      ring.automated_tests,
+      ring.promotion_gate,
+      ring.rollback_strategy,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(ring.status, statusClassFromStatus(ring.status)));
+    target.append(tr);
+  }
+}
+
+function renderAssuranceGates(targetId, gates) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const gate of gates) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      gate.stage,
+      gate.gate_id,
+      gate.applies_to,
+      gate.required_checks,
+      gate.automation_tool,
+      gate.blocking,
+      gate.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(gate.status, statusClassFromStatus(gate.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, gate.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderAssuranceThreatStack(targetId, components) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const component of components) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      component.capability,
+      component.component_id,
+      component.wiz_like_function,
+      component.open_source_stack,
+      component.integration_surface,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(component.status, statusClassFromStatus(component.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, component.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderAssuranceScannerCoverage(targetId, scanners) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const scanner of scanners) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      scanner.scan_domain,
+      scanner.scanner_id,
+      scanner.target,
+      scanner.default_tool,
+      scanner.trigger,
+      scanner.output,
+      scanner.aggregation,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(scanner.status, statusClassFromStatus(scanner.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, scanner.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
 function renderPreview(targetId, preview) {
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -1823,6 +1976,76 @@ async function hydrateCommercial() {
   wireDownloadButton("commercial-export-audit", "commercial-audit", "osdc-audit-evidence.csv");
 }
 
+async function hydrateAssurance() {
+  const overview = await api("/api/assurance/overview");
+
+  renderMetrics("assurance-metrics", overview.metrics);
+  renderAssuranceAutomationJobs("assurance-jobs", overview.automation_jobs);
+  renderAssuranceTests("assurance-tests", overview.test_harnesses);
+  renderAssuranceRings("assurance-rings", overview.upgrade_rings);
+  renderAssuranceGates("assurance-gates", overview.upgrade_gates);
+  renderAssuranceThreatStack("assurance-threat-stack", overview.threat_stack);
+  renderAssuranceScannerCoverage("assurance-scanners", overview.scanner_coverage);
+
+  attachTableFilters({
+    textInputId: "assurance-job-filter",
+    tbodyId: "assurance-jobs",
+  });
+  attachTableFilters({
+    textInputId: "assurance-test-filter",
+    statusSelectId: "assurance-test-status",
+    tbodyId: "assurance-tests",
+  });
+  attachTableFilters({
+    textInputId: "assurance-ring-filter",
+    tbodyId: "assurance-rings",
+  });
+  attachTableFilters({
+    textInputId: "assurance-gate-filter",
+    tbodyId: "assurance-gates",
+  });
+  attachTableFilters({
+    textInputId: "assurance-threat-filter",
+    tbodyId: "assurance-threat-stack",
+  });
+  attachTableFilters({
+    textInputId: "assurance-scanner-filter",
+    tbodyId: "assurance-scanners",
+  });
+
+  wireActionButton("assurance-refresh", "Assurance data refreshed.", "assurance-action-output");
+  wireActionButton(
+    "assurance-run-tests",
+    "Test gate run staged.",
+    "assurance-action-output"
+  );
+  wireActionButton(
+    "assurance-open-upgrade",
+    "Upgrade pull request staged with assurance gates.",
+    "assurance-action-output"
+  );
+  wireActionButton(
+    "assurance-run-scan",
+    "Scanner bundle staged for DefectDojo and Dependency-Track ingestion.",
+    "assurance-action-output"
+  );
+  wireActionButton(
+    "assurance-create-waiver",
+    "Waiver request staged with owner and expiry required.",
+    "assurance-action-output"
+  );
+
+  wireDownloadButton("assurance-export-jobs", "assurance-jobs", "osdc-assurance-jobs.csv");
+  wireDownloadButton("assurance-export-tests", "assurance-tests", "osdc-assurance-tests.csv");
+  wireDownloadButton("assurance-export-rings", "assurance-rings", "osdc-upgrade-rings.csv");
+  wireDownloadButton("assurance-export-gates", "assurance-gates", "osdc-upgrade-gates.csv");
+  wireDownloadButton(
+    "assurance-export-scanners",
+    "assurance-scanners",
+    "osdc-scanner-coverage.csv"
+  );
+}
+
 async function hydrateDataPlatform() {
   const overview = await api("/api/data-platform/overview");
 
@@ -1962,6 +2185,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (document.body.dataset.portal === "commercial") {
     hydrateCommercial().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "assurance") {
+    hydrateAssurance().catch((error) => console.error(error));
   }
   if (document.body.dataset.portal === "data-platform") {
     hydrateDataPlatform().catch((error) => console.error(error));

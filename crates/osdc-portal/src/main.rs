@@ -17,6 +17,7 @@ const LIFECYCLE_HTML: &str = include_str!("views/lifecycle.html");
 const DEVELOPER_HTML: &str = include_str!("views/developer.html");
 const DATA_PLATFORM_HTML: &str = include_str!("views/data-platform.html");
 const COMMERCIAL_HTML: &str = include_str!("views/commercial.html");
+const ASSURANCE_HTML: &str = include_str!("views/assurance.html");
 const RACK_IMAGE: &[u8] = include_bytes!("../../../docs/assets/rack-thermal-spine-cutaway.png");
 const EXTERIOR_IMAGE: &[u8] =
     include_bytes!("../../../docs/assets/prefab-panel-datacentre-exterior-02.png");
@@ -83,6 +84,15 @@ const DATA_ACCESS_POLICIES_CSV: &str =
     include_str!("../../../data/software/data-access-policies.csv");
 const DATA_PLATFORM_TEMPLATES_CSV: &str =
     include_str!("../../../data/software/data-platform-templates.csv");
+const ASSURANCE_AUTOMATION_JOBS_CSV: &str =
+    include_str!("../../../data/software/assurance-automation-jobs.csv");
+const TEST_HARNESS_CATALOGUE_CSV: &str =
+    include_str!("../../../data/software/test-harness-catalogue.csv");
+const UPGRADE_RINGS_CSV: &str = include_str!("../../../data/software/upgrade-rings.csv");
+const UPGRADE_TEST_GATES_CSV: &str = include_str!("../../../data/software/upgrade-test-gates.csv");
+const THREAT_MANAGEMENT_STACK_CSV: &str =
+    include_str!("../../../data/security/threat-management-stack.csv");
+const SCANNER_COVERAGE_CSV: &str = include_str!("../../../data/security/scanner-coverage.csv");
 
 fn main() -> std::io::Result<()> {
     let addr = env::args()
@@ -97,6 +107,7 @@ fn main() -> std::io::Result<()> {
     println!("planning console: http://{addr}/planner");
     println!("lifecycle console: http://{addr}/lifecycle");
     println!("commercial console: http://{addr}/commercial");
+    println!("assurance console: http://{addr}/assurance");
     println!("developer console: http://{addr}/developer");
     println!("data platform console: http://{addr}/data-platform");
     println!("catalog API: http://{addr}/api/catalog/hardware");
@@ -149,6 +160,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/developer") => html(DEVELOPER_HTML),
         ("GET", "/data-platform") => html(DATA_PLATFORM_HTML),
         ("GET", "/commercial") => html(COMMERCIAL_HTML),
+        ("GET", "/assurance") => html(ASSURANCE_HTML),
         ("GET", "/styles.css") => bytes("200 OK", "text/css; charset=utf-8", STYLE_CSS.as_bytes()),
         ("GET", "/portal.js") => bytes(
             "200 OK",
@@ -196,6 +208,13 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/lifecycle/overview") => json(&lifecycle_overview()),
         ("GET", "/api/developer/platform") => json(&developer_platform()),
         ("GET", "/api/data-platform/overview") => json(&data_platform_overview()),
+        ("GET", "/api/assurance/overview") => json(&assurance_overview()),
+        ("GET", "/api/assurance/test-harnesses") => json(&test_harnesses()),
+        ("GET", "/api/assurance/upgrade-rings") => json(&upgrade_rings()),
+        ("GET", "/api/assurance/upgrade-gates") => json(&upgrade_test_gates()),
+        ("GET", "/api/assurance/threat-stack") => json(&threat_management_stack()),
+        ("GET", "/api/assurance/scanner-coverage") => json(&scanner_coverage()),
+        ("GET", "/api/assurance/automation-jobs") => json(&assurance_automation_jobs()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -828,6 +847,92 @@ struct DataPlatformTemplate {
     pipeline_path: String,
     preview_surface: String,
     owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize)]
+struct AssuranceOverview {
+    metrics: Vec<LifecycleMetric>,
+    automation_jobs: Vec<AssuranceAutomationJob>,
+    test_harnesses: Vec<TestHarness>,
+    upgrade_rings: Vec<UpgradeRing>,
+    upgrade_gates: Vec<UpgradeTestGate>,
+    threat_stack: Vec<ThreatManagementComponent>,
+    scanner_coverage: Vec<ScannerCoverage>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AssuranceAutomationJob {
+    job_id: String,
+    purpose: String,
+    command: String,
+    trigger: String,
+    required_inputs: String,
+    evidence_output: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TestHarness {
+    test_id: String,
+    function_area: String,
+    target: String,
+    test_type: String,
+    tool_stack: String,
+    trigger: String,
+    required_evidence: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UpgradeRing {
+    ring_id: String,
+    scope: String,
+    cadence: String,
+    entry_criteria: String,
+    automated_tests: String,
+    promotion_gate: String,
+    rollback_strategy: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UpgradeTestGate {
+    gate_id: String,
+    stage: String,
+    applies_to: String,
+    required_checks: String,
+    automation_tool: String,
+    evidence_path: String,
+    blocking: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ThreatManagementComponent {
+    component_id: String,
+    capability: String,
+    wiz_like_function: String,
+    open_source_stack: String,
+    integration_surface: String,
+    evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ScannerCoverage {
+    scanner_id: String,
+    scan_domain: String,
+    target: String,
+    default_tool: String,
+    trigger: String,
+    output: String,
+    aggregation: String,
+    evidence_path: String,
     status: String,
 }
 
@@ -2442,6 +2547,95 @@ fn data_platform_overview() -> DataPlatformOverview {
     }
 }
 
+fn test_harnesses() -> Vec<TestHarness> {
+    csv_rows(
+        TEST_HARNESS_CATALOGUE_CSV,
+        "data/software/test-harness-catalogue.csv",
+    )
+}
+
+fn upgrade_rings() -> Vec<UpgradeRing> {
+    csv_rows(UPGRADE_RINGS_CSV, "data/software/upgrade-rings.csv")
+}
+
+fn upgrade_test_gates() -> Vec<UpgradeTestGate> {
+    csv_rows(
+        UPGRADE_TEST_GATES_CSV,
+        "data/software/upgrade-test-gates.csv",
+    )
+}
+
+fn threat_management_stack() -> Vec<ThreatManagementComponent> {
+    csv_rows(
+        THREAT_MANAGEMENT_STACK_CSV,
+        "data/security/threat-management-stack.csv",
+    )
+}
+
+fn scanner_coverage() -> Vec<ScannerCoverage> {
+    csv_rows(SCANNER_COVERAGE_CSV, "data/security/scanner-coverage.csv")
+}
+
+fn assurance_automation_jobs() -> Vec<AssuranceAutomationJob> {
+    csv_rows(
+        ASSURANCE_AUTOMATION_JOBS_CSV,
+        "data/software/assurance-automation-jobs.csv",
+    )
+}
+
+fn assurance_overview() -> AssuranceOverview {
+    let automation_jobs = assurance_automation_jobs();
+    let test_harnesses = test_harnesses();
+    let upgrade_rings = upgrade_rings();
+    let upgrade_gates = upgrade_test_gates();
+    let threat_stack = threat_management_stack();
+    let scanner_coverage = scanner_coverage();
+
+    let blocking_gates = upgrade_gates
+        .iter()
+        .filter(|gate| gate.blocking.eq_ignore_ascii_case("yes"))
+        .count();
+    let threat_components = threat_stack
+        .iter()
+        .filter(|component| component.status != "retired")
+        .count();
+
+    AssuranceOverview {
+        metrics: vec![
+            LifecycleMetric {
+                label: "Test harnesses".to_string(),
+                value: test_harnesses.len().to_string(),
+                detail: "software security data facility".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Upgrade rings".to_string(),
+                value: upgrade_rings.len().to_string(),
+                detail: "dev staging canary prod edge".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Blocking gates".to_string(),
+                value: blocking_gates.to_string(),
+                detail: "automated promotion controls".to_string(),
+                kind: "warn",
+            },
+            LifecycleMetric {
+                label: "Threat coverage".to_string(),
+                value: threat_components.to_string(),
+                detail: "open Wiz-style components".to_string(),
+                kind: "info",
+            },
+        ],
+        automation_jobs,
+        test_harnesses,
+        upgrade_rings,
+        upgrade_gates,
+        threat_stack,
+        scanner_coverage,
+    }
+}
+
 fn is_closed_status(status: &str) -> bool {
     matches!(
         status.to_ascii_lowercase().as_str(),
@@ -3556,23 +3750,28 @@ mod tests {
         let developer = body(&route_response("GET", "/developer"));
         let data_platform = body(&route_response("GET", "/data-platform"));
         let commercial = body(&route_response("GET", "/commercial"));
+        let assurance = body(&route_response("GET", "/assurance"));
 
         assert!(user.contains("Tenant Cloud"));
         assert!(user.contains("tenant-service-filter"));
         assert!(user.contains("tenant-action-output"));
         assert!(user.contains("href=\"/commercial\""));
+        assert!(user.contains("href=\"/assurance\""));
         assert!(operator.contains("Operator Console"));
         assert!(operator.contains("operator-service-filter"));
         assert!(operator.contains("href=\"/commercial\""));
+        assert!(operator.contains("href=\"/assurance\""));
         assert!(edge.contains("Edge Shield"));
         assert!(edge.contains("edge-service-filter"));
         assert!(edge.contains("edge-config-preview"));
         assert!(edge.contains("edge-script-editor"));
         assert!(edge.contains("href=\"/commercial\""));
+        assert!(edge.contains("href=\"/assurance\""));
         assert!(planner.contains("Cost Planner"));
         assert!(planner.contains("planner-scenarios"));
         assert!(planner.contains("planner-price-basis"));
         assert!(planner.contains("href=\"/commercial\""));
+        assert!(planner.contains("href=\"/assurance\""));
         assert!(lifecycle.contains("Lifecycle Console"));
         assert!(lifecycle.contains("lifecycle-stages"));
         assert!(lifecycle.contains("lifecycle-evidence"));
@@ -3585,15 +3784,24 @@ mod tests {
         assert!(developer.contains("developer-vscode"));
         assert!(developer.contains("Forgejo"));
         assert!(developer.contains("href=\"/commercial\""));
+        assert!(developer.contains("href=\"/assurance\""));
         assert!(data_platform.contains("Data Platform"));
         assert!(data_platform.contains("data-products"));
         assert!(data_platform.contains("data-ontology"));
         assert!(data_platform.contains("Open Data Platform Stack"));
         assert!(data_platform.contains("href=\"/commercial\""));
+        assert!(data_platform.contains("href=\"/assurance\""));
         assert!(commercial.contains("Commercial Console"));
         assert!(commercial.contains("commercial-standards"));
         assert!(commercial.contains("commercial-pricebook"));
         assert!(commercial.contains("commercial-access"));
+        assert!(commercial.contains("href=\"/assurance\""));
+        assert!(assurance.contains("Assurance Console"));
+        assert!(assurance.contains("assurance-jobs"));
+        assert!(assurance.contains("assurance-tests"));
+        assert!(assurance.contains("assurance-gates"));
+        assert!(assurance.contains("assurance-threat-stack"));
+        assert!(assurance.contains("assurance-scanners"));
     }
 
     #[test]
@@ -4064,6 +4272,68 @@ mod tests {
                     && template["devcontainer_path"]
                         == "examples/data-platform/health-capacity/.devcontainer/devcontainer.json"
             }));
+    }
+
+    #[test]
+    fn exposes_assurance_testing_upgrade_and_threat_management() {
+        let overview = json_body("/api/assurance/overview");
+        let jobs = json_body("/api/assurance/automation-jobs");
+        let tests = json_body("/api/assurance/test-harnesses");
+        let rings = json_body("/api/assurance/upgrade-rings");
+        let gates = json_body("/api/assurance/upgrade-gates");
+        let threat = json_body("/api/assurance/threat-stack");
+        let scanners = json_body("/api/assurance/scanner-coverage");
+
+        assert!(overview["metrics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|metric| metric["label"] == "Threat coverage"));
+        assert!(overview["automation_jobs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|job| job["job_id"] == "JOB_UPGRADE_DRY_RUN"));
+        assert!(jobs.as_array().unwrap().iter().any(|job| {
+            job["job_id"] == "JOB_ASSURANCE_RUN"
+                && job["command"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("scripts/assurance-run.sh")
+        }));
+        assert!(tests.as_array().unwrap().iter().any(|test| {
+            test["test_id"] == "TEST_SUPPLY_CHAIN"
+                && test["tool_stack"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("trivy")
+        }));
+        assert!(rings
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|ring| ring["ring_id"] == "RING_CANARY"));
+        assert!(gates.as_array().unwrap().iter().any(|gate| {
+            gate["gate_id"] == "GATE_SCAN"
+                && gate["automation_tool"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("OSV-Scanner")
+        }));
+        assert!(threat.as_array().unwrap().iter().any(|component| {
+            component["component_id"] == "THREAT_ASPM"
+                && component["open_source_stack"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("DefectDojo")
+        }));
+        assert!(scanners.as_array().unwrap().iter().any(|scanner| {
+            scanner["scanner_id"] == "SCAN_K8S"
+                && scanner["default_tool"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("Kubescape")
+        }));
     }
 
     #[test]

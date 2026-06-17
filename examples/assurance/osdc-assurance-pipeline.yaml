@@ -1,0 +1,25 @@
+name: osdc-assurance-pipeline
+description: Prototype CI and GitOps assurance flow for OSDC service upgrades.
+stages:
+  - id: local-assurance
+    commands:
+      - scripts/assurance-run.sh --ring RING_DEV --evidence-dir target/assurance/dev
+  - id: strict-security
+    commands:
+      - scripts/assurance-run.sh --ring RING_STAGING --strict-security --evidence-dir target/assurance/staging
+  - id: upgrade-dry-run
+    commands:
+      - scripts/upgrade-with-assurance.sh --ring RING_STAGING --service osdc-platform --change-ref CHANGE_ID --strict-security --evidence-dir target/assurance/upgrades/CHANGE_ID
+  - id: publish-evidence
+    commands:
+      - upload target/assurance/staging dependency-track
+      - upload target/assurance/staging defectdojo
+      - upload target/assurance/staging wazuh-opensearch
+  - id: gitops-staging
+    commands:
+      - open-gitops-pr --environment staging
+      - wait-for-argocd-sync --app osdc-service --health healthy
+  - id: promote
+    commands:
+      - require-owner-approval
+      - open-gitops-pr --environment production

@@ -33,6 +33,23 @@ The project needs test harnesses for both code and real-world systems. A datacen
 
 GitHub Actions should run the default verifier on every push and pull request.
 
+For a broader operator evidence bundle, use [Assurance Automation Runbook](assurance-automation-runbook.md). The first runnable commands are:
+
+```bash
+scripts/assurance-run.sh --ring RING_DEV
+scripts/upgrade-with-assurance.sh --ring RING_STAGING --service osdc-platform --change-ref PR-123
+```
+
+The broader assurance catalogue lives in:
+
+- [assurance-automation-jobs.csv](../../data/software/assurance-automation-jobs.csv)
+- [test-harness-catalogue.csv](../../data/software/test-harness-catalogue.csv)
+- [upgrade-rings.csv](../../data/software/upgrade-rings.csv)
+- [upgrade-test-gates.csv](../../data/software/upgrade-test-gates.csv)
+- [scanner-coverage.csv](../../data/security/scanner-coverage.csv)
+
+The control model is described in [Assurance Test and Upgrade Fabric](../software/assurance-test-and-upgrade-fabric.md).
+
 ## Cost Calculator Tests
 
 - Golden examples for small edge site, regional datacentre, AI training cluster, and islanded solar-plus-storage site.
@@ -84,6 +101,9 @@ The required commissioning pack is in `docs/commissioning/`:
 - Network-policy tests for OT/IT segmentation.
 - Break-glass access tests with auditable logs.
 - Dependency and container image scanning.
+- Source, dependency, container image, IaC, Kubernetes, endpoint, network, runtime, compliance, and OT scan coverage through the open threat-management pipeline.
+
+The open-source threat-management model is described in [Open Threat Management and Scanner Platform](../security/open-threat-management-and-scanner.md).
 
 ## Acceptance Gates
 
@@ -94,3 +114,5 @@ No release should be considered production-ready unless it can answer:
 - Which risks remain?
 - Which systems are simulated versus measured?
 - What rollback path exists?
+- Which scanner findings remain open or waived?
+- Which upgrade ring is approved next?

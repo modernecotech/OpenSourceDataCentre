@@ -1,0 +1,11 @@
+scanner_id,scan_domain,target,default_tool,trigger,output,aggregation,evidence_path,status
+SCAN_SOURCE,source-code,forgejo-repositories,Semgrep+gitleaks+OSV-Scanner,on-pr,SARIF+JSON,DefectDojo,docs/security/open-threat-management-and-scanner.md,template
+SCAN_DEPENDENCY,dependencies,lockfiles+manifests,OSV-Scanner+cargo-audit+Dependency-Track,on-pr,CycloneDX+finding-json,Dependency-Track,docs/security/supply-chain-security.md,template
+SCAN_IMAGE,container-images,harbor-images,Trivy+Grype,on-build,SARIF+CycloneDX+SPDX,Harbor+DefectDojo,docs/security/open-threat-management-and-scanner.md,template
+SCAN_IAC,infrastructure-code,opentofu+kubernetes-manifests,Checkov+KICS+Conftest,on-pr,Junit+SARIF,DefectDojo,docs/software/assurance-test-and-upgrade-fabric.md,template
+SCAN_K8S,kubernetes-clusters,workloads+rbac+admission,Kubescape+Trivy-Kubernetes,nightly,JSON+securityreports,DefectDojo+portal,docs/security/open-threat-management-and-scanner.md,template
+SCAN_HOST,linux-hosts,servers+edge-nodes,Wazuh+OpenSCAP+osquery,nightly,Wazuh-alerts+SCAP-reports,Wazuh+OpenSearch,docs/security/open-threat-management-and-scanner.md,template
+SCAN_NETWORK,network-services,public+internal-exposure,Greenbone-OpenVAS+Nuclei+Naabu,weekly,scan-reports,DefectDojo+Wazuh,docs/security/open-threat-management-and-scanner.md,template
+SCAN_RUNTIME,runtime-events,containers+hosts,Falco+Wazuh+Suricata+Zeek,continuous,alerts+events,Wazuh+OpenSearch,docs/software/security-control-plane.md,template
+SCAN_COMPLIANCE,compliance-baseline,os-profiles+kubernetes-policy,OpenSCAP+Kubescape+Kyverno,release-gate,HTML+JSON+policy-reports,portal+DefectDojo,docs/security/open-threat-management-and-scanner.md,template
+SCAN_FACILITY_OT,facility-ot,bms+epms+gateways,passive-Zeek+Wazuh+manual-OpenVAS-window,scheduled-maintenance,segmented-scan-record,Wazuh+audit-pack,docs/security/ot-security-zones-and-conduits.md,template

@@ -30,3 +30,14 @@ The edge/security pillar should be reproducible and auditable. Operators need to
 - Deployment diff.
 - Rollback test.
 - Exception record for known unresolved vulnerabilities.
+
+Supply-chain evidence should be ingested into the open threat-management platform:
+
+- Dependency-Track tracks SBOM/component risk over time.
+- DefectDojo aggregates scanner findings, deduplicates results, and tracks remediation.
+- The OSDC assurance console summarizes whether an upgrade can move to the next ring.
+
+Related docs:
+
+- [Assurance Test and Upgrade Fabric](../software/assurance-test-and-upgrade-fabric.md)
+- [Open Threat Management and Scanner Platform](open-threat-management-and-scanner.md)

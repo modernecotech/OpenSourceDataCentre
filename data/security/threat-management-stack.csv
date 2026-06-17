@@ -1,0 +1,11 @@
+component_id,capability,wiz_like_function,open_source_stack,integration_surface,evidence_path,status
+THREAT_ASPM,application-security-posture,wiz-app-risk-inventory,DefectDojo,portal-security-dashboard+forgejo-issues,docs/security/open-threat-management-and-scanner.md,template
+THREAT_SBOM,supply-chain-risk,wiz-software-supply-chain-risk,Dependency-Track+Syft+CycloneDX,harbor+ci+portal,docs/security/supply-chain-security.md,template
+THREAT_IMAGE_SCAN,container-image-risk,wiz-container-vulnerability-view,Trivy+Grype+Harbor-scanner,ci+harbor+portal,docs/security/open-threat-management-and-scanner.md,template
+THREAT_K8S_CSPM,kubernetes-posture,wiz-kubernetes-posture-graph,Kubescape+kube-bench+OPA+Kyverno,cluster-operator+portal,docs/security/open-threat-management-and-scanner.md,template
+THREAT_ENDPOINT,endpoint-vulnerability,wiz-host-vulnerability-inventory,Wazuh+OpenSCAP+osquery,agent-telemetry+portal,docs/security/open-threat-management-and-scanner.md,template
+THREAT_NETWORK,network-exposure,wiz-attack-surface-pathing,Greenbone-OpenVAS+Nuclei+Zeek+Suricata,scan-zone+siem,docs/security/open-threat-management-and-scanner.md,template
+THREAT_RUNTIME,runtime-detection,wiz-runtime-signals,Falco+Wazuh+OpenSearch,siem+incident-queue,docs/software/security-control-plane.md,template
+THREAT_SECRETS,secrets-exposure,wiz-secret-detection,gitleaks+trufflehog+OpenBao-audit,ci+secrets-vault,docs/security/secrets-and-key-management.md,template
+THREAT_CLOUD_GRAPH,asset-relationship-graph,wiz-security-graph-approximation,OpenCTI+MISP+NetBox+OpenSearch+Neo4j-optional,asset-graph+portal,docs/security/open-threat-management-and-scanner.md,experimental
+THREAT_TICKETS,remediation-workflow,wiz-finding-lifecycle,DefectDojo+Forgejo+Zammad,portal-actions+issue-tracker,docs/security/open-threat-management-and-scanner.md,template

@@ -1,0 +1,9 @@
+job_id,purpose,command,trigger,required_inputs,evidence_output,owner,status
+JOB_LOCAL_REPO_VERIFY,Run repository formatting tests Rust tests and metadata checks,scripts/verify.sh,on-pr,clean-working-tree,target/assurance/latest/repository-verify.txt,platform-owner,implemented
+JOB_ASSURANCE_RUN,Run broad assurance gate set and optional scanner bundle,scripts/assurance-run.sh --ring RING_DEV,on-pr-or-manual,upgrade-ring,target/assurance/<timestamp>/README.md,platform-owner,implemented
+JOB_UPGRADE_DRY_RUN,Create an upgrade plan and run assurance before promotion,scripts/upgrade-with-assurance.sh --ring RING_STAGING --service osdc-platform,upgrade-request,service+ring+change-ref,target/assurance/upgrades/<timestamp>/promotion-decision.md,platform-owner,implemented
+JOB_SECURITY_SCAN,Run installed source dependency image IaC and Kubernetes scanners,scripts/assurance-run.sh --ring RING_STAGING --strict-security,release-gate,scanner-tooling,target/assurance/<timestamp>/evidence-manifest.tsv,security-owner,pilot
+JOB_SBOM_EXPORT,Generate SPDX and CycloneDX SBOMs when Syft is installed,scripts/assurance-run.sh --ring RING_DEV,nightly,syft,target/assurance/<timestamp>/osdc-sbom.spdx.json,security-owner,pilot
+JOB_LIVE_PORTAL_SMOKE,Run live portal and edge service API smoke checks,scripts/verify.sh --live,pre-release,running-portal+running-edge,target/assurance/live-smoke.txt,platform-owner,template
+JOB_GITOPS_STAGING,Open or update staging GitOps promotion after assurance pass,open-gitops-pr --environment staging,post-assurance,passing-assurance-bundle,target/gitops/staging-pr.json,service-owner,template
+JOB_FINDING_SYNC,Ingest scanner outputs into DefectDojo Dependency-Track Wazuh and issue tracker,sync-assurance-findings --bundle target/assurance/latest,post-scan,assurance-bundle,target/assurance/finding-sync.json,security-owner,template

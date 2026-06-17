@@ -1,0 +1,10 @@
+gate_id,stage,applies_to,required_checks,automation_tool,evidence_path,blocking,owner,status
+GATE_DISCOVER,discover,all-updates,renovate-pr+release-notes+asset-impact,Renovate,docs/software/patching-and-upgrade-policy.md,yes,platform-owner,template
+GATE_BUILD,build,code-images,cargo-test+image-build+sbom+signature,Woodpecker+Harbor+cosign,docs/security/supply-chain-security.md,yes,platform-owner,template
+GATE_SCAN,scan,code-images-clusters,vulnerability+license+secret+iac+container+osv-scan,Trivy+Grype+OSV-Scanner+Semgrep+Checkov,docs/security/open-threat-management-and-scanner.md,yes,security-owner,template
+GATE_POSTURE,posture,kubernetes-hosts,kubescape+openscap+wazuh-baseline+network-scan,Kubescape+OpenSCAP+Wazuh+OpenVAS,docs/security/open-threat-management-and-scanner.md,yes,security-owner,template
+GATE_STAGING,staging,services,argo-sync+smoke+synthetic+observability,Argo-CD+Flux+Prometheus,docs/software/assurance-test-and-upgrade-fabric.md,yes,service-owner,template
+GATE_STATE,backup-restore,stateful-services,backup-valid+restore-test+schema-dry-run,Velero+Kopia+CloudNativePG+dbt,docs/commissioning/backup-restore-test.md,yes,service-owner,template
+GATE_ROLLBACK,rollback,all-services,rollback-plan+rollback-drill+git-revert-tested,Argo-CD+Flux+OpenTofu,docs/software/assurance-test-and-upgrade-fabric.md,yes,platform-owner,template
+GATE_APPROVAL,approval,production,owner-approval+maintenance-window+tenant-notice,Portal+Forgejo,docs/software/patching-and-upgrade-policy.md,yes,service-owner,template
+GATE_AUDIT,audit,all-updates,evidence-bundle+finding-link+change-record,DefectDojo+Dependency-Track+Wazuh,docs/security/open-threat-management-and-scanner.md,yes,security-owner,template

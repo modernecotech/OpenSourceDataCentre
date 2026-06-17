@@ -12,6 +12,7 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `upgrade-policy.csv` and `config-script-catalogue.csv` are operational source files, not derived views.
 - `developer-platform-services.csv`, `developer-templates.csv`, `deployment-environments.csv`, `developer-promotion-gates.csv`, and `vscode-workflows.csv` define the Forgejo/CI/Harbor/GitOps/OpenTofu/VS Code developer platform.
 - `data-platform-services.csv`, `data-products.csv`, `data-pipelines.csv`, `data-ontology-objects.csv`, `data-access-policies.csv`, and `data-platform-templates.csv` define the optional open-source data platform service.
+- `test-harness-catalogue.csv`, `upgrade-rings.csv`, `upgrade-test-gates.csv`, and `assurance-automation-jobs.csv` define the assurance testing and automated upgrade control plane.
 
 Every row in `service-catalogue-v1.csv` must include a maturity value:
 
@@ -43,6 +44,10 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 - `data-ontology-objects.csv` lists business objects and relationships.
 - `data-access-policies.csv` lists policy subjects, conditions, and enforcement points.
 - `data-platform-templates.csv` lists starter templates for generated data-product repositories.
+- `test-harness-catalogue.csv` lists broad tests for software, data, config, GitOps, Kubernetes, endpoint, network, runtime, and facility functions.
+- `upgrade-rings.csv` lists the promotion rings used for automated upgrades.
+- `upgrade-test-gates.csv` lists blocking gates that upgrades must pass before promotion.
+- `assurance-automation-jobs.csv` lists runnable local and GitOps-facing automation jobs for tests, upgrades, scans, SBOM export, live smoke tests, and finding sync.
 
 Keep these files as simple rectangular CSVs with a single header row. When adding fields, update the Rust sample data and portal tests at the same time so the GUI and documentation remain aligned.
 

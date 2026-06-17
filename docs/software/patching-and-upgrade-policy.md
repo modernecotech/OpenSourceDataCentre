@@ -38,7 +38,13 @@ Audit record stored
 | Firmware/BMC | Quarterly or emergency | Lab test first, staged by rack. |
 | Kubernetes/OpenStack/Ceph | Planned release train | Never ad hoc. |
 
-Machine-readable policy rows live in `data/software/upgrade-policy.csv`.
+Machine-readable policy rows live in:
+
+- [upgrade-policy.csv](../../data/software/upgrade-policy.csv)
+- [upgrade-rings.csv](../../data/software/upgrade-rings.csv)
+- [upgrade-test-gates.csv](../../data/software/upgrade-test-gates.csv)
+
+The broader automated testing fabric is defined in [Assurance Test and Upgrade Fabric](assurance-test-and-upgrade-fabric.md).
 
 ## Portal View
 
@@ -64,6 +70,7 @@ Then the portal should trigger GitOps. It should not SSH into machines randomly.
 - SBOM generated.
 - Vulnerability scan completed.
 - Licence/policy check completed.
+- Open-source threat-management findings are ingested into DefectDojo or Dependency-Track.
 - Config scripts validated where the change touches service configuration.
 - Staging rollout completed.
 - Smoke test passed.

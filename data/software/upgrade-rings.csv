@@ -1,0 +1,8 @@
+ring_id,scope,cadence,entry_criteria,automated_tests,promotion_gate,rollback_strategy,owner,status
+RING_DEV,development,continuous,unit-tests-pass+scan-clean,unit+lint+sca+iac,dev-to-staging,git-revert-or-redeploy,platform-owner,pilot
+RING_STAGING,staging,per-change,pr-approved+sbom+policy-clean,integration+smoke+posture+backup-restore,staging-to-canary,argo-rollback-or-flux-reconcile,service-owner,template
+RING_CANARY,canary,scheduled,staging-green+owner-approval,synthetic+runtime+metrics+error-budget,canary-to-production,traffic-shift-back,service-owner,template
+RING_PROD_BATCH,production-batch,maintenance-window,canary-green+rollback-tested,health+smoke+audit+tenant-impact,production-complete,rollback-window,platform-owner,template
+RING_FACILITY,facility-control,quarterly-or-emergency,lab-test+vendor-notes+spare-plan,offline-lab+simulation+manual-mop,site-rollout,manual-reversal-or-spare-controller,facility-owner,template
+RING_EDGE,edge-shield,security-window,config-validation+staging-node,edge-smoke+dns-waf-tunnel-health,edge-rollout,revert-gitops-revision,edge-owner,pilot
+RING_DATA,data-platform,release-train,schema-migration-plan+lineage-review,dbt+dagster+quality+access-policy,data-prod,rollback-schema-or-restore,data-owner,template

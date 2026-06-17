@@ -22,6 +22,7 @@ Cloud Logging / Log Analytics,Loki + OpenSearch + ClickHouse logs,observability,
 Security Hub / Defender / Sentinel,Wazuh + OpenSearch + Falco + Kyverno,security,B,security,security posture and findings
 GuardDuty,Wazuh + Zeek + Suricata + Falco,security,B,security,threat detections
 Inspector / Vulnerability Management,Trivy + Grype + OpenVAS,security,C,security,vulnerability results
+Wiz / CNAPP,DefectDojo + Dependency-Track + Trivy + Grype + OSV-Scanner + Wazuh + Falco + Kubescape + OpenVAS + OpenSCAP,security,B,assurance,cloud workload posture scans findings waivers and remediation
 RDS / Cloud SQL,CloudNativePG + Percona + MariaDB operators,database,D,tenant,managed databases
 DynamoDB / Cosmos DB,ScyllaDB + Cassandra + FoundationDB + FerretDB,database,D,tenant,NoSQL services
 ElastiCache / Memorystore,Valkey,database,D,tenant,Redis-compatible cache

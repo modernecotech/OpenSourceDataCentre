@@ -1,0 +1,13 @@
+test_id,function_area,target,test_type,tool_stack,trigger,required_evidence,owner,status
+TEST_UNIT_RUST,software-core,crates,unit-test,cargo-test,on-pr,docs/process/test-harnesses.md,platform-owner,implemented
+TEST_REPO_METADATA,repo-data,data-and-docs,metadata-check,scripts-verify,on-pr,docs/process/test-harnesses.md,platform-owner,implemented
+TEST_PORTAL_CONTRACT,portal-api,osdc-portal-routes,contract-test,cargo-test-osdc-portal,on-pr,docs/architecture/portal-api.md,platform-owner,implemented
+TEST_CONFIG_SCRIPT,config-management,examples-config-scripts,static-validation,caddy+powerdns+coraza+crowdsec+wireguard,on-change,docs/software/browser-config-management.md,edge-owner,pilot
+TEST_GITOPS_POLICY,gitops,argo-flux-opentofu,policy-test,conftest+opa+kyverno+checkov,on-pr,docs/software/assurance-test-and-upgrade-fabric.md,platform-owner,template
+TEST_SUPPLY_CHAIN,software-supply-chain,images-dependencies-sbom,security-scan,syft+grype+trivy+osv-scanner+scorecard,on-pr,docs/security/open-threat-management-and-scanner.md,security-owner,template
+TEST_K8S_POSTURE,kubernetes,clusters-workloads,posture-scan,kubescape+kube-bench+trivy-kubernetes,nightly,docs/security/open-threat-management-and-scanner.md,security-owner,template
+TEST_ENDPOINT_POSTURE,endpoint,linux-nodes-endpoints,host-compliance,wazuh+openscap+osquery,nightly,docs/security/open-threat-management-and-scanner.md,soc-owner,template
+TEST_NETWORK_VULN,network,edge-public-private-networks,vulnerability-scan,greenbone-openvas+nuclei+naabu,scheduled,docs/security/open-threat-management-and-scanner.md,soc-owner,template
+TEST_RUNTIME_SECURITY,runtime,linux-containers-kubernetes,runtime-detection,falco+wazuh+suricata+zeek,continuous,docs/security/open-threat-management-and-scanner.md,soc-owner,template
+TEST_DATA_PLATFORM,data-platform,dagster-dbt-superset-ontology,workflow-test,pytest+dagster+dbt+great-expectations,on-pr,docs/software/data-platform-service.md,data-owner,pilot
+TEST_FACILITY_COMMISSIONING,facility,mep-power-cooling-commissioning,acceptance-test,commissioning-register+sensor-calibration+load-bank,project-gate,docs/commissioning/commissioning-evidence-register.md,commissioning-authority,template

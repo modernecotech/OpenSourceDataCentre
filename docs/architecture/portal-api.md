@@ -10,12 +10,13 @@ Last reviewed: 2026-06-17.
 - Cost planner: `/planner`
 - Lifecycle console: `/lifecycle`
 - Commercial console: `/commercial`
+- Assurance console: `/assurance`
 - Developer console: `/developer`
 - Data platform console: `/data-platform`
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, NetBox, Ceph, Kubernetes, Kueue, OpenBao, and the facility gateways.
 
-Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is loaded from `data/software/service-catalogue-v1.csv`; commercial-readiness, delivery, commissioning, engineering, operations, site-selection, physical-security, sustainability, AI-ready, developer-platform, and data-platform planning routes are loaded from CSVs under `data/`. `/api/lifecycle/overview` composes those catalogues into one design-to-run operator view.
+Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is loaded from `data/software/service-catalogue-v1.csv`; commercial-readiness, assurance, delivery, commissioning, engineering, operations, site-selection, physical-security, sustainability, AI-ready, developer-platform, and data-platform planning routes are loaded from CSVs under `data/`. `/api/lifecycle/overview` composes those catalogues into one design-to-run operator view.
 
 ## Current Routes
 
@@ -27,6 +28,7 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/planner` | HTML | Cost and scale planning GUI for 50 kW to 5 MW scenarios. |
 | `/lifecycle` | HTML | Unified design-to-commission-to-operations console across gates, permits, evidence, work items, services, config scripts, and documents. |
 | `/commercial` | HTML | Commercial readiness console for gaps, standards, SLA classes, colocation products, cross-connects, remote hands, access roles, and audit evidence. |
+| `/assurance` | HTML | Assurance console for broad test harnesses, automated upgrade rings, blocking gates, threat-management components, and scanner coverage. |
 | `/developer` | HTML | Developer platform console for Forgejo-style repos, CI, Harbor, GitOps, OpenTofu, templates, environments, promotion gates, and VS Code workflows. |
 | `/data-platform` | HTML | Optional open-source data platform console for governed data products, lakehouse, catalog, lineage, ontology, pipelines, dashboards, apps, and AI context. |
 | `/api/catalog/hardware` | JSON | Chosen SBC/GPU hardware baseline. |
@@ -56,6 +58,13 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/api/commercial/remote-hands-pricebook` | JSON | Remote/smart-hands billing units, response targets, approvals, and evidence references. |
 | `/api/commercial/access-roles` | JSON | Customer, carrier, staff, security, and break-glass access role templates. |
 | `/api/commercial/audit-evidence` | JSON | Audit-evidence register with owners, cadence, and evidence paths. |
+| `/api/assurance/overview` | JSON | Combined assurance view for test harnesses, upgrade rings, gates, threat stack, scanner coverage, and metrics. |
+| `/api/assurance/automation-jobs` | JSON | Runnable assurance automation jobs for repository checks, upgrade dry runs, scanner bundles, SBOM export, live smoke tests, GitOps staging, and finding sync. |
+| `/api/assurance/test-harnesses` | JSON | Broad test-harness catalogue across software, data, config, GitOps, Kubernetes, endpoints, network, runtime, and facility commissioning. |
+| `/api/assurance/upgrade-rings` | JSON | Automated upgrade promotion rings for development, staging, canary, production, facility controls, Edge Shield, and data-platform releases. |
+| `/api/assurance/upgrade-gates` | JSON | Blocking upgrade gates for discovery, build, scan, posture, staging, stateful restore, rollback, approval, and audit. |
+| `/api/assurance/threat-stack` | JSON | Open-source Wiz-like threat-management component catalogue. |
+| `/api/assurance/scanner-coverage` | JSON | Scanner coverage catalogue for source, dependency, image, IaC, Kubernetes, host, network, runtime, compliance, and OT scans. |
 | `/api/site-selection/scorecard` | JSON | Site-selection due-diligence criteria and evidence targets. |
 | `/api/security/physical-controls` | JSON | Physical security control catalogue for zones, access, CCTV, loading dock, and break-glass procedures. |
 | `/api/sustainability/metrics` | JSON | Sustainability measurement boundaries for PUE, WUE, CUE, renewable fraction, heat reuse, e-waste, and battery lifecycle. |
@@ -89,6 +98,7 @@ The next production step is to replace the in-process sample data with adapters:
 - Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.
 - Developer platform catalogues from `data/software/developer-*.csv`, `data/software/deployment-environments.csv`, `data/software/vscode-workflows.csv`, and `examples/developer-platform/`.
 - Data platform catalogues from `data/software/data-*.csv` and `examples/data-platform/`.
+- Assurance test, upgrade, automation, and scanner catalogues from `data/software/test-harness-catalogue.csv`, `data/software/assurance-automation-jobs.csv`, `data/software/upgrade-rings.csv`, `data/software/upgrade-test-gates.csv`, `data/security/threat-management-stack.csv`, and `data/security/scanner-coverage.csv`.
 - Inventory and rack truth from NetBox/openDCIM.
 - VM and bare-metal state from OpenStack Nova/Ironic.
 - Storage state from Ceph.
@@ -114,10 +124,11 @@ Open:
 - `http://127.0.0.1:8787/planner`
 - `http://127.0.0.1:8787/lifecycle`
 - `http://127.0.0.1:8787/commercial`
+- `http://127.0.0.1:8787/assurance`
 - `http://127.0.0.1:8787/developer`
 - `http://127.0.0.1:8787/data-platform`
 
-The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant/planner/lifecycle/commercial/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, commercial, developer, data, and edge workflows.
+The GUI includes table filtering, tenant provisioning preview recalculation, CSV export for visible tenant/planner/lifecycle/commercial/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, commercial, assurance, developer, data, and edge workflows.
 
 The Radxa-local edge service can be run separately:
 
