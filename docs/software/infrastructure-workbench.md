@@ -13,18 +13,19 @@ The Rust portal serves the workbench at `/infrastructure` and redirects `/` ther
 - `data/software/infrastructure-workflows.csv` for user-facing workflows.
 - `data/software/deployment-stack-profiles.csv` for Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, bare-metal, Edge Shield, and GitOps pairings by scale.
 - `data/software/system-ui-connectors.csv` for backend system adapters, auth patterns, write modes, owners, and evidence paths.
+- `data/software/live-adapter-roadmap.csv` for the read-first path from plan-only adapters to real integrations and persistence.
 - `data/software/test-harness-catalogue.csv` for required functional, security, GitOps, Kubernetes, endpoint, runtime, data, and facility tests.
 - `data/software/upgrade-test-gates.csv` for blocking promotion and upgrade gates.
 - `data/software/assurance-automation-jobs.csv` for runnable local/GitOps automation hooks.
 
-The UI includes a guided request form, workflow catalogue, selected connector table, required test harness table, blocking gate table, and preview output before a change is opened.
+The UI includes a guided request form, workflow catalogue, selected connector table, live adapter roadmap, required test harness table, blocking gate table, and preview output before a change is opened.
 
 ## User Workflow
 
 1. Select a workflow such as creating a tenant, provisioning a VM, provisioning Kubernetes, provisioning storage, requesting GPU capacity, provisioning hardware, exposing an edge endpoint, creating a data product, running an upgrade, or running a security scan.
 2. Select a deployment profile such as 50 kW edge, 250 kW regional pilot, 1 MW regional production, or 5 MW national/AI-ready.
 3. Choose environment, owner, resource name, and change mode.
-4. Review the generated connector path, required tests, blocking gates, automation command, and evidence location.
+4. Review the generated connector path, live adapter maturity, required tests, blocking gates, automation command, and evidence location.
 5. Stage a GitOps pull request or guarded API action.
 6. Run required tests and attach evidence before promotion.
 

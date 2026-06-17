@@ -123,7 +123,7 @@ This repository is currently a strong architecture, planning framework, CSV-back
 
 The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended infrastructure workbench, tenant, operator, Edge Shield, config-editor, lifecycle, hardware provisioning, commercial, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, or MLflow installations.
 
-The next engineering phase is to turn the plan-only adapter contracts into real read-first integrations, starting with PowerDNS, NetBox, Keycloak, OpenBao, GitOps, and one small-site cloud substrate such as Proxmox or CloudStack before deeper OpenStack automation.
+The next engineering phase is to turn the plan-only adapter contracts into real read-first integrations, starting with PowerDNS, NetBox, Keycloak, OpenBao, GitOps, and one small-site cloud substrate such as Proxmox or CloudStack before deeper OpenStack automation. The live-adapter roadmap is now tracked in [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv), exposed through the infrastructure workbench, and documented in [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md).
 
 Commercial readiness is also early. The repository now tracks the gap between the OSDC blueprint and a commercial colocation or hyperscale-grade datacentre through a gap register, standards/control matrix, SLA model, commercial product catalogue, MEP evidence targets, operations templates, and audit-evidence register. These artifacts are templates and planning controls, not certification evidence until project-specific professionals review and sign them off.
 
@@ -296,6 +296,7 @@ Machine-readable catalogue data lives in:
 - [config-script-catalogue.csv](data/software/config-script-catalogue.csv) - browser-editable config-script catalogue.
 - [deployment-stack-profiles.csv](data/software/deployment-stack-profiles.csv) - recommended Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, bare-metal, Edge Shield, and GitOps pairings by deployment size.
 - [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv) - front-door workflows that map user goals to connectors, test harnesses, gates, automation jobs, owners, and evidence paths.
+- [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv) - read-first integration roadmap for PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL persistence.
 - [developer platform catalogues](data/software/) - developer services, templates, deployment environments, promotion gates, and VS Code workflows.
 - [data platform catalogues](data/software/) - data services, products, pipelines, ontology objects, access policies, and templates.
 - [service catalogue examples](examples/service-catalogue/)
@@ -304,9 +305,9 @@ Machine-readable catalogue data lives in:
 
 The portal now has one front door for infrastructure creation and management: `/infrastructure`.
 
-The workbench is CSV-backed and workflow-first. A user chooses an action such as creating a tenant, provisioning a VM, deploying Kubernetes, provisioning storage, requesting GPU capacity, provisioning physical hardware, exposing an edge endpoint, creating a data product, running an upgrade, or running a security scan. The UI then shows the selected deployment profile, connector path, required test harnesses, blocking gates, automation job, owner, evidence target, and staged change mode before anything is promoted.
+The workbench is CSV-backed and workflow-first. A user chooses an action such as creating a tenant, provisioning a VM, deploying Kubernetes, provisioning storage, requesting GPU capacity, provisioning physical hardware, exposing an edge endpoint, creating a data product, running an upgrade, or running a security scan. The UI then shows the selected deployment profile, connector path, live-adapter roadmap, required test harnesses, blocking gates, automation job, owner, evidence target, and staged change mode before anything is promoted.
 
-The source of truth is [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv). It joins the deployment stack profiles, system connector contracts, assurance test harnesses, upgrade gates, and automation jobs already in the repository. The main guide is [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md).
+The source of truth is [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv). It joins the deployment stack profiles, system connector contracts, assurance test harnesses, upgrade gates, and automation jobs already in the repository. The adapter maturity source is [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv). The main guides are [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md) and [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md).
 
 ## Sovereign Developer Platform
 
@@ -475,7 +476,8 @@ Scope:
 
 - CSV-driven sovereign service catalogue in the portal.
 - Typed GitOps objects: `ChangeRequest`, `ValidationResult`, `RolloutPlan`, `RollbackPlan`, and `AuditEvent`.
-- Adapter stubs for Keycloak, PowerDNS, NetBox, OpenBao, and Argo CD or Flux.
+- Read-first live adapters for PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox or CloudStack, and a scoped OpenStack profile.
+- PostgreSQL persistence for lifecycle state, approval history, evidence bundles, audit events, and infrastructure requests.
 - Edge Shield profile validator and policy checks.
 - Config-script editor that opens a real GitOps change object instead of only updating UI messages.
 - Country-profile calculator extension for resilience, procurement, sovereignty, and operations fields.
@@ -497,6 +499,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Sovereign Cloud Service Catalogue](docs/software/sovereign-cloud-service-catalogue.md) - broad open-source cloud service catalogue and bundles.
 - [Deployment Stack Profiles](docs/software/deployment-stack-profiles.md) - recommended mature infrastructure substrate by deployment size.
 - [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md) - front-door workflow UI for infrastructure requests, connector paths, required tests, gates, automation, and evidence.
+- [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md) - read-first path from plan-only adapters to real PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL integrations.
 - [Unified Portal Integration Model](docs/software/unified-portal-integration-model.md) - Rust API and workflow layer over mature open-source systems.
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
@@ -604,6 +607,7 @@ The portal GUI exposes a unified infrastructure workbench, tenant provisioning p
 Useful portal APIs:
 
 - `/api/infrastructure/workbench`
+- `/api/infrastructure/adapter-roadmap`
 - `/api/catalog/core-services`
 - `/api/catalog/sovereign-services`
 - `/api/catalog/upgrade-policy`

@@ -14,6 +14,7 @@ Machine-readable connector data lives in [system-ui-connectors.csv](../../data/s
 | API with approval | The portal calls the backend API only after an owner approval or ticket. | MAAS deployment, Keycloak tenant role changes, OpenStack quota changes. |
 | Guarded API action | The portal requires break-glass controls, evidence, and rollback notes. | Redfish power or firmware action, Ceph disruptive maintenance, OpenVAS active scans. |
 | API ingest | The portal or CI sends evidence into the tool. | DefectDojo findings, Dependency-Track SBOMs. |
+| Local persistence | The portal stores its own workflow state without becoming the source of truth for external systems. | PostgreSQL-backed lifecycle state, approvals, evidence bundles, audit events, and request history. |
 
 ## Minimum Connector Contract
 
@@ -68,6 +69,10 @@ The portal should expose Proxmox, CloudStack, and OpenStack as deployment substr
 | OpenStack | 250 kW+ regional and national sovereign clouds. | API-with-quota-policy plus GitOps/audit for Nova, Neutron, Glance, Cinder, Keystone, and Ironic workflows. |
 
 OSDC should choose the substrate by site scale and operator maturity, then provide the same sovereign workflow surface: tenant request, quota check, evidence, approval, deployment, health, cost, and audit.
+
+## Portal State Connector Pattern
+
+PostgreSQL is the first persistence target for OSDC-owned state. It should store change requests, approvals, evidence bundles, audit events, lifecycle work items, and infrastructure request history. It must not become a shadow source of truth for racks, IPAM, DNS, identity, cloud inventory, or secrets; those remain owned by NetBox, PowerDNS, Keycloak, OpenBao, Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, and the other mature systems.
 
 ## Source Notes
 

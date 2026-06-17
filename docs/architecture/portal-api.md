@@ -18,7 +18,7 @@ Last reviewed: 2026-06-17.
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, CloudStack, Proxmox, NetBox, Ceph, Kubernetes, Kueue, OpenBao, PowerDNS, Keycloak, GitOps, and the facility gateways.
 
-Current maturity: prototype. Many catalogue routes are now loaded from CSVs under `data/`, while status summaries and action previews still use in-process sample state so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. OSDC is not a replacement for mature systems such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, or OpenBMC; the portal is the workflow, policy, evidence, cost, and GitOps layer above them. `/api/infrastructure/workbench` composes workflow, connector, deployment, test, gate, and automation catalogues into the main user/operator front door. `/api/lifecycle/overview` composes project catalogues into one design-to-run operator view.
+Current maturity: prototype. Many catalogue routes are now loaded from CSVs under `data/`, while status summaries and action previews still use in-process sample state so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. OSDC is not a replacement for mature systems such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, or OpenBMC; the portal is the workflow, policy, evidence, cost, and GitOps layer above them. `/api/infrastructure/workbench` composes workflow, connector, live-adapter roadmap, deployment, test, gate, and automation catalogues into the main user/operator front door. `/api/lifecycle/overview` composes project catalogues into one design-to-run operator view.
 
 ## Current Routes
 
@@ -60,7 +60,8 @@ Current maturity: prototype. Many catalogue routes are now loaded from CSVs unde
 | `/api/cost/categories` | JSON | Category-level cost ranges for each scenario. |
 | `/api/cost/price-basis` | JSON | Marketplace and derived unit-cost planning basis. |
 | `/api/deployment/stack-profiles` | JSON | Recommended Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, bare-metal, Edge Shield, and GitOps pairings by deployment size. |
-| `/api/infrastructure/workbench` | JSON | Composed workbench view joining infrastructure workflows, deployment stack profiles, system connectors, required test harnesses, upgrade gates, automation jobs, and metrics. |
+| `/api/infrastructure/workbench` | JSON | Composed workbench view joining infrastructure workflows, live adapter milestones, deployment stack profiles, system connectors, required test harnesses, upgrade gates, automation jobs, and metrics. |
+| `/api/infrastructure/adapter-roadmap` | JSON | Read-first live-adapter roadmap for PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL persistence. |
 | `/api/commercial/gaps` | JSON | Commercial-readiness gap register for certification, MEP, operations, compliance, and interconnection gaps. |
 | `/api/commercial/standards` | JSON | Standards/control matrix mapping candidate standards to evidence files and owners. |
 | `/api/commercial/sla-classes` | JSON | Power, cooling, network, remote-hands, and cloud-platform SLA class templates. |
@@ -109,6 +110,7 @@ CSV-backed catalogue sources currently wired into the portal include:
 - Sovereign cloud service catalogue from `data/software/service-catalogue-v1.csv`.
 - Deployment substrate pairings from `data/software/deployment-stack-profiles.csv`.
 - Infrastructure workflow mappings from `data/software/infrastructure-workflows.csv`.
+- Live adapter roadmap from `data/software/live-adapter-roadmap.csv`.
 - Upgrade policy from `data/software/upgrade-policy.csv`.
 - Software security controls from `data/software/security-controls.csv`.
 - Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.

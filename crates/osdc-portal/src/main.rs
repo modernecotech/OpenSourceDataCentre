@@ -48,6 +48,8 @@ const DEPLOYMENT_STACK_PROFILES_CSV: &str =
     include_str!("../../../data/software/deployment-stack-profiles.csv");
 const INFRASTRUCTURE_WORKFLOWS_CSV: &str =
     include_str!("../../../data/software/infrastructure-workflows.csv");
+const LIVE_ADAPTER_ROADMAP_CSV: &str =
+    include_str!("../../../data/software/live-adapter-roadmap.csv");
 const COMMERCIAL_GAP_REGISTER_CSV: &str =
     include_str!("../../../data/commercial/commercial-gap-register.csv");
 const STANDARDS_CONTROL_MATRIX_CSV: &str =
@@ -256,6 +258,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/assurance/scanner-coverage") => json(&scanner_coverage()),
         ("GET", "/api/assurance/automation-jobs") => json(&assurance_automation_jobs()),
         ("GET", "/api/infrastructure/workbench") => json(&infrastructure_workbench()),
+        ("GET", "/api/infrastructure/adapter-roadmap") => json(&live_adapter_roadmap()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -1294,6 +1297,7 @@ struct CostPlanning {
 struct InfrastructureWorkbench {
     metrics: Vec<LifecycleMetric>,
     workflows: Vec<InfrastructureWorkflow>,
+    adapter_milestones: Vec<LiveAdapterMilestone>,
     stack_profiles: Vec<DeploymentStackProfile>,
     connectors: Vec<SystemUiConnector>,
     test_harnesses: Vec<TestHarness>,
@@ -1316,6 +1320,24 @@ struct InfrastructureWorkflow {
     evidence_path: String,
     owner: String,
     status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LiveAdapterMilestone {
+    milestone_id: String,
+    priority: String,
+    adapter_target: String,
+    backend_system: String,
+    connector_id: String,
+    initial_mode: String,
+    production_write_path: String,
+    first_capability: String,
+    workflow_ids: String,
+    proof_command: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+    next_step: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1711,8 +1733,16 @@ fn infrastructure_workflows() -> Vec<InfrastructureWorkflow> {
     )
 }
 
+fn live_adapter_roadmap() -> Vec<LiveAdapterMilestone> {
+    csv_rows(
+        LIVE_ADAPTER_ROADMAP_CSV,
+        "data/software/live-adapter-roadmap.csv",
+    )
+}
+
 fn infrastructure_workbench() -> InfrastructureWorkbench {
     let workflows = infrastructure_workflows();
+    let adapter_milestones = live_adapter_roadmap();
     let connectors = system_ui_connectors();
     let test_harnesses = test_harnesses();
     let upgrade_gates = upgrade_test_gates();
@@ -1753,6 +1783,12 @@ fn infrastructure_workbench() -> InfrastructureWorkbench {
                 kind: "normal",
             },
             LifecycleMetric {
+                label: "Adapter milestones".to_string(),
+                value: adapter_milestones.len().to_string(),
+                detail: "read-first integrations".to_string(),
+                kind: "warn",
+            },
+            LifecycleMetric {
                 label: "Blocking gates".to_string(),
                 value: blocking_gates.to_string(),
                 detail: format!("{implemented_jobs} runnable jobs").to_string(),
@@ -1760,6 +1796,7 @@ fn infrastructure_workbench() -> InfrastructureWorkbench {
             },
         ],
         workflows,
+        adapter_milestones,
         stack_profiles: deployment_stack_profiles(),
         connectors,
         test_harnesses,
@@ -3181,6 +3218,7 @@ mod tests {
         assert!(infrastructure.contains("infra-workflow-select"));
         assert!(infrastructure.contains("infra-workflows"));
         assert!(infrastructure.contains("infra-connectors"));
+        assert!(infrastructure.contains("infra-adapters"));
         assert!(infrastructure.contains("infra-tests"));
         assert!(infrastructure.contains("infra-gates"));
         assert!(infrastructure.contains("href=\"/hardware\""));
@@ -3340,6 +3378,7 @@ mod tests {
     #[test]
     fn exposes_infrastructure_workbench_with_workflow_assurance_mapping() {
         let workbench = json_body("/api/infrastructure/workbench");
+        let adapter_roadmap = json_body("/api/infrastructure/adapter-roadmap");
 
         assert!(workbench["metrics"]
             .as_array()
@@ -3370,6 +3409,23 @@ mod tests {
             .unwrap()
             .iter()
             .any(|profile| profile["profile_id"] == "DSP_250KW_REGIONAL"));
+        assert!(workbench["adapter_milestones"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|milestone| {
+                milestone["milestone_id"] == "ADAPT_006"
+                    && milestone["adapter_target"] == "Proxmox"
+                    && milestone["workflow_ids"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("WF_PROVISION_VM")
+            }));
+        assert!(workbench["connectors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|connector| connector["connector_id"] == "CONN_POSTGRES"));
         assert!(workbench["connectors"]
             .as_array()
             .unwrap()
@@ -3390,6 +3446,12 @@ mod tests {
             .unwrap()
             .iter()
             .any(|job| job["job_id"] == "JOB_ASSURANCE_RUN"));
+        assert!(adapter_roadmap
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|milestone| milestone["milestone_id"] == "ADAPT_009"
+                && milestone["backend_system"] == "PostgreSQL"));
     }
 
     #[test]

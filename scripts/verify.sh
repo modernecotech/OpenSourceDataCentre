@@ -117,6 +117,7 @@ unique_columns = {
     Path("data/software/edge-shield-service-map.csv"): "service_id",
     Path("data/software/edge-shield-services.csv"): "service_id",
     Path("data/software/infrastructure-workflows.csv"): "workflow_id",
+    Path("data/software/live-adapter-roadmap.csv"): "milestone_id",
     Path("data/software/open-cloud-service-map.csv"): "cloud_domain",
     Path("data/software/proprietary-open-source-equivalents.csv"): "proprietary_service",
     Path("data/software/proprietary-to-open-source-map.csv"): "proprietary_system",

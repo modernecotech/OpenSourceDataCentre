@@ -1726,6 +1726,44 @@ function renderInfrastructureConnectors(targetId, connectors) {
   }
 }
 
+function renderInfrastructureAdapters(targetId, milestones, selectedWorkflowId) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  const sorted = [...milestones].sort((left, right) => {
+    const leftSelected = splitTokenList(left.workflow_ids).includes(selectedWorkflowId);
+    const rightSelected = splitTokenList(right.workflow_ids).includes(selectedWorkflowId);
+    if (leftSelected !== rightSelected) return leftSelected ? -1 : 1;
+    return Number(left.priority) - Number(right.priority);
+  });
+  for (const milestone of sorted) {
+    const tr = document.createElement("tr");
+    if (splitTokenList(milestone.workflow_ids).includes(selectedWorkflowId)) {
+      tr.className = "selected-row";
+    }
+    for (const field of [
+      milestone.priority,
+      `${milestone.milestone_id} ${milestone.adapter_target}`,
+      milestone.backend_system,
+      milestone.initial_mode,
+      milestone.production_write_path,
+      milestone.first_capability,
+      milestone.workflow_ids,
+      milestone.proof_command,
+      milestone.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(milestone.status, statusClassFromStatus(milestone.status)));
+    const next = document.createElement("td");
+    next.append(text(milestone.next_step));
+    tr.append(next);
+    target.append(tr);
+  }
+}
+
 function renderInfrastructureTests(targetId, tests) {
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -1793,6 +1831,9 @@ function renderInfrastructureSelection(workbench, applyFilters = {}) {
   const connectors = workbench.connectors.filter((connector) => connectorIds.has(connector.connector_id));
   const tests = workbench.test_harnesses.filter((item) => testIds.has(item.test_id));
   const gates = workbench.upgrade_gates.filter((gate) => gateIds.has(gate.gate_id));
+  const adapterMilestones = workbench.adapter_milestones.filter((milestone) =>
+    splitTokenList(milestone.workflow_ids).includes(workflow.workflow_id)
+  );
   const job = workbench.automation_jobs.find((item) => item.job_id === workflow.automation_job_id);
   const changeMode = document.getElementById("infra-change-mode")?.value ?? "gitops-pr";
   const environment = document.getElementById("infra-environment")?.value ?? "development";
@@ -1805,6 +1846,11 @@ function renderInfrastructureSelection(workbench, applyFilters = {}) {
     renderInfrastructureSelection(workbench, applyFilters);
   });
   renderInfrastructureConnectors("infra-connectors", connectors);
+  renderInfrastructureAdapters(
+    "infra-adapters",
+    workbench.adapter_milestones,
+    workflow.workflow_id
+  );
   renderInfrastructureTests("infra-tests", tests);
   renderInfrastructureGates("infra-gates", gates);
 
@@ -1840,13 +1886,14 @@ function renderInfrastructureSelection(workbench, applyFilters = {}) {
     output.textContent = [
       `Preview: ${workflow.user_goal} for ${resourceName} in ${environment}.`,
       `Use ${stack.stage} on ${stack.default_cloud_substrate}.`,
-      `Stage through ${changeMode} with ${connectors.length} connectors, ${tests.length} tests, ${gates.length} gates, and automation ${jobText}.`,
+      `Stage through ${changeMode} with ${connectors.length} connectors, ${adapterMilestones.length} adapter milestones, ${tests.length} tests, ${gates.length} gates, and automation ${jobText}.`,
       `Evidence target: ${workflow.evidence_path}.`,
     ].join(" ");
   }
 
   applyFilters.workflows?.();
   applyFilters.connectors?.();
+  applyFilters.adapters?.();
   applyFilters.tests?.();
   applyFilters.gates?.();
 }
@@ -1865,6 +1912,11 @@ async function hydrateInfrastructure() {
     connectors: attachTableFilters({
       textInputId: "infra-connector-filter",
       tbodyId: "infra-connectors",
+    }),
+    adapters: attachTableFilters({
+      textInputId: "infra-adapter-filter",
+      statusSelectId: "infra-adapter-status",
+      tbodyId: "infra-adapters",
     }),
     tests: attachTableFilters({
       textInputId: "infra-test-filter",
@@ -1910,6 +1962,7 @@ async function hydrateInfrastructure() {
     "infra-action-output"
   );
   wireDownloadButton("infra-export-workflows", "infra-workflows", "osdc-infrastructure-workflows.csv");
+  wireDownloadButton("infra-export-adapters", "infra-adapters", "osdc-live-adapter-roadmap.csv");
   wireDownloadButton("infra-export-tests", "infra-tests", "osdc-infrastructure-required-tests.csv");
   wireDownloadButton("infra-export-gates", "infra-gates", "osdc-infrastructure-required-gates.csv");
 }

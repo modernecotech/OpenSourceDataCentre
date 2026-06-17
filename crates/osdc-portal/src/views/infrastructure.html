@@ -160,6 +160,28 @@
 
           <section class="panel">
             <div class="panel-header">
+              <h2>Live Adapter Roadmap</h2>
+              <div class="panel-tools">
+                <input id="infra-adapter-filter" type="search" placeholder="Filter adapters">
+                <select id="infra-adapter-status" aria-label="Adapter status filter">
+                  <option value="">All status</option>
+                  <option value="planned">planned</option>
+                  <option value="pilot">pilot</option>
+                  <option value="implemented">implemented</option>
+                </select>
+                <button id="infra-export-adapters">Export adapters</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Priority</th><th>Target</th><th>Backend</th><th>Mode</th><th>Write path</th><th>First capability</th><th>Workflows</th><th>Proof</th><th>Owner</th><th>Status</th><th>Next step</th></tr>
+              </thead>
+              <tbody id="infra-adapters"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
               <h2>Required Test Harnesses</h2>
               <div class="panel-tools">
                 <input id="infra-test-filter" type="search" placeholder="Filter tests">
