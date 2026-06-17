@@ -1,0 +1,6 @@
+meter_id,service_domain,source_system,metric_name,unit,collection_cadence,rating_plan,evidence_path,owner,status
+METER_VM_HOURS,compute,OpenStack+CloudStack,instance_hours,hour,hourly,BILL_PUBLIC_CRITICAL,docs/commercial/billing-and-metering.md,cloud-owner,template
+METER_GPU_HOURS,ai,Kubernetes+Kueue+OpenMeter,gpu_hours,hour,hourly,BILL_RESEARCH,docs/commercial/billing-and-metering.md,ai-platform-owner,template
+METER_OBJECT_GB,storage,Ceph RGW,object_storage_gb_month,gb-month,daily,BILL_PUBLIC_CRITICAL,docs/commercial/billing-and-metering.md,storage-owner,template
+METER_REMOTE_HANDS,remote-hands,Portal Work Orders,approved_remote_hands_hours,hour,per-request,BILL_PUBLIC_CRITICAL,docs/commercial/remote-hands-service.md,commercial-owner,template
+METER_CROSS_CONNECT,network,NetBox+NMS,cross_connect_ports,port-month,daily,BILL_CARRIER_EDGE,docs/network-commercial/cross-connect-workflow.md,network-commercial-owner,pilot

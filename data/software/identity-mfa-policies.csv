@@ -1,0 +1,5 @@
+policy_id,scope,provider_stack,factors,enrollment_flow,recovery_method,enforcement_point,evidence_path,owner,status
+MFA_ALL_USERS,all tenant users,Keycloak+privacyIDEA,totp+webauthn,first-login-required-action,recovery-codes+helpdesk-approval,OIDC realm policy,docs/security/open-source-mfa.md,identity-owner,template
+MFA_TENANT_ADMIN,tenant admins,Keycloak+privacyIDEA+authentik,webauthn+totp,admin-invitation-with-device-binding,recovery-codes+break-glass-approval,admin-console+portal-command-queue,docs/security/open-source-mfa.md,identity-owner,pilot
+MFA_OPERATOR_PRIVILEGED,operators and remote hands,Keycloak+privacyIDEA,webauthn+totp+emergency-token,operator-onboarding-with-manager-approval,sealed-break-glass-token,VPN+portal+GitOps,docs/security/open-source-mfa.md,security-owner,pilot
+MFA_BILLING_ADMIN,billing and finance admins,Keycloak+authentik,webauthn+totp,finance-admin-approval,recovery-codes+dual-approval,billing-console,docs/security/open-source-mfa.md,finance-owner,template

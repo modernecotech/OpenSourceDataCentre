@@ -1,0 +1,4 @@
+invoice_id,customer_id,billing_period,plan_id,usage_summary,amount_usd,credits_usd,tax_usd,status
+INV_HEALTH_2026_06,CUST_HEALTH,2026-06,BILL_PUBLIC_CRITICAL,18800 vm-hours + 2100 gb-month + 6 remote-hands-hours,27640,0,4146,draft
+INV_UNIVERSITY_2026_06,CUST_UNIVERSITY,2026-06,BILL_RESEARCH,960 gpu-hours + 4800 object-gb-month + data-platform bundle,14880,1200,0,draft
+INV_TELCO_EDGE_2026_06,CUST_TELCO_EDGE,2026-06,BILL_CARRIER_EDGE,3 cross-connects + edge-cache service + dns service,9420,0,1413,review

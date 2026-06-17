@@ -15,6 +15,7 @@
         </div>
         <nav class="nav-list" aria-label="Infrastructure navigation">
           <a class="active" href="/infrastructure"><span class="nav-icon">I</span>Infrastructure</a>
+          <a href="/customers"><span class="nav-icon">C</span>Customers</a>
           <a href="/user"><span class="nav-icon">U</span>Tenant</a>
           <a href="/hardware"><span class="nav-icon">H</span>Hardware</a>
           <a href="/assurance"><span class="nav-icon">A</span>Assurance</a>
@@ -88,6 +89,48 @@
                 </label>
               </form>
               <div class="action-output" id="infra-action-output">Choose a workflow to see connectors, tests, gates, and evidence before opening a change.</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Change Request Workspace</h2>
+              <div class="panel-tools">
+                <span class="status info" id="infra-change-status">draft</span>
+                <button id="infra-approve-change">Approve rollout</button>
+                <button id="infra-download-change">Download JSON</button>
+              </div>
+            </div>
+            <div class="panel-body table-stack">
+              <div class="flow-grid" id="infra-execution-flow">
+                <div class="flow-step"><strong>Request</strong><span>draft</span></div>
+                <div class="flow-step"><strong>Validate</strong><span>queued</span></div>
+                <div class="flow-step"><strong>Approve</strong><span>blocked</span></div>
+                <div class="flow-step"><strong>Rollout</strong><span>not staged</span></div>
+                <div class="flow-step"><strong>Evidence</strong><span>pending</span></div>
+              </div>
+              <div class="split">
+                <div class="table-block">
+                  <h3>Generated Change Record</h3>
+                  <table>
+                    <thead><tr><th>Field</th><th>Value</th></tr></thead>
+                    <tbody id="infra-change-record"></tbody>
+                  </table>
+                </div>
+                <div class="table-block">
+                  <h3>Evidence Bundle</h3>
+                  <table>
+                    <thead><tr><th>Artifact</th><th>Value</th></tr></thead>
+                    <tbody id="infra-evidence-bundle"></tbody>
+                  </table>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Stage</th><th>Item</th><th>Owner or tool</th><th>Action</th><th>State</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="infra-execution-steps"></tbody>
+              </table>
             </div>
           </section>
 
@@ -177,6 +220,50 @@
                 <tr><th>Priority</th><th>Target</th><th>Backend</th><th>Mode</th><th>Write path</th><th>First capability</th><th>Workflows</th><th>Proof</th><th>Owner</th><th>Status</th><th>Next step</th></tr>
               </thead>
               <tbody id="infra-adapters"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Adapter Proof Harnesses</h2>
+              <div class="panel-tools">
+                <input id="infra-proof-filter" type="search" placeholder="Filter proofs">
+                <select id="infra-proof-status" aria-label="Proof status filter">
+                  <option value="">All status</option>
+                  <option value="planned">planned</option>
+                  <option value="pilot">pilot</option>
+                  <option value="implemented">implemented</option>
+                </select>
+                <button id="infra-export-proofs">Export proofs</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Proof</th><th>Milestone</th><th>Target</th><th>Command</th><th>Mode</th><th>Scope</th><th>Required env</th><th>Evidence</th><th>Gate</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="infra-adapter-proofs"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Portal Persistence Schema</h2>
+              <div class="panel-tools">
+                <button id="infra-export-persistence">Export schema</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="flow-grid" id="infra-persistence-flow">
+                <div class="flow-step"><strong>Schema</strong><span>osdc_portal</span></div>
+                <div class="flow-step"><strong>Tables</strong><span>workflow state</span></div>
+                <div class="flow-step"><strong>Boundary</strong><span>external truth stays external</span></div>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Table</th><th>Purpose</th><th>Columns</th><th>Column count</th></tr>
+              </thead>
+              <tbody id="infra-persistence-schema"></tbody>
             </table>
           </section>
 

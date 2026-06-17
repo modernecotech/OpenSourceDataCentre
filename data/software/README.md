@@ -13,10 +13,12 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `upgrade-policy.csv` and `config-script-catalogue.csv` are operational source files, not derived views.
 - `developer-platform-services.csv`, `developer-templates.csv`, `deployment-environments.csv`, `developer-promotion-gates.csv`, and `vscode-workflows.csv` define the Forgejo/CI/Harbor/GitOps/OpenTofu/VS Code developer platform.
 - `data-platform-services.csv`, `data-products.csv`, `data-pipelines.csv`, `data-ontology-objects.csv`, `data-access-policies.csv`, and `data-platform-templates.csv` define the optional open-source data platform service.
+- `customer-operations-workflows.csv` and `identity-mfa-policies.csv` define the multi-customer operations workflows and open-source MFA policies surfaced in `/customers`.
 - `test-harness-catalogue.csv`, `upgrade-rings.csv`, `upgrade-test-gates.csv`, and `assurance-automation-jobs.csv` define the assurance testing and automated upgrade control plane.
 - `deployment-stack-profiles.csv` defines the recommended mature infrastructure substrate by deployment scale, including where Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, MAAS, Ironic, Metal3, Edge Shield, and GitOps fit.
 - `infrastructure-workflows.csv` defines the front-door workbench workflows and must map each user action to connector IDs, required test IDs, required gate IDs, an automation job, an owner, and an evidence path.
 - `live-adapter-roadmap.csv` defines the read-first path from plan-only adapter traits to real PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL integrations.
+- `live-adapter-proof-catalogue.csv` defines the local proof commands, required environment variables, evidence outputs, gates, and owners for each live-adapter milestone. The PostgreSQL proof inspects `crates/osdc-portal/migrations/0001_osdc_portal_state.sql`.
 
 Every row in `service-catalogue-v1.csv` must include a maturity value:
 
@@ -31,6 +33,7 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 - `deployment-stack-profiles.csv` captures the 50 kW, 250 kW, 1 MW, and 5 MW stack pairings so OSDC acts as an integration layer over mature substrates rather than pretending one cloud stack fits every site.
 - `infrastructure-workflows.csv` maps create/manage/upgrade/scan actions to deployment profiles, connector contracts, assurance tests, upgrade gates, automation jobs, owners, and evidence targets for the `/infrastructure` UI.
 - `live-adapter-roadmap.csv` exposes the maturity gap honestly by listing the next live adapter milestones, proof commands, write paths, owners, and evidence docs.
+- `live-adapter-proof-catalogue.csv` maps each adapter milestone to a runnable plan-mode proof harness.
 - `edge-shield-services.csv` captures the Cloudflare-equivalent Edge Shield functions for Radxa nodes.
 - `edge-shield-service-map.csv` expands Edge Shield into default production and simple deployment stacks.
 - `security-control-map.csv` maps security control areas to open tools and required evidence.
@@ -46,6 +49,8 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 - `deployment-environments.csv` lists deployment targets and GitOps policies.
 - `developer-promotion-gates.csv` lists required checks and approvers.
 - `vscode-workflows.csv` lists VS Code-facing actions and artifacts.
+- `customer-operations-workflows.csv` maps customer onboarding, open-source MFA enforcement, site provisioning, usage rating, and invoice approval to connectors and evidence.
+- `identity-mfa-policies.csv` defines Keycloak/privacyIDEA/authentik MFA policy templates for tenants, admins, operators, and billing users.
 - `data-platform-services.csv` lists the Palantir-like open data-platform components.
 - `data-products.csv` lists governed domain data products.
 - `data-pipelines.csv` lists ingestion, transform, and AI context pipelines.

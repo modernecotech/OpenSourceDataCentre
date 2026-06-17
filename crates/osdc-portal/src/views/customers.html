@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Customer Operations</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="customers">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Customers</strong>
+          <span>accounts sites MFA billing</span>
+        </div>
+        <nav class="nav-list" aria-label="Customer operations navigation">
+          <a class="active" href="/customers"><span class="nav-icon">C</span>Customers</a>
+          <a href="/infrastructure"><span class="nav-icon">I</span>Infrastructure</a>
+          <a href="/commercial"><span class="nav-icon">C</span>Commercial</a>
+          <a href="/hardware"><span class="nav-icon">H</span>Hardware</a>
+          <a href="/assurance"><span class="nav-icon">A</span>Assurance</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/data-platform"><span class="nav-icon">A</span>Data</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+        </nav>
+        <small>scope: multi-customer operations</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Customer Operations</h1>
+            <p>Run customer accounts, site instances, open-source MFA, provisioning, usage metering, billing, invoice previews, and evidence from one operator surface</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="customers-refresh" aria-label="Refresh customer operations data">R</button>
+            <button id="customers-preview">Preview command</button>
+            <button class="primary" id="customers-open-onboarding">Open onboarding</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="customer-metrics">
+            <div class="metric"><span>Customers</span><strong>0</strong><em>loading</em></div>
+            <div class="metric"><span>Customer sites</span><strong>0</strong><em>loading</em></div>
+            <div class="metric"><span>MFA policies</span><strong>0</strong><em>loading</em></div>
+            <div class="metric"><span>Billable meters</span><strong>0</strong><em>loading</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Customer Command Builder</h2>
+              <div class="panel-tools">
+                <span class="status info" id="customer-command-status">draft</span>
+                <button id="customers-enforce-mfa">Enforce MFA</button>
+                <button id="customers-provision-site">Provision site</button>
+                <button id="customers-preview-invoice">Preview invoice</button>
+                <button id="customers-download-command">Download JSON</button>
+              </div>
+            </div>
+            <div class="panel-body table-stack">
+              <form class="form-grid">
+                <label>Customer<select id="customer-select"></select></label>
+                <label>Site instance<select id="customer-site-select"></select></label>
+                <label>Workflow<select id="customer-workflow-select"></select></label>
+                <label>MFA policy<select id="customer-mfa-select"></select></label>
+                <label>Billing plan<select id="customer-plan-select"></select></label>
+                <label>Operator<input id="customer-operator" value="customer-ops-lead"></label>
+              </form>
+              <div class="action-output" id="customer-action-output">Select a customer workflow to generate the command payload, evidence bundle, and adapter path.</div>
+              <div class="flow-grid" id="customer-execution-flow">
+                <div class="flow-step"><strong>Customer</strong><span>select account</span></div>
+                <div class="flow-step"><strong>MFA</strong><span>policy pending</span></div>
+                <div class="flow-step"><strong>Provision</strong><span>site pending</span></div>
+                <div class="flow-step"><strong>Billing</strong><span>meter pending</span></div>
+                <div class="flow-step"><strong>Evidence</strong><span>pending</span></div>
+              </div>
+              <div class="split">
+                <div class="table-block">
+                  <h3>Generated Command</h3>
+                  <table>
+                    <thead><tr><th>Field</th><th>Value</th></tr></thead>
+                    <tbody id="customer-command-record"></tbody>
+                  </table>
+                </div>
+                <div class="table-block">
+                  <h3>Evidence Bundle</h3>
+                  <table>
+                    <thead><tr><th>Artifact</th><th>Value</th></tr></thead>
+                    <tbody id="customer-evidence-bundle"></tbody>
+                  </table>
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Stage</th><th>System</th><th>Action</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="customer-execution-steps"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Customer Accounts</h2>
+              <div class="panel-tools">
+                <input id="customer-account-filter" type="search" placeholder="Filter accounts">
+                <button id="customers-export-accounts">Export accounts</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Customer</th><th>Type</th><th>Residency</th><th>Region</th><th>Realm</th><th>Billing</th><th>Support</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="customer-accounts"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Site Instances</h2>
+              <div class="panel-tools">
+                <input id="customer-site-filter" type="search" placeholder="Filter sites">
+                <button id="customers-export-sites">Export sites</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Site</th><th>Customer</th><th>Location</th><th>Stage</th><th>Load</th><th>Substrate</th><th>Provisioner</th><th>Source</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="customer-sites"></tbody>
+            </table>
+          </section>
+
+          <div class="split">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>MFA Policies</h2>
+                <div class="panel-tools">
+                  <input id="customer-mfa-filter" type="search" placeholder="Filter MFA">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Policy</th><th>Scope</th><th>Stack</th><th>Factors</th><th>Recovery</th><th>Enforcement</th><th>Status</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="customer-mfa-policies"></tbody>
+              </table>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Customer Workflows</h2>
+                <div class="panel-tools">
+                  <input id="customer-workflow-filter" type="search" placeholder="Filter workflows">
+                </div>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Workflow</th><th>Goal</th><th>Connectors</th><th>MFA</th><th>Provisioning</th><th>Billing event</th><th>Owner</th><th>Status</th></tr>
+                </thead>
+                <tbody id="customer-workflows"></tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Billing Plans And Meters</h2>
+              <div class="panel-tools">
+                <input id="customer-billing-filter" type="search" placeholder="Filter billing">
+                <button id="customers-export-billing">Export billing</button>
+              </div>
+            </div>
+            <div class="split">
+              <table>
+                <thead>
+                  <tr><th>Plan</th><th>Segment</th><th>Included</th><th>Rating</th><th>Invoice</th><th>Minimum</th><th>Status</th></tr>
+                </thead>
+                <tbody id="customer-billing-plans"></tbody>
+              </table>
+              <table>
+                <thead>
+                  <tr><th>Meter</th><th>Domain</th><th>Source</th><th>Metric</th><th>Unit</th><th>Cadence</th><th>Status</th><th>Evidence</th></tr>
+                </thead>
+                <tbody id="customer-usage-meters"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Invoice Preview Queue</h2>
+              <div class="panel-tools">
+                <input id="customer-invoice-filter" type="search" placeholder="Filter invoices">
+                <button id="customers-export-invoices">Export invoices</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Invoice</th><th>Customer</th><th>Period</th><th>Plan</th><th>Usage</th><th>Amount</th><th>Credits</th><th>Tax</th><th>Status</th></tr>
+              </thead>
+              <tbody id="customer-invoices"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Customer Operations Connectors</h2>
+              <div class="panel-tools">
+                <input id="customer-connector-filter" type="search" placeholder="Filter connectors">
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Connector</th><th>System</th><th>Domain</th><th>Capability</th><th>Pattern</th><th>Write mode</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="customer-connectors"></tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

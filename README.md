@@ -29,6 +29,7 @@ The project combines:
 | Commissioning and reliability pack | L1-L5 commissioning, grid-loss, DC-bus ride-through, cooling failover, generator-start, and backup-restore tests. |
 | Operator training pack | Local skills, runbooks, spares lists, maintenance schedules, emergency procedures, staffing, and escalation paths. |
 | Commercial readiness pack | Gap register, standards matrix, SLA model, colocation products, cross-connect workflows, audit evidence, and customer responsibility boundaries. |
+| Customer operations control plane | Multi-customer accounts, site instances, open-source MFA/2FA, provisioning workflow, usage metering, billing plans, invoice previews, and evidence-backed approvals. |
 | Delivery control pack | Project lifecycle gates, authority permits, owner-engineer review, design freeze, operational readiness, handover, risk, action, and commissioning evidence registers. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
 | Unified infrastructure workbench | Browser front door for guided infrastructure requests, selected deployment stack, connector paths, required tests, blocking gates, automation jobs, and evidence targets. |
@@ -104,14 +105,14 @@ The flagship developing-world pilot is the 250 kW regional design: 10 racks at 2
                     |
  +------------------+------------------+
  |                  |                  |
-Tenant UI       Operator UI        Security UI
+Tenant UI       Operator UI        Customer/Security UI
  |                  |                  |
-VMs/K8s/AI      racks/power/DCIM    SIEM/WAF/IAM
+VMs/K8s/AI      racks/power/DCIM    MFA/billing/SIEM
  |                  |                  |
-OpenStack       NetBox/openDCIM     Wazuh/Falco/OPA
-Kubernetes      Prometheus          Keycloak/OpenBao
-Ceph            Grafana             Edge Shield
-Harbor          Velero              Coraza/CrowdSec
+OpenStack       NetBox/openDCIM     Keycloak/privacyIDEA
+Kubernetes      Prometheus          CloudKitty/OpenMeter
+Ceph            Grafana             Kill Bill/Lago/Wazuh
+Harbor          Velero              Edge Shield/Coraza
 Argo/Flux       Cilium              Suricata/Zeek
 ```
 
@@ -121,11 +122,13 @@ The Rust layer does not replace mature infrastructure systems. It provides the u
 
 This repository is currently a strong architecture, planning framework, CSV-backed catalogue, and working Rust prototype. It is not yet a deployable national cloud platform.
 
-The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended infrastructure workbench, tenant, operator, Edge Shield, config-editor, lifecycle, hardware provisioning, commercial, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, or MLflow installations.
+The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended infrastructure workbench, tenant, operator, Edge Shield, config-editor, lifecycle, hardware provisioning, commercial, customer operations, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, Keycloak, privacyIDEA, authentik, NetBox, PowerDNS, OpenBao, CloudKitty, OpenMeter, Kill Bill, Lago, OpenCost, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, or MLflow installations.
 
-The next engineering phase is to turn the plan-only adapter contracts into real read-first integrations, starting with PowerDNS, NetBox, Keycloak, OpenBao, GitOps, and one small-site cloud substrate such as Proxmox or CloudStack before deeper OpenStack automation. The live-adapter roadmap is now tracked in [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv), exposed through the infrastructure workbench, and documented in [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md).
+The next engineering phase is to turn the plan-only adapter contracts into real read-first integrations, starting with PowerDNS, NetBox, Keycloak, OpenBao, GitOps, and one small-site cloud substrate such as Proxmox or CloudStack before deeper OpenStack automation. The live-adapter roadmap is now tracked in [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv), proof commands are tracked in [live-adapter-proof-catalogue.csv](data/software/live-adapter-proof-catalogue.csv), both are exposed through the infrastructure workbench, and the path is documented in [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md). The first PostgreSQL persistence migration for workflow state is [0001_osdc_portal_state.sql](crates/osdc-portal/migrations/0001_osdc_portal_state.sql), with its boundary documented in [Portal Persistence](docs/architecture/portal-persistence.md).
 
 Commercial readiness is also early. The repository now tracks the gap between the OSDC blueprint and a commercial colocation or hyperscale-grade datacentre through a gap register, standards/control matrix, SLA model, commercial product catalogue, MEP evidence targets, operations templates, and audit-evidence register. These artifacts are templates and planning controls, not certification evidence until project-specific professionals review and sign them off.
+
+Customer operations are now a first-class prototype surface. The `/customers` console composes customer accounts, site instances, open-source MFA policies, customer workflows, usage meters, billing plans, invoice previews, and connector paths into command records that can be validated, approved, exported, and later persisted. The supporting docs are [Customer Operations Console](docs/software/customer-operations-console.md), [Open-Source MFA And 2FA](docs/security/open-source-mfa.md), and [Billing And Metering](docs/commercial/billing-and-metering.md).
 
 ## Portal Screenshots
 
@@ -297,6 +300,8 @@ Machine-readable catalogue data lives in:
 - [deployment-stack-profiles.csv](data/software/deployment-stack-profiles.csv) - recommended Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, bare-metal, Edge Shield, and GitOps pairings by deployment size.
 - [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv) - front-door workflows that map user goals to connectors, test harnesses, gates, automation jobs, owners, and evidence paths.
 - [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv) - read-first integration roadmap for PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL persistence.
+- [live-adapter-proof-catalogue.csv](data/software/live-adapter-proof-catalogue.csv) - local plan-mode proof commands, required environment variables, evidence outputs, gates, and owners for each adapter milestone.
+- [0001_osdc_portal_state.sql](crates/osdc-portal/migrations/0001_osdc_portal_state.sql) - PostgreSQL portal-state schema for change requests, approvals, evidence bundles, audit events, infrastructure requests, and adapter proof runs.
 - [developer platform catalogues](data/software/) - developer services, templates, deployment environments, promotion gates, and VS Code workflows.
 - [data platform catalogues](data/software/) - data services, products, pipelines, ontology objects, access policies, and templates.
 - [service catalogue examples](examples/service-catalogue/)
@@ -305,9 +310,9 @@ Machine-readable catalogue data lives in:
 
 The portal now has one front door for infrastructure creation and management: `/infrastructure`.
 
-The workbench is CSV-backed and workflow-first. A user chooses an action such as creating a tenant, provisioning a VM, deploying Kubernetes, provisioning storage, requesting GPU capacity, provisioning physical hardware, exposing an edge endpoint, creating a data product, running an upgrade, or running a security scan. The UI then shows the selected deployment profile, connector path, live-adapter roadmap, required test harnesses, blocking gates, automation job, owner, evidence target, and staged change mode before anything is promoted.
+The workbench is CSV-backed and workflow-first. A user chooses an action such as creating a tenant, provisioning a VM, deploying Kubernetes, provisioning storage, requesting GPU capacity, provisioning physical hardware, exposing an edge endpoint, creating a data product, running an upgrade, or running a security scan. The UI then shows the selected deployment profile, connector path, live-adapter roadmap, adapter proof harnesses, portal persistence schema, required test harnesses, blocking gates, automation job, owner, evidence target, staged change mode, generated command record, validation state, approval state, and JSON payload before anything is promoted.
 
-The source of truth is [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv). It joins the deployment stack profiles, system connector contracts, assurance test harnesses, upgrade gates, and automation jobs already in the repository. The adapter maturity source is [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv). The main guides are [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md) and [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md).
+The source of truth is [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv). It joins the deployment stack profiles, system connector contracts, assurance test harnesses, upgrade gates, and automation jobs already in the repository. The adapter maturity source is [live-adapter-roadmap.csv](data/software/live-adapter-roadmap.csv), the local proof source is [live-adapter-proof-catalogue.csv](data/software/live-adapter-proof-catalogue.csv), and the first durable workflow-state schema is [0001_osdc_portal_state.sql](crates/osdc-portal/migrations/0001_osdc_portal_state.sql). The main guides are [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md), [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md), and [Portal Persistence](docs/architecture/portal-persistence.md).
 
 ## Sovereign Developer Platform
 
@@ -477,7 +482,7 @@ Scope:
 - CSV-driven sovereign service catalogue in the portal.
 - Typed GitOps objects: `ChangeRequest`, `ValidationResult`, `RolloutPlan`, `RollbackPlan`, and `AuditEvent`.
 - Read-first live adapters for PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox or CloudStack, and a scoped OpenStack profile.
-- PostgreSQL persistence for lifecycle state, approval history, evidence bundles, audit events, and infrastructure requests.
+- PostgreSQL persistence for lifecycle state, approval history, evidence bundles, adapter proof runs, audit events, and infrastructure requests.
 - Edge Shield profile validator and policy checks.
 - Config-script editor that opens a real GitOps change object instead of only updating UI messages.
 - Country-profile calculator extension for resilience, procurement, sovereignty, and operations fields.
@@ -500,6 +505,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Deployment Stack Profiles](docs/software/deployment-stack-profiles.md) - recommended mature infrastructure substrate by deployment size.
 - [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md) - front-door workflow UI for infrastructure requests, connector paths, required tests, gates, automation, and evidence.
 - [Live Adapter Roadmap](docs/software/live-adapter-roadmap.md) - read-first path from plan-only adapters to real PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL integrations.
+- [Portal Persistence](docs/architecture/portal-persistence.md) - PostgreSQL boundary and first schema for OSDC-owned workflow state.
 - [Unified Portal Integration Model](docs/software/unified-portal-integration-model.md) - Rust API and workflow layer over mature open-source systems.
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
@@ -508,6 +514,7 @@ Work outside that scope should remain documented but not block the first real co
 - [Developer Platform](docs/software/developer-platform.md), [Data Platform as a Service](docs/software/data-platform-service.md), and [Data and AI Platform](docs/software/data-and-ai-platform.md) - service catalogue pillars beyond basic compute/storage, including Forgejo, CI, Harbor, GitOps, OpenTofu, governed data products, lakehouse, catalog, lineage, ontology, templates, and VS Code workflows.
 - [Open Threat Management and Scanner Platform](docs/security/open-threat-management-and-scanner.md) - open-source Wiz-like scanner, posture, risk, and remediation fabric.
 - [Commercial Readiness](docs/commercial-readiness/README.md) - gap register, standards matrix, SLA model, commercial service catalogue, audit evidence, and customer responsibility matrix.
+- [Customer Operations Console](docs/software/customer-operations-console.md), [Open-Source MFA And 2FA](docs/security/open-source-mfa.md), and [Billing And Metering](docs/commercial/billing-and-metering.md) - multi-customer operations, 2FA, provisioning, metering, billing, and invoice preview controls.
 - [Delivery Controls](docs/delivery/README.md) - lifecycle gates, authority permits, design freeze, operational readiness, handover, owner-engineer review, risk, and action tracking.
 - [Engineering Evidence](data/engineering/) - MEP evidence register for electrical, DC protection, coordination, earthing, EPO, generator fuel, BESS safety, thermal, cooling, fire, and controls artifacts.
 - [Site Selection](docs/site-selection/README.md) - flood, seismic, geotechnical, utility, fibre, road, logistics, permitting, and authority due diligence.
@@ -588,7 +595,7 @@ cargo run -p osdc-edge -- 127.0.0.1:8790
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
 
-The first portal serves eleven GUI surfaces and redirects `/` to the infrastructure workbench:
+The first portal serves twelve GUI surfaces and redirects `/` to the infrastructure workbench:
 
 - Infrastructure workbench: `http://127.0.0.1:8787/infrastructure`
 - Tenant portal: `http://127.0.0.1:8787/user`
@@ -598,16 +605,18 @@ The first portal serves eleven GUI surfaces and redirects `/` to the infrastruct
 - Lifecycle console: `http://127.0.0.1:8787/lifecycle`
 - Hardware provisioning console: `http://127.0.0.1:8787/hardware`
 - Commercial console: `http://127.0.0.1:8787/commercial`
+- Customer operations console: `http://127.0.0.1:8787/customers`
 - Assurance console: `http://127.0.0.1:8787/assurance`
 - Developer console: `http://127.0.0.1:8787/developer`
 - Data platform console: `http://127.0.0.1:8787/data-platform`
 
-The portal GUI exposes a unified infrastructure workbench, tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, hardware provisioning requests and connector controls, commercial readiness products and evidence controls, assurance test/upgrade/scanner controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
+The portal GUI exposes a unified infrastructure workbench, tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, hardware provisioning requests and connector controls, commercial readiness products and evidence controls, customer account/site/MFA/provisioning/billing command controls, assurance test/upgrade/scanner controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
 
 Useful portal APIs:
 
 - `/api/infrastructure/workbench`
 - `/api/infrastructure/adapter-roadmap`
+- `/api/infrastructure/adapter-proofs`
 - `/api/catalog/core-services`
 - `/api/catalog/sovereign-services`
 - `/api/catalog/upgrade-policy`
@@ -653,6 +662,15 @@ Useful portal APIs:
 - `/api/lifecycle/overview`
 - `/api/developer/platform`
 - `/api/data-platform/overview`
+
+Runnable local adapter proof commands:
+
+```bash
+scripts/adapter-proof.sh --all --mode plan
+scripts/adapter-proof.sh --milestone ADAPT_001 --mode plan
+```
+
+These commands write plan-mode evidence under `target/assurance/adapter-proofs/`. They do not contact external systems until real adapter clients and credentials are added.
 
 The local edge service exposes a Radxa-ready dashboard at `http://127.0.0.1:8790/` plus JSON APIs at `/api/status` and `/api/config-preview`.
 

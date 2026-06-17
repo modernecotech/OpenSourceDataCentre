@@ -1,0 +1,4 @@
+plan_id,customer_segment,services_included,rating_engine,invoice_engine,currency,minimum_commit_usd,tax_policy,approval_owner,status
+BILL_PUBLIC_CRITICAL,public-sector,vm+kubernetes+database+backup+remote-hands,CloudKitty+OpenMeter,Kill-Bill,USD,25000,local-tax-profile,commercial-owner,template
+BILL_RESEARCH,education,gpu-batch+object-storage+notebooks+data-platform,OpenMeter+Lago,Kill-Bill,USD,12000,public-research-exemption,education-cloud-owner,template
+BILL_CARRIER_EDGE,carrier,edge-cache+dns+cross-connect+ixp-port,CloudKitty+OpenMeter,Kill-Bill,USD,8000,carrier-services-tax,network-commercial-owner,pilot

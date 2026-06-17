@@ -9,6 +9,11 @@ This directory stores machine-readable catalogues for commercial datacentre read
 - `cross-connect-products.csv` defines meet-me-room and network-interconnection products.
 - `remote-hands-products.csv` defines remote/smart-hands task classes.
 - `remote-hands-pricebook.csv` defines remote/smart-hands billing units, response targets, approvals, and evidence references.
+- `customer-accounts.csv` defines customer accounts, residency zones, identity realms, billing accounts, support tiers, service owners, and status.
+- `customer-sites.csv` maps customers to site instances, deployment stages, substrates, provisioners, source-of-truth systems, and owners.
+- `billing-plans.csv` defines open-source rating/invoice stacks, minimum commits, tax policies, and approval owners.
+- `usage-meters.csv` maps service domains to source systems, metric names, rating plans, evidence paths, and owners.
+- `invoice-preview.csv` provides draft invoice previews for portal workflow and approval testing.
 - `access-roles.csv` defines customer, carrier, staff, and break-glass physical access roles.
 - `audit-evidence.csv` maps evidence records to owners, cadence, and storage paths.
 

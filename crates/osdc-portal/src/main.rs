@@ -19,6 +19,7 @@ const HARDWARE_HTML: &str = include_str!("views/hardware.html");
 const DEVELOPER_HTML: &str = include_str!("views/developer.html");
 const DATA_PLATFORM_HTML: &str = include_str!("views/data-platform.html");
 const COMMERCIAL_HTML: &str = include_str!("views/commercial.html");
+const CUSTOMERS_HTML: &str = include_str!("views/customers.html");
 const ASSURANCE_HTML: &str = include_str!("views/assurance.html");
 const RACK_IMAGE: &[u8] = include_bytes!("../../../docs/assets/rack-thermal-spine-cutaway.png");
 const EXTERIOR_IMAGE: &[u8] =
@@ -50,6 +51,9 @@ const INFRASTRUCTURE_WORKFLOWS_CSV: &str =
     include_str!("../../../data/software/infrastructure-workflows.csv");
 const LIVE_ADAPTER_ROADMAP_CSV: &str =
     include_str!("../../../data/software/live-adapter-roadmap.csv");
+const LIVE_ADAPTER_PROOF_CATALOGUE_CSV: &str =
+    include_str!("../../../data/software/live-adapter-proof-catalogue.csv");
+const PORTAL_STATE_MIGRATION_SQL: &str = include_str!("../migrations/0001_osdc_portal_state.sql");
 const COMMERCIAL_GAP_REGISTER_CSV: &str =
     include_str!("../../../data/commercial/commercial-gap-register.csv");
 const STANDARDS_CONTROL_MATRIX_CSV: &str =
@@ -63,6 +67,11 @@ const REMOTE_HANDS_PRODUCTS_CSV: &str =
     include_str!("../../../data/commercial/remote-hands-products.csv");
 const REMOTE_HANDS_PRICEBOOK_CSV: &str =
     include_str!("../../../data/commercial/remote-hands-pricebook.csv");
+const CUSTOMER_ACCOUNTS_CSV: &str = include_str!("../../../data/commercial/customer-accounts.csv");
+const CUSTOMER_SITES_CSV: &str = include_str!("../../../data/commercial/customer-sites.csv");
+const BILLING_PLANS_CSV: &str = include_str!("../../../data/commercial/billing-plans.csv");
+const USAGE_METERS_CSV: &str = include_str!("../../../data/commercial/usage-meters.csv");
+const INVOICE_PREVIEW_CSV: &str = include_str!("../../../data/commercial/invoice-preview.csv");
 const ACCESS_ROLES_CSV: &str = include_str!("../../../data/commercial/access-roles.csv");
 const AUDIT_EVIDENCE_CSV: &str = include_str!("../../../data/commercial/audit-evidence.csv");
 const SITE_SELECTION_SCORECARD_CSV: &str =
@@ -100,6 +109,10 @@ const DEPLOYMENT_ENVIRONMENTS_CSV: &str =
 const DEVELOPER_PROMOTION_GATES_CSV: &str =
     include_str!("../../../data/software/developer-promotion-gates.csv");
 const VSCODE_WORKFLOWS_CSV: &str = include_str!("../../../data/software/vscode-workflows.csv");
+const CUSTOMER_OPERATIONS_WORKFLOWS_CSV: &str =
+    include_str!("../../../data/software/customer-operations-workflows.csv");
+const IDENTITY_MFA_POLICIES_CSV: &str =
+    include_str!("../../../data/software/identity-mfa-policies.csv");
 const DATA_PLATFORM_SERVICES_CSV: &str =
     include_str!("../../../data/software/data-platform-services.csv");
 const DATA_PRODUCTS_CSV: &str = include_str!("../../../data/software/data-products.csv");
@@ -141,6 +154,7 @@ fn main() -> std::io::Result<()> {
     println!("lifecycle console: http://{addr}/lifecycle");
     println!("hardware provisioning console: http://{addr}/hardware");
     println!("commercial console: http://{addr}/commercial");
+    println!("customer operations console: http://{addr}/customers");
     println!("assurance console: http://{addr}/assurance");
     println!("developer console: http://{addr}/developer");
     println!("data platform console: http://{addr}/data-platform");
@@ -196,6 +210,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/developer") => html(DEVELOPER_HTML),
         ("GET", "/data-platform") => html(DATA_PLATFORM_HTML),
         ("GET", "/commercial") => html(COMMERCIAL_HTML),
+        ("GET", "/customers") => html(CUSTOMERS_HTML),
         ("GET", "/assurance") => html(ASSURANCE_HTML),
         ("GET", "/styles.css") => bytes("200 OK", "text/css; charset=utf-8", STYLE_CSS.as_bytes()),
         ("GET", "/portal.js") => bytes(
@@ -234,6 +249,14 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/commercial/cross-connect-products") => json(&cross_connect_products()),
         ("GET", "/api/commercial/remote-hands-products") => json(&remote_hands_products()),
         ("GET", "/api/commercial/remote-hands-pricebook") => json(&remote_hands_pricebook()),
+        ("GET", "/api/customers/overview") => json(&customer_operations_overview()),
+        ("GET", "/api/customers/accounts") => json(&customer_accounts()),
+        ("GET", "/api/customers/sites") => json(&customer_sites()),
+        ("GET", "/api/customers/workflows") => json(&customer_operations_workflows()),
+        ("GET", "/api/customers/mfa-policies") => json(&identity_mfa_policies()),
+        ("GET", "/api/customers/billing-plans") => json(&billing_plans()),
+        ("GET", "/api/customers/usage-meters") => json(&usage_meters()),
+        ("GET", "/api/customers/invoice-preview") => json(&invoice_preview()),
         ("GET", "/api/commercial/access-roles") => json(&access_roles()),
         ("GET", "/api/commercial/audit-evidence") => json(&audit_evidence()),
         ("GET", "/api/site-selection/scorecard") => json(&site_selection_scorecard()),
@@ -259,6 +282,8 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/assurance/automation-jobs") => json(&assurance_automation_jobs()),
         ("GET", "/api/infrastructure/workbench") => json(&infrastructure_workbench()),
         ("GET", "/api/infrastructure/adapter-roadmap") => json(&live_adapter_roadmap()),
+        ("GET", "/api/infrastructure/adapter-proofs") => json(&live_adapter_proofs()),
+        ("GET", "/api/infrastructure/persistence-schema") => json(&portal_persistence_schema()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -328,6 +353,7 @@ fn bytes(status: &str, content_type: &str, body: &[u8]) -> Vec<u8> {
 
 fn is_repo_text_path(path: &str) -> bool {
     path.starts_with("/docs/")
+        || path.starts_with("/crates/osdc-portal/migrations/")
         || path.starts_with("/data/")
         || path.starts_with("/examples/")
         || path == "/README.md"
@@ -607,6 +633,118 @@ struct RemoteHandsPricebook {
     target_response: String,
     requires_approval: String,
     evidence_path: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize)]
+struct CustomerOperationsOverview {
+    metrics: Vec<LifecycleMetric>,
+    accounts: Vec<CustomerAccount>,
+    site_instances: Vec<CustomerSiteInstance>,
+    workflows: Vec<CustomerOperationsWorkflow>,
+    mfa_policies: Vec<IdentityMfaPolicy>,
+    billing_plans: Vec<BillingPlan>,
+    usage_meters: Vec<UsageMeter>,
+    invoice_preview: Vec<InvoicePreview>,
+    connectors: Vec<SystemUiConnector>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CustomerAccount {
+    customer_id: String,
+    display_name: String,
+    customer_type: String,
+    residency_zone: String,
+    primary_region: String,
+    identity_realm: String,
+    billing_account: String,
+    support_tier: String,
+    service_owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CustomerSiteInstance {
+    site_id: String,
+    customer_id: String,
+    country: String,
+    city: String,
+    deployment_stage: String,
+    it_load_kw: u32,
+    substrate: String,
+    provisioner: String,
+    data_residency_zone: String,
+    source_of_truth: String,
+    ops_owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CustomerOperationsWorkflow {
+    workflow_id: String,
+    workflow_name: String,
+    customer_goal: String,
+    connector_ids: String,
+    required_mfa_policy: String,
+    provisioning_system: String,
+    billing_event: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct IdentityMfaPolicy {
+    policy_id: String,
+    scope: String,
+    provider_stack: String,
+    factors: String,
+    enrollment_flow: String,
+    recovery_method: String,
+    enforcement_point: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct BillingPlan {
+    plan_id: String,
+    customer_segment: String,
+    services_included: String,
+    rating_engine: String,
+    invoice_engine: String,
+    currency: String,
+    minimum_commit_usd: u32,
+    tax_policy: String,
+    approval_owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UsageMeter {
+    meter_id: String,
+    service_domain: String,
+    source_system: String,
+    metric_name: String,
+    unit: String,
+    collection_cadence: String,
+    rating_plan: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct InvoicePreview {
+    invoice_id: String,
+    customer_id: String,
+    billing_period: String,
+    plan_id: String,
+    usage_summary: String,
+    amount_usd: f64,
+    credits_usd: f64,
+    tax_usd: f64,
     status: String,
 }
 
@@ -1298,6 +1436,8 @@ struct InfrastructureWorkbench {
     metrics: Vec<LifecycleMetric>,
     workflows: Vec<InfrastructureWorkflow>,
     adapter_milestones: Vec<LiveAdapterMilestone>,
+    adapter_proofs: Vec<LiveAdapterProof>,
+    persistence_schema: PortalPersistenceSchema,
     stack_profiles: Vec<DeploymentStackProfile>,
     connectors: Vec<SystemUiConnector>,
     test_harnesses: Vec<TestHarness>,
@@ -1338,6 +1478,40 @@ struct LiveAdapterMilestone {
     owner: String,
     status: String,
     next_step: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LiveAdapterProof {
+    proof_id: String,
+    milestone_id: String,
+    adapter_target: String,
+    proof_command: String,
+    mode: String,
+    scope: String,
+    required_env: String,
+    evidence_output: String,
+    required_gate: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize)]
+struct PortalPersistenceSchema {
+    migration_path: &'static str,
+    docs_path: &'static str,
+    schema_name: &'static str,
+    boundary: &'static str,
+    metrics: Vec<LifecycleMetric>,
+    tables: Vec<PortalPersistenceTable>,
+    indexes: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct PortalPersistenceTable {
+    table_name: String,
+    purpose: &'static str,
+    column_count: usize,
+    columns: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1740,9 +1914,179 @@ fn live_adapter_roadmap() -> Vec<LiveAdapterMilestone> {
     )
 }
 
+fn live_adapter_proofs() -> Vec<LiveAdapterProof> {
+    csv_rows(
+        LIVE_ADAPTER_PROOF_CATALOGUE_CSV,
+        "data/software/live-adapter-proof-catalogue.csv",
+    )
+}
+
+fn portal_persistence_schema() -> PortalPersistenceSchema {
+    let tables = parse_migration_tables(PORTAL_STATE_MIGRATION_SQL);
+    let indexes = parse_migration_indexes(PORTAL_STATE_MIGRATION_SQL);
+    let jsonb_tables = tables
+        .iter()
+        .filter(|table| table.columns.iter().any(|column| column.contains("jsonb")))
+        .count();
+
+    PortalPersistenceSchema {
+        migration_path: "crates/osdc-portal/migrations/0001_osdc_portal_state.sql",
+        docs_path: "docs/architecture/portal-persistence.md",
+        schema_name: "osdc_portal",
+        boundary: "OSDC-owned workflow state only; external systems remain authoritative for their own domains.",
+        metrics: vec![
+            LifecycleMetric {
+                label: "State tables".to_string(),
+                value: tables.len().to_string(),
+                detail: "requests approvals evidence audit".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Indexes".to_string(),
+                value: indexes.len().to_string(),
+                detail: "status owner workflow lookup".to_string(),
+                kind: "info",
+            },
+            LifecycleMetric {
+                label: "JSONB tables".to_string(),
+                value: jsonb_tables.to_string(),
+                detail: "plans summaries payloads".to_string(),
+                kind: "info",
+            },
+        ],
+        tables,
+        indexes,
+    }
+}
+
+fn parse_migration_tables(sql: &str) -> Vec<PortalPersistenceTable> {
+    let mut tables = Vec::new();
+    let mut current: Option<(String, Vec<String>)> = None;
+
+    for line in sql.lines() {
+        let trimmed = line.trim();
+        if trimmed
+            .to_ascii_uppercase()
+            .starts_with("CREATE TABLE IF NOT EXISTS ")
+        {
+            let table_name = trimmed
+                .split_whitespace()
+                .nth(5)
+                .unwrap_or_default()
+                .trim_end_matches('(')
+                .to_string();
+            current = Some((table_name, Vec::new()));
+            continue;
+        }
+
+        let Some((table_name, columns)) = current.as_mut() else {
+            continue;
+        };
+
+        if trimmed.starts_with(");") {
+            let table_name = table_name.clone();
+            let columns = columns.clone();
+            tables.push(PortalPersistenceTable {
+                purpose: portal_table_purpose(&table_name),
+                column_count: columns.len(),
+                table_name,
+                columns,
+            });
+            current = None;
+            continue;
+        }
+
+        if trimmed.is_empty() || trimmed.starts_with("--") {
+            continue;
+        }
+
+        let column_name = trimmed
+            .split_whitespace()
+            .next()
+            .unwrap_or_default()
+            .trim_matches('"')
+            .trim_end_matches(',');
+        if !column_name.is_empty() {
+            columns.push(format!("{column_name} {}", column_type_summary(trimmed)));
+        }
+    }
+
+    tables
+}
+
+fn parse_migration_indexes(sql: &str) -> Vec<String> {
+    sql.lines()
+        .filter_map(|line| {
+            let trimmed = line.trim();
+            if !trimmed
+                .to_ascii_uppercase()
+                .starts_with("CREATE INDEX IF NOT EXISTS ")
+            {
+                return None;
+            }
+            trimmed.split_whitespace().nth(5).map(str::to_string)
+        })
+        .collect()
+}
+
+fn column_type_summary(line: &str) -> String {
+    line.split_whitespace()
+        .skip(1)
+        .take_while(|part| {
+            !matches!(
+                part.trim_end_matches(',').to_ascii_uppercase().as_str(),
+                "PRIMARY" | "REFERENCES" | "NOT" | "DEFAULT"
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+        .trim_end_matches(',')
+        .to_string()
+}
+
+fn portal_table_purpose(table_name: &str) -> &'static str {
+    match table_name.rsplit('.').next().unwrap_or(table_name) {
+        "change_requests" => {
+            "GitOps or guarded-API change envelope, risk, validation, rollout, rollback, and status."
+        }
+        "approval_records" => {
+            "Approval owner, decision, approver, decision timestamp, notes, and evidence reference."
+        }
+        "evidence_bundles" => {
+            "Assurance, test, scanner, adapter-proof, and commissioning evidence attached to workflows."
+        }
+        "audit_events" => {
+            "Operational audit trail for request creation, validation, approval, rollout, rollback, and closeout."
+        }
+        "infrastructure_requests" => {
+            "Front-door workbench requests for infrastructure, hardware, edge, data, upgrade, and scan workflows."
+        }
+        "adapter_proof_runs" => {
+            "Local and future live adapter proof executions, modes, statuses, summaries, and evidence paths."
+        }
+        "customer_accounts" => {
+            "OSDC customer account workflow state, service owner, identity realm, billing account, support tier, and status."
+        }
+        "customer_site_instances" => {
+            "Customer datacentre or site-instance state, deployment stage, substrate, provisioner, residency zone, and owner."
+        }
+        "identity_mfa_policies" => {
+            "Open-source MFA policy catalogue state for factors, recovery, enforcement points, evidence, owner, and status."
+        }
+        "usage_meter_snapshots" => {
+            "Customer usage snapshots imported from metering systems for rating, evidence, billing period, and approval."
+        }
+        "invoice_previews" => {
+            "Draft invoice previews, customer period, plan, credits, taxes, approval reference, and release status."
+        }
+        _ => "Portal persistence table.",
+    }
+}
+
 fn infrastructure_workbench() -> InfrastructureWorkbench {
     let workflows = infrastructure_workflows();
     let adapter_milestones = live_adapter_roadmap();
+    let adapter_proofs = live_adapter_proofs();
     let connectors = system_ui_connectors();
     let test_harnesses = test_harnesses();
     let upgrade_gates = upgrade_test_gates();
@@ -1789,6 +2133,12 @@ fn infrastructure_workbench() -> InfrastructureWorkbench {
                 kind: "warn",
             },
             LifecycleMetric {
+                label: "Adapter proofs".to_string(),
+                value: adapter_proofs.len().to_string(),
+                detail: "local plan-mode harnesses".to_string(),
+                kind: "info",
+            },
+            LifecycleMetric {
                 label: "Blocking gates".to_string(),
                 value: blocking_gates.to_string(),
                 detail: format!("{implemented_jobs} runnable jobs").to_string(),
@@ -1797,6 +2147,8 @@ fn infrastructure_workbench() -> InfrastructureWorkbench {
         ],
         workflows,
         adapter_milestones,
+        adapter_proofs,
+        persistence_schema: portal_persistence_schema(),
         stack_profiles: deployment_stack_profiles(),
         connectors,
         test_harnesses,
@@ -1876,6 +2228,122 @@ fn remote_hands_pricebook() -> Vec<RemoteHandsPricebook> {
         REMOTE_HANDS_PRICEBOOK_CSV,
         "data/commercial/remote-hands-pricebook.csv",
     )
+}
+
+fn customer_accounts() -> Vec<CustomerAccount> {
+    csv_rows(
+        CUSTOMER_ACCOUNTS_CSV,
+        "data/commercial/customer-accounts.csv",
+    )
+}
+
+fn customer_sites() -> Vec<CustomerSiteInstance> {
+    csv_rows(CUSTOMER_SITES_CSV, "data/commercial/customer-sites.csv")
+}
+
+fn customer_operations_workflows() -> Vec<CustomerOperationsWorkflow> {
+    csv_rows(
+        CUSTOMER_OPERATIONS_WORKFLOWS_CSV,
+        "data/software/customer-operations-workflows.csv",
+    )
+}
+
+fn identity_mfa_policies() -> Vec<IdentityMfaPolicy> {
+    csv_rows(
+        IDENTITY_MFA_POLICIES_CSV,
+        "data/software/identity-mfa-policies.csv",
+    )
+}
+
+fn billing_plans() -> Vec<BillingPlan> {
+    csv_rows(BILLING_PLANS_CSV, "data/commercial/billing-plans.csv")
+}
+
+fn usage_meters() -> Vec<UsageMeter> {
+    csv_rows(USAGE_METERS_CSV, "data/commercial/usage-meters.csv")
+}
+
+fn invoice_preview() -> Vec<InvoicePreview> {
+    csv_rows(INVOICE_PREVIEW_CSV, "data/commercial/invoice-preview.csv")
+}
+
+fn customer_operations_overview() -> CustomerOperationsOverview {
+    let accounts = customer_accounts();
+    let site_instances = customer_sites();
+    let workflows = customer_operations_workflows();
+    let mfa_policies = identity_mfa_policies();
+    let billing_plans = billing_plans();
+    let usage_meters = usage_meters();
+    let invoice_preview = invoice_preview();
+    let connector_ids = workflows
+        .iter()
+        .flat_map(|workflow| workflow.connector_ids.split('+'))
+        .map(str::trim)
+        .filter(|id| !id.is_empty())
+        .collect::<std::collections::BTreeSet<_>>();
+    let connectors = system_ui_connectors()
+        .into_iter()
+        .filter(|connector| {
+            connector.portal_surface.contains("/customers")
+                || connector_ids.contains(connector.connector_id.as_str())
+        })
+        .collect::<Vec<_>>();
+    let active_accounts = accounts
+        .iter()
+        .filter(|account| matches!(account.status.as_str(), "active" | "onboarding" | "pilot"))
+        .count();
+    let enforced_mfa = mfa_policies
+        .iter()
+        .filter(|policy| matches!(policy.status.as_str(), "pilot" | "implemented"))
+        .count();
+    let open_invoice_total = invoice_preview
+        .iter()
+        .filter(|invoice| !is_closed_status(&invoice.status))
+        .map(|invoice| invoice.amount_usd - invoice.credits_usd + invoice.tax_usd)
+        .sum::<f64>();
+
+    CustomerOperationsOverview {
+        metrics: vec![
+            LifecycleMetric {
+                label: "Customers".to_string(),
+                value: active_accounts.to_string(),
+                detail: "active onboarding pilot".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Customer sites".to_string(),
+                value: site_instances.len().to_string(),
+                detail: "regional edge research".to_string(),
+                kind: "info",
+            },
+            LifecycleMetric {
+                label: "MFA policies".to_string(),
+                value: enforced_mfa.to_string(),
+                detail: "pilot or implemented".to_string(),
+                kind: "warn",
+            },
+            LifecycleMetric {
+                label: "Billable meters".to_string(),
+                value: usage_meters.len().to_string(),
+                detail: "compute storage AI network".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Draft invoices".to_string(),
+                value: format!("${open_invoice_total:.0}"),
+                detail: "before credits approval".to_string(),
+                kind: "info",
+            },
+        ],
+        accounts,
+        site_instances,
+        workflows,
+        mfa_policies,
+        billing_plans,
+        usage_meters,
+        invoice_preview,
+        connectors,
+    }
 }
 
 fn access_roles() -> Vec<AccessRole> {
@@ -3212,16 +3680,25 @@ mod tests {
         let developer = body(&route_response("GET", "/developer"));
         let data_platform = body(&route_response("GET", "/data-platform"));
         let commercial = body(&route_response("GET", "/commercial"));
+        let customers = body(&route_response("GET", "/customers"));
         let assurance = body(&route_response("GET", "/assurance"));
 
         assert!(infrastructure.contains("Infrastructure Workbench"));
         assert!(infrastructure.contains("infra-workflow-select"));
+        assert!(infrastructure.contains("infra-change-record"));
+        assert!(infrastructure.contains("infra-execution-steps"));
+        assert!(infrastructure.contains("infra-evidence-bundle"));
+        assert!(infrastructure.contains("infra-download-change"));
+        assert!(infrastructure.contains("infra-approve-change"));
         assert!(infrastructure.contains("infra-workflows"));
         assert!(infrastructure.contains("infra-connectors"));
         assert!(infrastructure.contains("infra-adapters"));
+        assert!(infrastructure.contains("infra-adapter-proofs"));
+        assert!(infrastructure.contains("infra-persistence-schema"));
         assert!(infrastructure.contains("infra-tests"));
         assert!(infrastructure.contains("infra-gates"));
         assert!(infrastructure.contains("href=\"/hardware\""));
+        assert!(infrastructure.contains("href=\"/customers\""));
         assert!(infrastructure.contains("href=\"/assurance\""));
         assert!(infrastructure.contains("href=\"/developer\""));
         assert!(user.contains("Tenant Cloud"));
@@ -3288,9 +3765,21 @@ mod tests {
         assert!(commercial.contains("commercial-standards"));
         assert!(commercial.contains("commercial-pricebook"));
         assert!(commercial.contains("commercial-access"));
+        assert!(commercial.contains("href=\"/customers\""));
         assert!(commercial.contains("href=\"/infrastructure\""));
         assert!(commercial.contains("href=\"/assurance\""));
         assert!(commercial.contains("href=\"/hardware\""));
+        assert!(customers.contains("Customer Operations"));
+        assert!(customers.contains("customer-command-record"));
+        assert!(customers.contains("customer-execution-steps"));
+        assert!(customers.contains("customer-mfa-policies"));
+        assert!(customers.contains("customer-billing-plans"));
+        assert!(customers.contains("customer-usage-meters"));
+        assert!(customers.contains("customer-invoices"));
+        assert!(customers.contains("customer-connectors"));
+        assert!(customers.contains("href=\"/infrastructure\""));
+        assert!(customers.contains("href=\"/commercial\""));
+        assert!(customers.contains("href=\"/hardware\""));
         assert!(assurance.contains("Assurance Console"));
         assert!(assurance.contains("assurance-jobs"));
         assert!(assurance.contains("assurance-tests"));
@@ -3379,6 +3868,8 @@ mod tests {
     fn exposes_infrastructure_workbench_with_workflow_assurance_mapping() {
         let workbench = json_body("/api/infrastructure/workbench");
         let adapter_roadmap = json_body("/api/infrastructure/adapter-roadmap");
+        let adapter_proofs = json_body("/api/infrastructure/adapter-proofs");
+        let persistence_schema = json_body("/api/infrastructure/persistence-schema");
 
         assert!(workbench["metrics"]
             .as_array()
@@ -3421,6 +3912,26 @@ mod tests {
                         .unwrap_or_default()
                         .contains("WF_PROVISION_VM")
             }));
+        assert!(workbench["adapter_proofs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|proof| {
+                proof["proof_id"] == "PROOF_PROXMOX_READ"
+                    && proof["proof_command"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("scripts/adapter-proof.sh")
+            }));
+        assert_eq!(
+            workbench["persistence_schema"]["migration_path"],
+            "crates/osdc-portal/migrations/0001_osdc_portal_state.sql"
+        );
+        assert!(workbench["persistence_schema"]["tables"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|table| table["table_name"] == "osdc_portal.change_requests"));
         assert!(workbench["connectors"]
             .as_array()
             .unwrap()
@@ -3452,6 +3963,33 @@ mod tests {
             .iter()
             .any(|milestone| milestone["milestone_id"] == "ADAPT_009"
                 && milestone["backend_system"] == "PostgreSQL"));
+        assert!(adapter_proofs
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|proof| proof["proof_id"] == "PROOF_POSTGRES_MIGRATION"
+                && proof["required_env"] == "DATABASE_URL"));
+        assert!(persistence_schema["tables"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(
+                |table| table["table_name"] == "osdc_portal.adapter_proof_runs"
+                    && table["columns"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|column| column
+                            .as_str()
+                            .unwrap_or_default()
+                            .contains("evidence_path"))
+            ));
+        assert!(persistence_schema["tables"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|table| table["table_name"] == "osdc_portal.invoice_previews"));
+        assert_eq!(persistence_schema["indexes"].as_array().unwrap().len(), 13);
     }
 
     #[test]
@@ -3691,6 +4229,64 @@ mod tests {
             .unwrap()
             .iter()
             .any(|item| item["evidence_id"] == "EV007"));
+    }
+
+    #[test]
+    fn exposes_customer_operations_mfa_metering_and_billing_catalogues() {
+        let overview = json_body("/api/customers/overview");
+        let accounts = json_body("/api/customers/accounts");
+        let sites = json_body("/api/customers/sites");
+        let workflows = json_body("/api/customers/workflows");
+        let mfa = json_body("/api/customers/mfa-policies");
+        let plans = json_body("/api/customers/billing-plans");
+        let meters = json_body("/api/customers/usage-meters");
+        let invoices = json_body("/api/customers/invoice-preview");
+
+        assert!(overview["metrics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|metric| metric["label"] == "Billable meters"));
+        assert!(overview["connectors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|connector| connector["connector_id"] == "CONN_PRIVACYIDEA"));
+        assert!(overview["connectors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|connector| connector["connector_id"] == "CONN_KILLBILL"));
+        assert!(accounts.as_array().unwrap().iter().any(|account| {
+            account["customer_id"] == "CUST_HEALTH" && account["identity_realm"] == "health.gov"
+        }));
+        assert!(sites.as_array().unwrap().iter().any(|site| {
+            site["site_id"] == "SITE_HEALTH_REGIONAL" && site["source_of_truth"] == "NetBox"
+        }));
+        assert!(workflows.as_array().unwrap().iter().any(|workflow| {
+            workflow["workflow_id"] == "CUST_ENFORCE_MFA"
+                && workflow["connector_ids"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("CONN_PRIVACYIDEA")
+        }));
+        assert!(mfa.as_array().unwrap().iter().any(|policy| {
+            policy["policy_id"] == "MFA_OPERATOR_PRIVILEGED"
+                && policy["provider_stack"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("privacyIDEA")
+        }));
+        assert!(plans.as_array().unwrap().iter().any(|plan| {
+            plan["plan_id"] == "BILL_PUBLIC_CRITICAL" && plan["invoice_engine"] == "Kill-Bill"
+        }));
+        assert!(meters.as_array().unwrap().iter().any(|meter| {
+            meter["meter_id"] == "METER_VM_HOURS"
+                && meter["evidence_path"] == "docs/commercial/billing-and-metering.md"
+        }));
+        assert!(invoices.as_array().unwrap().iter().any(|invoice| {
+            invoice["invoice_id"] == "INV_HEALTH_2026_06" && invoice["status"] == "draft"
+        }));
     }
 
     #[test]
@@ -3983,6 +4579,7 @@ mod tests {
     #[test]
     fn static_assets_have_content_types_and_unknown_routes_404() {
         let css = response_text(&route_response("GET", "/styles.css"));
+        let js = response_text(&route_response("GET", "/portal.js"));
         let png = response_text(&route_response(
             "GET",
             "/assets/rack-thermal-spine-cutaway.png",
@@ -3990,6 +4587,9 @@ mod tests {
         let missing = response_text(&route_response("GET", "/missing"));
 
         assert!(css.contains("Content-Type: text/css; charset=utf-8"));
+        assert!(js.contains("Content-Type: text/javascript; charset=utf-8"));
+        assert!(js.contains("Active Command Queue"));
+        assert!(js.contains("recordPortalCommand"));
         assert!(png.contains("Content-Type: image/png"));
         assert!(missing.starts_with("HTTP/1.1 404 Not Found"));
     }
@@ -4009,6 +4609,10 @@ mod tests {
             "GET",
             "/examples/data-platform/health-capacity/dagster_assets.py",
         ));
+        let migration = response_text(&route_response(
+            "GET",
+            "/crates/osdc-portal/migrations/0001_osdc_portal_state.sql",
+        ));
         let escaped = response_text(&route_response("GET", "/docs/../Cargo.toml"));
 
         assert!(doc.contains("Content-Type: text/markdown; charset=utf-8"));
@@ -4019,6 +4623,8 @@ mod tests {
         assert!(devcontainer.contains("OSDC Rust API"));
         assert!(data_template.contains("Content-Type: text/plain; charset=utf-8"));
         assert!(data_template.contains("capacity_daily"));
+        assert!(migration.contains("Content-Type: text/plain; charset=utf-8"));
+        assert!(migration.contains("CREATE TABLE IF NOT EXISTS osdc_portal.change_requests"));
         assert!(escaped.starts_with("HTTP/1.1 404 Not Found"));
     }
 }

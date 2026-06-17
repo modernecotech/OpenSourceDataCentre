@@ -12,13 +12,16 @@ Last reviewed: 2026-06-17.
 - Lifecycle console: `/lifecycle`
 - Hardware provisioning console: `/hardware`
 - Commercial console: `/commercial`
+- Customer operations console: `/customers`
 - Assurance console: `/assurance`
 - Developer console: `/developer`
 - Data platform console: `/data-platform`
 
 It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, CloudStack, Proxmox, NetBox, Ceph, Kubernetes, Kueue, OpenBao, PowerDNS, Keycloak, GitOps, and the facility gateways.
 
-Current maturity: prototype. Many catalogue routes are now loaded from CSVs under `data/`, while status summaries and action previews still use in-process sample state so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. OSDC is not a replacement for mature systems such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, or OpenBMC; the portal is the workflow, policy, evidence, cost, and GitOps layer above them. `/api/infrastructure/workbench` composes workflow, connector, live-adapter roadmap, deployment, test, gate, and automation catalogues into the main user/operator front door. `/api/lifecycle/overview` composes project catalogues into one design-to-run operator view.
+Current maturity: prototype. Many catalogue routes are now loaded from CSVs under `data/`, while status summaries and action previews still use in-process sample state so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. OSDC is not a replacement for mature systems such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, or OpenBMC; the portal is the workflow, policy, evidence, cost, and GitOps layer above them. `/api/infrastructure/workbench` composes workflow, connector, live-adapter roadmap, adapter proof harness, deployment, test, gate, and automation catalogues into the main user/operator front door. `/api/lifecycle/overview` composes project catalogues into one design-to-run operator view.
+
+The first persistence target is PostgreSQL for OSDC-owned workflow state. The schema starts in `crates/osdc-portal/migrations/0001_osdc_portal_state.sql` and is described in [Portal Persistence](portal-persistence.md).
 
 ## Current Routes
 
@@ -33,6 +36,7 @@ Current maturity: prototype. Many catalogue routes are now loaded from CSVs unde
 | `/lifecycle` | HTML | Unified design-to-commission-to-operations console across gates, permits, evidence, work items, services, config scripts, and documents. |
 | `/hardware` | HTML | Hardware provisioning console for source-of-truth reservation, BMC validation, commissioning, imaging, security enrolment, platform handoff, and evidence closeout. |
 | `/commercial` | HTML | Commercial readiness console for gaps, standards, SLA classes, colocation products, cross-connects, remote hands, access roles, and audit evidence. |
+| `/customers` | HTML | Customer operations console for multi-customer accounts, site instances, open-source MFA, provisioning, usage metering, billing plans, invoice previews, and evidence-backed commands. |
 | `/assurance` | HTML | Assurance console for broad test harnesses, automated upgrade rings, blocking gates, threat-management components, and scanner coverage. |
 | `/developer` | HTML | Developer platform console for Forgejo-style repos, CI, Harbor, GitOps, OpenTofu, templates, environments, promotion gates, and VS Code workflows. |
 | `/data-platform` | HTML | Optional open-source data platform console for governed data products, lakehouse, catalog, lineage, ontology, pipelines, dashboards, apps, and AI context. |
@@ -60,8 +64,10 @@ Current maturity: prototype. Many catalogue routes are now loaded from CSVs unde
 | `/api/cost/categories` | JSON | Category-level cost ranges for each scenario. |
 | `/api/cost/price-basis` | JSON | Marketplace and derived unit-cost planning basis. |
 | `/api/deployment/stack-profiles` | JSON | Recommended Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, bare-metal, Edge Shield, and GitOps pairings by deployment size. |
-| `/api/infrastructure/workbench` | JSON | Composed workbench view joining infrastructure workflows, live adapter milestones, deployment stack profiles, system connectors, required test harnesses, upgrade gates, automation jobs, and metrics. |
+| `/api/infrastructure/workbench` | JSON | Composed workbench view joining infrastructure workflows, live adapter milestones, adapter proof harnesses, deployment stack profiles, system connectors, required test harnesses, upgrade gates, automation jobs, and metrics. |
 | `/api/infrastructure/adapter-roadmap` | JSON | Read-first live-adapter roadmap for PowerDNS, NetBox, Keycloak, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, and PostgreSQL persistence. |
+| `/api/infrastructure/adapter-proofs` | JSON | Local plan-mode proof commands, required environment variables, evidence outputs, gates, and owners for live adapter milestones. |
+| `/api/infrastructure/persistence-schema` | JSON | PostgreSQL portal-state migration summary with schema boundary, tables, indexes, docs path, and migration path. |
 | `/api/commercial/gaps` | JSON | Commercial-readiness gap register for certification, MEP, operations, compliance, and interconnection gaps. |
 | `/api/commercial/standards` | JSON | Standards/control matrix mapping candidate standards to evidence files and owners. |
 | `/api/commercial/sla-classes` | JSON | Power, cooling, network, remote-hands, and cloud-platform SLA class templates. |
@@ -69,6 +75,14 @@ Current maturity: prototype. Many catalogue routes are now loaded from CSVs unde
 | `/api/commercial/cross-connect-products` | JSON | Meet-me-room, IP transit, IXP, and cloud-on-ramp-equivalent product templates. |
 | `/api/commercial/remote-hands-products` | JSON | Remote/smart-hands task classes and evidence requirements. |
 | `/api/commercial/remote-hands-pricebook` | JSON | Remote/smart-hands billing units, response targets, approvals, and evidence references. |
+| `/api/customers/overview` | JSON | Composed customer operations view joining customer accounts, site instances, workflows, MFA policies, billing plans, usage meters, invoice previews, connectors, and metrics. |
+| `/api/customers/accounts` | JSON | Customer account catalogue with residency zone, identity realm, billing account, support tier, owner, and status. |
+| `/api/customers/sites` | JSON | Customer site-instance catalogue with deployment stage, IT load, cloud substrate, provisioner, source of truth, owner, and status. |
+| `/api/customers/workflows` | JSON | Customer operations workflow catalogue for onboarding, MFA enforcement, site provisioning, usage rating, and invoice approval. |
+| `/api/customers/mfa-policies` | JSON | Open-source MFA policy catalogue for Keycloak, privacyIDEA, authentik, factors, recovery, enforcement points, owners, and evidence. |
+| `/api/customers/billing-plans` | JSON | Billing plan catalogue for customer segments, included services, rating engine, invoice engine, minimum commits, tax policy, and approval owner. |
+| `/api/customers/usage-meters` | JSON | Usage meter catalogue mapping service domains to meter source systems, metric names, units, cadence, rating plans, evidence, and owners. |
+| `/api/customers/invoice-preview` | JSON | Draft invoice preview catalogue with usage summary, amount, credits, tax, plan, customer, billing period, and status. |
 | `/api/commercial/access-roles` | JSON | Customer, carrier, staff, security, and break-glass access role templates. |
 | `/api/commercial/audit-evidence` | JSON | Audit-evidence register with owners, cadence, and evidence paths. |
 | `/api/assurance/overview` | JSON | Combined assurance view for test harnesses, upgrade rings, gates, threat stack, scanner coverage, and metrics. |
@@ -111,6 +125,8 @@ CSV-backed catalogue sources currently wired into the portal include:
 - Deployment substrate pairings from `data/software/deployment-stack-profiles.csv`.
 - Infrastructure workflow mappings from `data/software/infrastructure-workflows.csv`.
 - Live adapter roadmap from `data/software/live-adapter-roadmap.csv`.
+- Live adapter proof catalogue from `data/software/live-adapter-proof-catalogue.csv`.
+- Portal persistence schema from `crates/osdc-portal/migrations/0001_osdc_portal_state.sql`.
 - Upgrade policy from `data/software/upgrade-policy.csv`.
 - Software security controls from `data/software/security-controls.csv`.
 - Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.
@@ -119,6 +135,7 @@ CSV-backed catalogue sources currently wired into the portal include:
 - Assurance test, upgrade, automation, and scanner catalogues from `data/software/test-harness-catalogue.csv`, `data/software/assurance-automation-jobs.csv`, `data/software/upgrade-rings.csv`, `data/software/upgrade-test-gates.csv`, `data/security/threat-management-stack.csv`, and `data/security/scanner-coverage.csv`.
 - Cost and carbon estimates from the Rust calculator crate.
 - Commercial readiness data from `data/commercial/` is already wired into `/api/commercial/*`.
+- Customer operations data from `data/commercial/customer-accounts.csv`, `data/commercial/customer-sites.csv`, `data/commercial/billing-plans.csv`, `data/commercial/usage-meters.csv`, `data/commercial/invoice-preview.csv`, `data/software/customer-operations-workflows.csv`, and `data/software/identity-mfa-policies.csv` is wired into `/api/customers/*`.
 - Site-selection, physical-security, sustainability, and AI-ready planning data is already wired into the corresponding `/api/*` catalogue routes.
 - Engineering evidence and operations procedure catalogues are already wired into `/api/engineering/evidence` and `/api/operations/procedures`.
 - Delivery and commissioning catalogues from `data/delivery/` and `data/commissioning/` are already wired into `/api/delivery/*` and `/api/commissioning/evidence`.
@@ -135,7 +152,7 @@ The next production step is live adapters and persistence:
 - Storage state from Ceph.
 - Kubernetes and queue state from Kubernetes, Kueue, and Slurm.
 - Facility status from Modbus/BACnet/OPC UA gateways.
-- PostgreSQL persistence for lifecycle state, approval history, evidence records, and audit events.
+- PostgreSQL persistence for lifecycle state, approval history, evidence records, adapter proof runs, audit events, and infrastructure requests.
 
 ## Run
 
@@ -153,11 +170,12 @@ Open:
 - `http://127.0.0.1:8787/lifecycle`
 - `http://127.0.0.1:8787/hardware`
 - `http://127.0.0.1:8787/commercial`
+- `http://127.0.0.1:8787/customers`
 - `http://127.0.0.1:8787/assurance`
 - `http://127.0.0.1:8787/developer`
 - `http://127.0.0.1:8787/data-platform`
 
-The GUI includes table filtering, infrastructure workflow preview recalculation, tenant provisioning preview recalculation, hardware request preview, CSV export for visible infrastructure/tenant/planner/lifecycle/hardware/commercial/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged infrastructure, operator, lifecycle, hardware, commercial, assurance, developer, data, and edge workflows.
+The GUI includes table filtering, infrastructure workflow preview recalculation, tenant provisioning preview recalculation, hardware request preview, customer onboarding/MFA/provisioning/billing command previews, CSV export for visible infrastructure/tenant/planner/lifecycle/hardware/commercial/customer/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and a shared active command queue on every tab. The command queue records local command envelopes from page actions, tracks submitted/validated/approved/blocked state, shows evidence targets, and exports JSON payloads for the future GitOps, adapter, and PostgreSQL persistence layers.
 
 The Radxa-local edge service can be run separately:
 

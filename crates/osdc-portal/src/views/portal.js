@@ -11,6 +11,18 @@ const clear = (node) => {
   while (node.firstChild) node.removeChild(node.firstChild);
 };
 
+const portalCommandState = {
+  surface: null,
+  items: [],
+  selectedId: null,
+  counter: 0,
+};
+
+const customerCommandRuntime = {
+  status: "draft",
+  lastRecord: null,
+};
+
 async function api(path) {
   const response = await fetch(path, { headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error(`${path} returned ${response.status}`);
@@ -108,8 +120,14 @@ function wireActionButton(buttonId, message, outputId) {
 
   button.addEventListener("click", (event) => {
     event.preventDefault();
+    const command = recordPortalCommand({
+      action: button.getAttribute("aria-label") || original || buttonId,
+      message,
+      payload: { button_id: buttonId, output_id: outputId ?? null },
+      status: "submitted",
+    });
     const output = outputId ? document.getElementById(outputId) : null;
-    if (output) output.textContent = message;
+    if (output) output.textContent = `${command.command_id}: ${message}`;
     if (!output && !button.classList.contains("icon-button")) {
       button.textContent = message;
       setTimeout(() => {
@@ -147,7 +165,334 @@ function wireDownloadButton(buttonId, tbodyId, filename) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
     downloadTableCsv(tbodyId, filename);
+    recordPortalCommand({
+      action: `Export ${filename}`,
+      message: `${filename} exported`,
+      payload: { button_id: buttonId, table_id: tbodyId, filename },
+      status: "validated",
+      evidenceTarget: filename,
+    });
   });
+}
+
+function downloadJson(filename, value) {
+  const url = URL.createObjectURL(
+    new Blob([`${JSON.stringify(value, null, 2)}\n`], { type: "application/json" })
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function portalSurface() {
+  return document.body?.dataset.portal || "portal";
+}
+
+function portalSurfaceLabel(surface = portalSurface()) {
+  return surface
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function portalCommandStorageKey(surface = portalSurface()) {
+  return `osdc.portal.commands.${surface}`;
+}
+
+function loadPortalCommands() {
+  const surface = portalSurface();
+  if (portalCommandState.surface === surface) return;
+  portalCommandState.surface = surface;
+  portalCommandState.items = [];
+  portalCommandState.selectedId = null;
+  portalCommandState.counter = 0;
+  try {
+    const raw = window.localStorage?.getItem(portalCommandStorageKey(surface));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      portalCommandState.items = Array.isArray(parsed.items) ? parsed.items : [];
+      portalCommandState.counter = Number(parsed.counter || portalCommandState.items.length || 0);
+      portalCommandState.selectedId = portalCommandState.items.at(-1)?.command_id ?? null;
+    }
+  } catch (_error) {
+    portalCommandState.items = [];
+  }
+}
+
+function savePortalCommands() {
+  try {
+    window.localStorage?.setItem(
+      portalCommandStorageKey(),
+      JSON.stringify({
+        counter: portalCommandState.counter,
+        items: portalCommandState.items.slice(-20),
+      })
+    );
+  } catch (_error) {
+    /* localStorage is optional in headless or locked-down browsers. */
+  }
+}
+
+function defaultCommandEvidenceTarget(surface = portalSurface()) {
+  return `target/assurance/commands/${surface}`;
+}
+
+function selectedPortalContext() {
+  const selected = document.querySelector(".selected-row");
+  if (selected?.textContent) {
+    return selected.textContent.trim().replace(/\s+/g, " ").slice(0, 220);
+  }
+  return document.querySelector(".title-block h1")?.textContent?.trim() || portalSurfaceLabel();
+}
+
+function commandStatusKind(status) {
+  const value = String(status ?? "").toLowerCase();
+  if (!value) return "info";
+  if (["approved", "validated", "completed"].includes(value)) return "normal";
+  if (["draft", "submitted", "queued"].includes(value)) return "info";
+  if (["blocked", "failed", "rejected"].includes(value)) return "danger";
+  return "warn";
+}
+
+function commandId(surface) {
+  portalCommandState.counter += 1;
+  const prefix = surface.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+  return `CMD-${prefix}-${String(portalCommandState.counter).padStart(4, "0")}`;
+}
+
+function ensurePortalCommandWorkspace() {
+  const content = document.querySelector(".content");
+  if (!content) return null;
+  loadPortalCommands();
+  let panel = document.getElementById("portal-command-workspace");
+  if (panel) return panel;
+
+  panel = document.createElement("section");
+  panel.className = "panel command-workspace";
+  panel.id = "portal-command-workspace";
+  panel.innerHTML = `
+    <div class="panel-header">
+      <h2>Active Command Queue</h2>
+      <div class="panel-tools">
+        <span class="status info" id="portal-command-status">idle</span>
+        <button id="portal-command-validate">Validate</button>
+        <button id="portal-command-approve">Approve</button>
+        <button id="portal-command-download">Download JSON</button>
+        <button id="portal-command-clear">Clear</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="flow-grid" id="portal-command-flow">
+        <div class="flow-step"><strong>Command</strong><span>idle</span></div>
+        <div class="flow-step"><strong>Validate</strong><span>pending</span></div>
+        <div class="flow-step"><strong>Approve</strong><span>pending</span></div>
+        <div class="flow-step"><strong>Evidence</strong><span>pending</span></div>
+      </div>
+      <div class="command-layout">
+        <table>
+          <thead><tr><th>Command</th><th>Action</th><th>Surface</th><th>State</th><th>Evidence</th></tr></thead>
+          <tbody id="portal-command-queue"></tbody>
+        </table>
+        <table>
+          <thead><tr><th>Field</th><th>Value</th></tr></thead>
+          <tbody id="portal-command-detail"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  const metrics = content.querySelector(".metric-grid");
+  if (metrics) {
+    metrics.insertAdjacentElement("afterend", panel);
+  } else {
+    content.prepend(panel);
+  }
+
+  document.getElementById("portal-command-validate")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    updateSelectedPortalCommand("validated");
+  });
+  document.getElementById("portal-command-approve")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const selected = selectedPortalCommand();
+    updateSelectedPortalCommand(selected?.status === "validated" ? "approved" : "blocked");
+  });
+  document.getElementById("portal-command-download")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const selected = selectedPortalCommand();
+    if (selected) downloadJson(`${selected.command_id.toLowerCase()}.json`, selected.payload);
+  });
+  document.getElementById("portal-command-clear")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    portalCommandState.items = [];
+    portalCommandState.selectedId = null;
+    savePortalCommands();
+    renderPortalCommandWorkspace();
+  });
+
+  renderPortalCommandWorkspace();
+  return panel;
+}
+
+function selectedPortalCommand() {
+  loadPortalCommands();
+  return portalCommandState.items.find((item) => item.command_id === portalCommandState.selectedId)
+    ?? portalCommandState.items.at(-1)
+    ?? null;
+}
+
+function recordPortalCommand({
+  action,
+  message,
+  payload = {},
+  status = "submitted",
+  evidenceTarget,
+}) {
+  ensurePortalCommandWorkspace();
+  const surface = portalSurface();
+  const command_id = commandId(surface);
+  const created_at_utc = new Date().toISOString();
+  const command = {
+    command_id,
+    surface,
+    action,
+    message,
+    status,
+    evidence_target: evidenceTarget || defaultCommandEvidenceTarget(surface),
+    selected_context: selectedPortalContext(),
+    created_at_utc,
+    payload: {
+      command_id,
+      surface,
+      action,
+      status,
+      message,
+      source_route: window.location.pathname,
+      selected_context: selectedPortalContext(),
+      evidence_target: evidenceTarget || defaultCommandEvidenceTarget(surface),
+      requested_at_utc: created_at_utc,
+      validations: [
+        { check: "catalogue contract", status: "queued" },
+        { check: "approval gate", status: "pending" },
+        { check: "evidence target", status: "pending" },
+      ],
+      ...payload,
+    },
+  };
+  portalCommandState.items.push(command);
+  portalCommandState.selectedId = command.command_id;
+  savePortalCommands();
+  renderPortalCommandWorkspace();
+  return command;
+}
+
+function updateSelectedPortalCommand(nextStatus) {
+  const command = selectedPortalCommand();
+  if (!command) return null;
+  command.status = nextStatus;
+  command.payload.status = nextStatus;
+  command.payload.validations = [
+    { check: "catalogue contract", status: nextStatus === "blocked" ? "blocked" : "passed" },
+    { check: "approval gate", status: nextStatus === "approved" ? "approved" : nextStatus === "blocked" ? "blocked" : "ready" },
+    { check: "evidence target", status: nextStatus === "approved" ? "recorded" : "pending" },
+  ];
+  command.payload.updated_at_utc = new Date().toISOString();
+  savePortalCommands();
+  renderPortalCommandWorkspace();
+  return command;
+}
+
+function renderPortalCommandWorkspace() {
+  const panel = document.getElementById("portal-command-workspace");
+  if (!panel) return;
+  loadPortalCommands();
+  const queue = document.getElementById("portal-command-queue");
+  const detail = document.getElementById("portal-command-detail");
+  const selected = selectedPortalCommand();
+  const status = document.getElementById("portal-command-status");
+  if (status) {
+    status.className = statusClass(commandStatusKind(selected?.status));
+    status.textContent = selected?.status || "idle";
+  }
+
+  renderFlow("portal-command-flow", [
+    { label: "Command", value: selected?.command_id || portalSurfaceLabel() },
+    { label: "Validate", value: selected?.status === "validated" || selected?.status === "approved" ? "passed" : "pending" },
+    { label: "Approve", value: selected?.status === "approved" ? "approved" : selected?.status === "blocked" ? "blocked" : "pending" },
+    { label: "Evidence", value: selected?.evidence_target || defaultCommandEvidenceTarget() },
+  ]);
+
+  if (queue) {
+    clear(queue);
+    if (!portalCommandState.items.length) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = 5;
+      cell.append(text("No command records"));
+      row.append(cell);
+      queue.append(row);
+    }
+    for (const item of portalCommandState.items.slice().reverse()) {
+      const row = document.createElement("tr");
+      if (item.command_id === selected?.command_id) row.className = "selected-row";
+      row.tabIndex = 0;
+      for (const field of [item.command_id, item.action, portalSurfaceLabel(item.surface)]) {
+        const cell = document.createElement("td");
+        cell.append(text(field));
+        row.append(cell);
+      }
+      row.append(statusCell(item.status, commandStatusKind(item.status)));
+      const evidence = document.createElement("td");
+      appendValueOrRepoLink(evidence, item.evidence_target);
+      row.append(evidence);
+      row.addEventListener("click", () => {
+        portalCommandState.selectedId = item.command_id;
+        savePortalCommands();
+        renderPortalCommandWorkspace();
+      });
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          portalCommandState.selectedId = item.command_id;
+          savePortalCommands();
+          renderPortalCommandWorkspace();
+        }
+      });
+      queue.append(row);
+    }
+  }
+
+  if (detail) {
+    clear(detail);
+    const rows = selected
+      ? [
+          ["command_id", selected.command_id],
+          ["surface", portalSurfaceLabel(selected.surface)],
+          ["action", selected.action],
+          ["status", selected.status],
+          ["context", selected.selected_context],
+          ["message", selected.message],
+          ["evidence", selected.evidence_target],
+          ["created_at_utc", selected.created_at_utc],
+        ]
+      : [
+          ["surface", portalSurfaceLabel()],
+          ["status", "idle"],
+          ["evidence", defaultCommandEvidenceTarget()],
+        ];
+    for (const [key, value] of rows) {
+      const row = document.createElement("tr");
+      const keyCell = document.createElement("td");
+      keyCell.append(text(key));
+      const valueCell = document.createElement("td");
+      appendValueOrRepoLink(valueCell, value);
+      row.append(keyCell, valueCell);
+      detail.append(row);
+    }
+  }
 }
 
 function attachColumnFilter({ textInputId, selectId, tbodyId, columnIndex }) {
@@ -393,6 +738,7 @@ function repoHref(value) {
   if (typeof value !== "string") return null;
   if (
     value.startsWith("docs/") ||
+    value.startsWith("crates/osdc-portal/migrations/") ||
     value.startsWith("data/") ||
     value.startsWith("examples/") ||
     value === "README.md" ||
@@ -1097,6 +1443,453 @@ function renderCommercialAuditEvidence(targetId, evidence) {
   }
 }
 
+function renderCustomerAccounts(targetId, accounts) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const account of accounts) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      `${account.customer_id} ${account.display_name}`,
+      account.customer_type,
+      account.residency_zone,
+      account.primary_region,
+      account.identity_realm,
+      account.billing_account,
+      account.support_tier,
+      account.service_owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(account.status, statusClassFromStatus(account.status)));
+    target.append(tr);
+  }
+}
+
+function renderCustomerSites(targetId, sites) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const site of sites) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      site.site_id,
+      site.customer_id,
+      `${site.city} ${site.country}`,
+      site.deployment_stage,
+      `${site.it_load_kw} kW`,
+      site.substrate,
+      site.provisioner,
+      site.source_of_truth,
+      site.ops_owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(site.status, statusClassFromStatus(site.status)));
+    target.append(tr);
+  }
+}
+
+function renderCustomerWorkflows(targetId, workflows) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const workflow of workflows) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      `${workflow.workflow_id} ${workflow.workflow_name}`,
+      workflow.customer_goal,
+      workflow.connector_ids,
+      workflow.required_mfa_policy,
+      workflow.provisioning_system,
+      workflow.billing_event,
+      workflow.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(workflow.status, statusClassFromStatus(workflow.status)));
+    target.append(tr);
+  }
+}
+
+function renderCustomerMfaPolicies(targetId, policies) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const policy of policies) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      policy.policy_id,
+      policy.scope,
+      policy.provider_stack,
+      policy.factors,
+      policy.recovery_method,
+      policy.enforcement_point,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(policy.status, statusClassFromStatus(policy.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, policy.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderCustomerBillingPlans(targetId, plans) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const plan of plans) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      plan.plan_id,
+      plan.customer_segment,
+      plan.services_included,
+      plan.rating_engine,
+      plan.invoice_engine,
+      formatUsd(plan.minimum_commit_usd),
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(plan.status, statusClassFromStatus(plan.status)));
+    target.append(tr);
+  }
+}
+
+function renderCustomerUsageMeters(targetId, meters) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const meter of meters) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      meter.meter_id,
+      meter.service_domain,
+      meter.source_system,
+      meter.metric_name,
+      meter.unit,
+      meter.collection_cadence,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(meter.status, statusClassFromStatus(meter.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, meter.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderCustomerInvoices(targetId, invoices) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const invoice of invoices) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      invoice.invoice_id,
+      invoice.customer_id,
+      invoice.billing_period,
+      invoice.plan_id,
+      invoice.usage_summary,
+      formatUsd(invoice.amount_usd),
+      formatUsd(invoice.credits_usd),
+      formatUsd(invoice.tax_usd),
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(invoice.status, statusClassFromStatus(invoice.status)));
+    target.append(tr);
+  }
+}
+
+function renderCustomerConnectors(targetId, connectors) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const connector of connectors) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      connector.connector_id,
+      connector.system_name,
+      connector.domain,
+      connector.capability,
+      connector.adapter_pattern,
+      connector.write_mode,
+      connector.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(connector.status, statusClassFromStatus(connector.status)));
+    target.append(tr);
+  }
+}
+
+function populateCustomerSelects(overview) {
+  renderOptions(
+    "customer-select",
+    overview.accounts.map((account) => ({
+      id: account.customer_id,
+      label: `${account.display_name} - ${account.customer_type}`,
+    })),
+    (option) => option.label
+  );
+  renderOptions(
+    "customer-workflow-select",
+    overview.workflows.map((workflow) => ({
+      id: workflow.workflow_id,
+      label: `${workflow.workflow_name} - ${workflow.status}`,
+    })),
+    (option) => option.label
+  );
+  renderOptions(
+    "customer-mfa-select",
+    overview.mfa_policies.map((policy) => ({
+      id: policy.policy_id,
+      label: `${policy.policy_id} - ${policy.scope}`,
+    })),
+    (option) => option.label
+  );
+  renderOptions(
+    "customer-plan-select",
+    overview.billing_plans.map((plan) => ({
+      id: plan.plan_id,
+      label: `${plan.plan_id} - ${plan.customer_segment}`,
+    })),
+    (option) => option.label
+  );
+  populateCustomerSiteSelect(overview);
+}
+
+function populateCustomerSiteSelect(overview) {
+  const customerId = document.getElementById("customer-select")?.value;
+  const sites = overview.site_instances.filter((site) => !customerId || site.customer_id === customerId);
+  const options = (sites.length ? sites : overview.site_instances).map((site) => ({
+    id: site.site_id,
+    label: `${site.site_id} - ${site.deployment_stage}`,
+  }));
+  renderOptions("customer-site-select", options, (option) => option.label);
+}
+
+function customerContext(overview) {
+  const account = byId(
+    overview.accounts,
+    "customer_id",
+    document.getElementById("customer-select")?.value
+  );
+  const matchingSites = overview.site_instances.filter((site) => site.customer_id === account?.customer_id);
+  const site = byId(
+    matchingSites.length ? matchingSites : overview.site_instances,
+    "site_id",
+    document.getElementById("customer-site-select")?.value
+  );
+  const workflow = byId(
+    overview.workflows,
+    "workflow_id",
+    document.getElementById("customer-workflow-select")?.value
+  );
+  const mfa = byId(
+    overview.mfa_policies,
+    "policy_id",
+    document.getElementById("customer-mfa-select")?.value || workflow?.required_mfa_policy
+  );
+  const plan = byId(
+    overview.billing_plans,
+    "plan_id",
+    document.getElementById("customer-plan-select")?.value
+  );
+  const invoices = overview.invoice_preview.filter(
+    (invoice) => invoice.customer_id === account?.customer_id
+  );
+  const connectorIds = new Set(splitTokenList(workflow?.connector_ids));
+  const connectors = overview.connectors.filter((connector) => connectorIds.has(connector.connector_id));
+  const meters = overview.usage_meters.filter(
+    (meter) => meter.rating_plan === plan?.plan_id || workflow?.billing_event?.includes("usage")
+  );
+
+  return {
+    account,
+    site,
+    workflow,
+    mfa,
+    plan,
+    invoices,
+    connectors,
+    meters,
+    operator: document.getElementById("customer-operator")?.value || "customer-ops",
+  };
+}
+
+function customerEvidencePath(context) {
+  const customer = infrastructureIdSegment(context.account?.customer_id || "customer");
+  const workflow = infrastructureIdSegment(context.workflow?.workflow_id || "workflow");
+  return `target/assurance/customers/${customer}/${workflow}`;
+}
+
+function customerCommandRecord(context, status = customerCommandRuntime.status) {
+  const commandId = `CUST-${context.account?.customer_id || "UNKNOWN"}-${context.workflow?.workflow_id || "WORKFLOW"}`;
+  return {
+    command_id: commandId,
+    customer_id: context.account?.customer_id,
+    customer_name: context.account?.display_name,
+    customer_type: context.account?.customer_type,
+    status,
+    workflow_id: context.workflow?.workflow_id,
+    workflow_name: context.workflow?.workflow_name,
+    site_id: context.site?.site_id,
+    deployment_stage: context.site?.deployment_stage,
+    substrate: context.site?.substrate,
+    residency_zone: context.site?.data_residency_zone || context.account?.residency_zone,
+    identity_realm: context.account?.identity_realm,
+    mfa_policy: context.mfa?.policy_id,
+    mfa_provider_stack: context.mfa?.provider_stack,
+    billing_account: context.account?.billing_account,
+    billing_plan: context.plan?.plan_id,
+    invoice_previews: context.invoices.map((invoice) => invoice.invoice_id),
+    meters: context.meters.map((meter) => meter.meter_id),
+    connectors: context.connectors.map((connector) => connector.connector_id),
+    operator: context.operator,
+    evidence_bundle: customerEvidencePath(context),
+    persistence_table: "osdc_portal.infrastructure_requests",
+    generated_at_utc: new Date().toISOString(),
+  };
+}
+
+function renderCustomerCommandWorkspace(overview, nextStatus = customerCommandRuntime.status) {
+  const context = customerContext(overview);
+  if (!context.account || !context.workflow) return null;
+  customerCommandRuntime.status = nextStatus;
+  const record = customerCommandRecord(context, nextStatus);
+  customerCommandRuntime.lastRecord = record;
+
+  const status = document.getElementById("customer-command-status");
+  if (status) {
+    status.className = statusClass(commandStatusKind(nextStatus));
+    status.textContent = nextStatus;
+  }
+  renderFlow("customer-execution-flow", [
+    { label: "Customer", value: context.account.display_name },
+    { label: "MFA", value: `${context.mfa?.policy_id ?? "policy"} via ${context.mfa?.provider_stack ?? "identity"}` },
+    { label: "Provision", value: `${context.site?.deployment_stage ?? "site"} on ${context.site?.substrate ?? "substrate"}` },
+    { label: "Billing", value: `${context.plan?.plan_id ?? "plan"} / ${context.meters.length} meters` },
+    { label: "Evidence", value: record.evidence_bundle },
+  ]);
+  renderKeyValueTable("customer-command-record", [
+    ["command_id", record.command_id],
+    ["customer", `${record.customer_id} ${record.customer_name}`],
+    ["workflow", `${record.workflow_id} ${record.workflow_name}`],
+    ["site", record.site_id],
+    ["mfa_policy", record.mfa_policy],
+    ["billing_plan", record.billing_plan],
+    ["connectors", record.connectors],
+    ["status", record.status],
+  ]);
+  renderKeyValueTable("customer-evidence-bundle", [
+    ["evidence_bundle", record.evidence_bundle],
+    ["workflow_docs", context.workflow.evidence_path],
+    ["mfa_docs", context.mfa?.evidence_path],
+    ["billing_docs", "docs/commercial/billing-and-metering.md"],
+    ["persistence_table", record.persistence_table],
+  ]);
+  renderCustomerExecutionSteps(context);
+
+  const output = document.getElementById("customer-action-output");
+  if (output) {
+    output.textContent = `${record.command_id}: ${context.workflow.customer_goal}`;
+  }
+  return { context, record };
+}
+
+function renderCustomerExecutionSteps(context) {
+  const target = document.getElementById("customer-execution-steps");
+  if (!target) return;
+  clear(target);
+  const rows = [
+    {
+      stage: "identity",
+      system: context.mfa?.provider_stack ?? "Keycloak",
+      action: `enforce ${context.mfa?.policy_id ?? "MFA policy"}`,
+      owner: context.mfa?.owner ?? "identity-owner",
+      status: customerCommandRuntime.status === "approved" ? "approved" : context.mfa?.status ?? "template",
+      evidence: context.mfa?.evidence_path ?? "docs/security/open-source-mfa.md",
+    },
+    {
+      stage: "provision",
+      system: context.workflow?.provisioning_system ?? context.site?.provisioner,
+      action: `${context.site?.site_id ?? "site"} on ${context.site?.substrate ?? "substrate"}`,
+      owner: context.site?.ops_owner ?? context.workflow?.owner,
+      status: customerCommandRuntime.status === "approved" ? "ready" : context.site?.status ?? "template",
+      evidence: context.workflow?.evidence_path,
+    },
+    {
+      stage: "billing",
+      system: `${context.plan?.rating_engine ?? "rating"} + ${context.plan?.invoice_engine ?? "invoice"}`,
+      action: `${context.plan?.plan_id ?? "plan"} with ${context.meters.length} meters`,
+      owner: context.plan?.approval_owner ?? "finance-owner",
+      status: customerCommandRuntime.status === "approved" ? "ready" : context.plan?.status ?? "template",
+      evidence: "docs/commercial/billing-and-metering.md",
+    },
+    ...context.connectors.map((connector) => ({
+      stage: "connector",
+      system: connector.system_name,
+      action: connector.capability,
+      owner: connector.owner,
+      status: connector.status,
+      evidence: connector.evidence_path,
+    })),
+  ];
+
+  for (const rowData of rows) {
+    const tr = document.createElement("tr");
+    for (const field of [rowData.stage, rowData.system, rowData.action, rowData.owner]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(rowData.status, statusClassFromStatus(rowData.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, rowData.evidence);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function recordCustomerCommand(overview, action, nextStatus = "submitted") {
+  const rendered = renderCustomerCommandWorkspace(overview, nextStatus);
+  if (!rendered) return null;
+  const { context, record } = rendered;
+  return recordPortalCommand({
+    action,
+    message: `${action}: ${record.customer_id} ${record.workflow_id}`,
+    payload: {
+      ...record,
+      workflow_goal: context.workflow.customer_goal,
+      billing_event: context.workflow.billing_event,
+      required_mfa_policy: context.workflow.required_mfa_policy,
+      tax_policy: context.plan?.tax_policy,
+    },
+    status: nextStatus,
+    evidenceTarget: record.evidence_bundle,
+  });
+}
+
 function renderAssuranceAutomationJobs(targetId, jobs) {
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -1466,7 +2259,20 @@ function renderConfigScriptEditor(scripts) {
     event.preventDefault();
     const script = scripts.find((item) => item.id === selectedId);
     if (output && script) {
-      output.textContent = `Prototype validation queued: ${script.validation_command}`;
+      const message = `Prototype validation queued: ${script.validation_command}`;
+      const command = recordPortalCommand({
+        action: "Validate edge config script",
+        message,
+        payload: {
+          script_id: script.id,
+          path: script.path,
+          validation_command: script.validation_command,
+          owner: script.owner,
+        },
+        status: "submitted",
+        evidenceTarget: script.evidence_path,
+      });
+      output.textContent = `${command.command_id}: ${message}`;
     }
   });
 
@@ -1474,7 +2280,21 @@ function renderConfigScriptEditor(scripts) {
     event.preventDefault();
     const script = scripts.find((item) => item.id === selectedId);
     if (output && script) {
-      output.textContent = `Prototype GitOps change staged for ${script.path}; production flow must open a reviewed change request before rollout.`;
+      const message = `Prototype GitOps change staged for ${script.path}; production flow must open a reviewed change request before rollout.`;
+      const command = recordPortalCommand({
+        action: "Stage edge GitOps change",
+        message,
+        payload: {
+          script_id: script.id,
+          path: script.path,
+          rollout_path: script.rollout_path,
+          validation_command: script.validation_command,
+          owner: script.owner,
+        },
+        status: "submitted",
+        evidenceTarget: script.evidence_path,
+      });
+      output.textContent = `${command.command_id}: ${message}`;
     }
   });
 }
@@ -1764,6 +2584,79 @@ function renderInfrastructureAdapters(targetId, milestones, selectedWorkflowId) 
   }
 }
 
+function renderInfrastructureProofs(targetId, proofs, milestones, selectedWorkflowId) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  const selectedMilestones = new Set(
+    milestones
+      .filter((milestone) => splitTokenList(milestone.workflow_ids).includes(selectedWorkflowId))
+      .map((milestone) => milestone.milestone_id)
+  );
+  const sorted = [...proofs].sort((left, right) => {
+    const leftSelected = selectedMilestones.has(left.milestone_id);
+    const rightSelected = selectedMilestones.has(right.milestone_id);
+    if (leftSelected !== rightSelected) return leftSelected ? -1 : 1;
+    return left.milestone_id.localeCompare(right.milestone_id);
+  });
+  for (const proof of sorted) {
+    const tr = document.createElement("tr");
+    if (selectedMilestones.has(proof.milestone_id)) tr.className = "selected-row";
+    for (const field of [
+      proof.proof_id,
+      proof.milestone_id,
+      proof.adapter_target,
+      proof.proof_command,
+      proof.mode,
+      proof.scope,
+      proof.required_env,
+      proof.evidence_output,
+      proof.required_gate,
+      proof.owner,
+    ]) {
+      const td = document.createElement("td");
+      if (field === proof.evidence_output) {
+        appendValueOrRepoLink(td, field);
+      } else {
+        td.append(text(field));
+      }
+      tr.append(td);
+    }
+    tr.append(statusCell(proof.status, statusClassFromStatus(proof.status)));
+    target.append(tr);
+  }
+}
+
+function renderInfrastructurePersistence(schema) {
+  const target = document.getElementById("infra-persistence-schema");
+  if (!target || !schema) return;
+  clear(target);
+
+  renderFlow("infra-persistence-flow", [
+    { label: "Schema", value: schema.schema_name },
+    { label: "Migration", value: schema.migration_path },
+    { label: "Docs", value: schema.docs_path },
+    { label: "Boundary", value: schema.boundary },
+  ]);
+
+  for (const table of schema.tables ?? []) {
+    const tr = document.createElement("tr");
+    const name = document.createElement("td");
+    name.append(text(table.table_name));
+    tr.append(name);
+    const purpose = document.createElement("td");
+    purpose.append(text(table.purpose));
+    tr.append(purpose);
+    const columns = document.createElement("td");
+    columns.append(text((table.columns ?? []).join(", ")));
+    tr.append(columns);
+    const count = document.createElement("td");
+    count.append(text(table.column_count));
+    tr.append(count);
+    target.append(tr);
+  }
+}
+
 function renderInfrastructureTests(targetId, tests) {
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -1818,32 +2711,241 @@ function renderInfrastructureGates(targetId, gates) {
   }
 }
 
-function renderInfrastructureSelection(workbench, applyFilters = {}) {
+function infrastructureIdSegment(value) {
+  return String(value ?? "resource")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "resource";
+}
+
+function resetInfrastructureRuntime(runtime) {
+  runtime.status = "draft";
+  runtime.submitted = false;
+  runtime.checksRun = false;
+  runtime.approved = false;
+  runtime.generatedAt = new Date().toISOString();
+}
+
+function infrastructureContext(workbench) {
   const workflowId = document.getElementById("infra-workflow-select")?.value;
   const stackId = document.getElementById("infra-stack-select")?.value;
   const workflow = byId(workbench.workflows, "workflow_id", workflowId);
   const stack = byId(workbench.stack_profiles, "profile_id", stackId);
-  if (!workflow || !stack) return;
+  if (!workflow || !stack) return null;
 
   const connectorIds = new Set(splitTokenList(workflow.connector_ids));
   const testIds = new Set(splitTokenList(workflow.required_test_ids));
   const gateIds = new Set(splitTokenList(workflow.required_gate_ids));
-  const connectors = workbench.connectors.filter((connector) => connectorIds.has(connector.connector_id));
-  const tests = workbench.test_harnesses.filter((item) => testIds.has(item.test_id));
-  const gates = workbench.upgrade_gates.filter((gate) => gateIds.has(gate.gate_id));
   const adapterMilestones = workbench.adapter_milestones.filter((milestone) =>
     splitTokenList(milestone.workflow_ids).includes(workflow.workflow_id)
   );
-  const job = workbench.automation_jobs.find((item) => item.job_id === workflow.automation_job_id);
-  const changeMode = document.getElementById("infra-change-mode")?.value ?? "gitops-pr";
-  const environment = document.getElementById("infra-environment")?.value ?? "development";
+  const selectedMilestoneIds = new Set(adapterMilestones.map((milestone) => milestone.milestone_id));
+  const adapterProofs = (workbench.adapter_proofs ?? []).filter((proof) =>
+    selectedMilestoneIds.has(proof.milestone_id)
+  );
   const resourceName = document.getElementById("infra-resource-name")?.value || "new-resource";
-  const owner = document.getElementById("infra-owner")?.value || workflow.owner;
+
+  return {
+    workflow,
+    stack,
+    connectors: workbench.connectors.filter((connector) => connectorIds.has(connector.connector_id)),
+    tests: workbench.test_harnesses.filter((item) => testIds.has(item.test_id)),
+    gates: workbench.upgrade_gates.filter((gate) => gateIds.has(gate.gate_id)),
+    adapterMilestones,
+    adapterProofs,
+    job: workbench.automation_jobs.find((item) => item.job_id === workflow.automation_job_id),
+    changeMode: document.getElementById("infra-change-mode")?.value ?? "gitops-pr",
+    environment: document.getElementById("infra-environment")?.value ?? "development",
+    resourceName,
+    resourceSlug: infrastructureIdSegment(resourceName),
+    owner: document.getElementById("infra-owner")?.value || workflow.owner,
+  };
+}
+
+function infrastructureRisk(environment) {
+  if (environment === "production") return "high";
+  if (environment === "production-canary" || environment === "staging") return "medium";
+  return "low";
+}
+
+function infrastructureChangeRecord(context, runtime) {
+  const changeId = `CR-${context.workflow.workflow_id.replace(/^WF_/, "")}-${context.resourceSlug}`.toUpperCase();
+  const evidencePath = `target/assurance/changes/${changeId.toLowerCase()}`;
+  return {
+    change_id: changeId,
+    request_id: `REQ-${context.resourceSlug.toUpperCase()}`,
+    title: `${context.workflow.workflow_name}: ${context.resourceName}`,
+    requester: context.owner,
+    target_system: context.workflow.service_domain,
+    target_environment: context.environment,
+    change_type: "infrastructure-plan",
+    risk: infrastructureRisk(context.environment),
+    status: runtime.status,
+    workflow_id: context.workflow.workflow_id,
+    deployment_profile: context.stack.profile_id,
+    change_mode: context.changeMode,
+    connectors: context.connectors.map((connector) => connector.connector_id),
+    adapter_milestones: context.adapterMilestones.map((milestone) => milestone.milestone_id),
+    adapter_proofs: context.adapterProofs.map((proof) => proof.proof_id),
+    required_tests: context.tests.map((test) => test.test_id),
+    required_gates: context.gates.map((gate) => gate.gate_id),
+    automation_job: context.job?.job_id ?? context.workflow.automation_job_id,
+    automation_command: context.job?.command ?? "",
+    rollout_plan: {
+      strategy: context.changeMode,
+      stages: ["plan", "validate", "approve", "rollout", "evidence"],
+    },
+    rollback_plan: {
+      trigger_conditions: ["failed gate", "failed health check", "owner rollback"],
+      restore_actions: ["revert GitOps change", "restore previous declared state"],
+    },
+    evidence_bundle: evidencePath,
+    persistence_table: "osdc_portal.change_requests",
+    generated_at_utc: runtime.generatedAt,
+  };
+}
+
+function renderKeyValueTable(targetId, rows) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const [key, value] of rows) {
+    const tr = document.createElement("tr");
+    const keyCell = document.createElement("td");
+    keyCell.append(text(key));
+    const valueCell = document.createElement("td");
+    const display = Array.isArray(value) ? value.join(", ") : String(value ?? "");
+    appendValueOrRepoLink(valueCell, display);
+    tr.append(keyCell, valueCell);
+    target.append(tr);
+  }
+}
+
+function executionStatusKind(status) {
+  const value = String(status ?? "").toLowerCase();
+  if (["passed", "approved", "ready", "recorded", "submitted"].includes(value)) return "normal";
+  if (["queued", "draft", "planned", "pilot", "generated", "validated"].includes(value)) return "info";
+  if (["blocked", "failed", "rejected"].includes(value)) return "danger";
+  return "warn";
+}
+
+function renderInfrastructureExecutionSteps(context, runtime, record) {
+  const target = document.getElementById("infra-execution-steps");
+  if (!target) return;
+  clear(target);
+
+  const rows = [
+    ...context.connectors.map((connector) => ({
+      stage: "read",
+      item: connector.system_name,
+      owner: connector.owner,
+      action: connector.capability,
+      state: connector.status,
+      evidence: connector.evidence_path,
+    })),
+    ...context.adapterProofs.map((proof) => ({
+      stage: "proof",
+      item: proof.proof_id,
+      owner: proof.owner,
+      action: proof.proof_command,
+      state: runtime.checksRun ? "recorded" : proof.status,
+      evidence: proof.evidence_output,
+    })),
+    ...context.tests.map((test) => ({
+      stage: "validate",
+      item: test.test_id,
+      owner: test.tool_stack,
+      action: test.test_type,
+      state: runtime.checksRun ? "passed" : "queued",
+      evidence: test.required_evidence,
+    })),
+    ...context.gates.map((gate) => ({
+      stage: "gate",
+      item: gate.gate_id,
+      owner: gate.owner,
+      action: gate.required_checks,
+      state: runtime.approved && gate.gate_id === "GATE_APPROVAL" ? "approved" : runtime.checksRun ? "ready" : "blocked",
+      evidence: gate.evidence_path,
+    })),
+    {
+      stage: "persist",
+      item: "change request",
+      owner: "osdc_portal",
+      action: record.persistence_table,
+      state: runtime.submitted ? "submitted" : "generated",
+      evidence: "crates/osdc-portal/migrations/0001_osdc_portal_state.sql",
+    },
+  ];
+
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    for (const field of [row.stage, row.item, row.owner, row.action]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(row.state, executionStatusKind(row.state)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, row.evidence);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderInfrastructureWorkspace(context, runtime) {
+  const record = infrastructureChangeRecord(context, runtime);
+  const status = document.getElementById("infra-change-status");
+  if (status) {
+    status.className = statusClass(executionStatusKind(runtime.status));
+    status.textContent = runtime.status;
+  }
+
+  renderFlow("infra-execution-flow", [
+    { label: "Request", value: `${record.change_id} / ${runtime.status}` },
+    { label: "Validate", value: runtime.checksRun ? `${context.tests.length} passed` : `${context.tests.length} queued` },
+    { label: "Approve", value: runtime.approved ? "approved" : `${context.gates.length} gates` },
+    { label: "Rollout", value: runtime.approved ? context.changeMode : "not staged" },
+    { label: "Evidence", value: record.evidence_bundle },
+  ]);
+
+  renderKeyValueTable("infra-change-record", [
+    ["change_id", record.change_id],
+    ["request_id", record.request_id],
+    ["status", record.status],
+    ["workflow", `${context.workflow.workflow_id} ${context.workflow.workflow_name}`],
+    ["resource", context.resourceName],
+    ["environment", context.environment],
+    ["owner", context.owner],
+    ["risk", record.risk],
+    ["change_mode", context.changeMode],
+    ["automation", record.automation_command || record.automation_job],
+  ]);
+  renderKeyValueTable("infra-evidence-bundle", [
+    ["bundle_path", record.evidence_bundle],
+    ["workflow_evidence", context.workflow.evidence_path],
+    ["tests", record.required_tests],
+    ["gates", record.required_gates],
+    ["connectors", record.connectors],
+    ["adapter_proofs", record.adapter_proofs],
+    ["persistence", record.persistence_table],
+  ]);
+  renderInfrastructureExecutionSteps(context, runtime, record);
+  return record;
+}
+
+function renderInfrastructureSelection(workbench, applyFilters = {}, runtime = { status: "draft" }) {
+  const context = infrastructureContext(workbench);
+  if (!context) return null;
+  const { workflow, stack, connectors, tests, gates, adapterMilestones, job, changeMode, environment, resourceName, owner } =
+    context;
+  const record = renderInfrastructureWorkspace(context, runtime);
 
   renderInfrastructureWorkflows("infra-workflows", workbench.workflows, workflow.workflow_id, (nextId) => {
     const select = document.getElementById("infra-workflow-select");
     if (select) select.value = nextId;
-    renderInfrastructureSelection(workbench, applyFilters);
+    resetInfrastructureRuntime(runtime);
+    renderInfrastructureSelection(workbench, applyFilters, runtime);
   });
   renderInfrastructureConnectors("infra-connectors", connectors);
   renderInfrastructureAdapters(
@@ -1851,6 +2953,13 @@ function renderInfrastructureSelection(workbench, applyFilters = {}) {
     workbench.adapter_milestones,
     workflow.workflow_id
   );
+  renderInfrastructureProofs(
+    "infra-adapter-proofs",
+    workbench.adapter_proofs,
+    workbench.adapter_milestones,
+    workflow.workflow_id
+  );
+  renderInfrastructurePersistence(workbench.persistence_schema);
   renderInfrastructureTests("infra-tests", tests);
   renderInfrastructureGates("infra-gates", gates);
 
@@ -1884,22 +2993,31 @@ function renderInfrastructureSelection(workbench, applyFilters = {}) {
   if (output) {
     const jobText = job ? `${job.job_id} (${job.command})` : workflow.automation_job_id;
     output.textContent = [
-      `Preview: ${workflow.user_goal} for ${resourceName} in ${environment}.`,
+      `${record.change_id}: ${workflow.user_goal} for ${resourceName} in ${environment}.`,
       `Use ${stack.stage} on ${stack.default_cloud_substrate}.`,
       `Stage through ${changeMode} with ${connectors.length} connectors, ${adapterMilestones.length} adapter milestones, ${tests.length} tests, ${gates.length} gates, and automation ${jobText}.`,
-      `Evidence target: ${workflow.evidence_path}.`,
+      `Evidence target: ${record.evidence_bundle}.`,
     ].join(" ");
   }
 
   applyFilters.workflows?.();
   applyFilters.connectors?.();
   applyFilters.adapters?.();
+  applyFilters.proofs?.();
   applyFilters.tests?.();
   applyFilters.gates?.();
+  return record;
 }
 
 async function hydrateInfrastructure() {
   const workbench = await api("/api/infrastructure/workbench");
+  const runtime = {
+    status: "draft",
+    submitted: false,
+    checksRun: false,
+    approved: false,
+    generatedAt: new Date().toISOString(),
+  };
   renderMetrics("infra-metrics", workbench.metrics);
   renderInfrastructureOptions(workbench);
 
@@ -1918,6 +3036,11 @@ async function hydrateInfrastructure() {
       statusSelectId: "infra-adapter-status",
       tbodyId: "infra-adapters",
     }),
+    proofs: attachTableFilters({
+      textInputId: "infra-proof-filter",
+      statusSelectId: "infra-proof-status",
+      tbodyId: "infra-adapter-proofs",
+    }),
     tests: attachTableFilters({
       textInputId: "infra-test-filter",
       tbodyId: "infra-tests",
@@ -1928,7 +3051,12 @@ async function hydrateInfrastructure() {
     }),
   };
 
-  renderInfrastructureSelection(workbench, applyFilters);
+  const renderSelected = (reset = false) => {
+    if (reset) resetInfrastructureRuntime(runtime);
+    return renderInfrastructureSelection(workbench, applyFilters, runtime);
+  };
+
+  renderSelected();
 
   for (const id of [
     "infra-workflow-select",
@@ -1940,29 +3068,103 @@ async function hydrateInfrastructure() {
   ]) {
     document
       .getElementById(id)
-      ?.addEventListener("change", () => renderInfrastructureSelection(workbench, applyFilters));
+      ?.addEventListener("change", () => renderSelected(true));
   }
   document
     .getElementById("infra-resource-name")
-    ?.addEventListener("input", () => renderInfrastructureSelection(workbench, applyFilters));
+    ?.addEventListener("input", () => renderSelected(true));
   document.getElementById("infra-preview")?.addEventListener("click", (event) => {
     event.preventDefault();
-    renderInfrastructureSelection(workbench, applyFilters);
+    renderSelected(true);
   });
 
-  wireActionButton("infra-refresh", "Infrastructure workbench refreshed.", "infra-action-output");
-  wireActionButton(
-    "infra-run-tests",
-    "Required workflow tests staged; evidence will be written to target/assurance before promotion.",
-    "infra-action-output"
-  );
-  wireActionButton(
-    "infra-open-change",
-    "Change request staged with connector plan, required tests, gates, rollback path, and evidence target.",
-    "infra-action-output"
-  );
+  document.getElementById("infra-refresh")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const record = renderSelected();
+    const output = document.getElementById("infra-action-output");
+    if (output && record) output.textContent = `${record.change_id}: workbench state refreshed.`;
+  });
+  document.getElementById("infra-open-change")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    runtime.submitted = true;
+    runtime.status = "submitted";
+    const record = renderSelected();
+    if (!record) return;
+    const command = recordPortalCommand({
+      action: "Open infrastructure change",
+      message: `${record.change_id} submitted to ${record.persistence_table}`,
+      payload: { change_request: record },
+      status: "submitted",
+      evidenceTarget: record.evidence_bundle,
+    });
+    const output = document.getElementById("infra-action-output");
+    if (output && record) output.textContent = `${command.command_id}: ${record.change_id}: submitted to ${record.persistence_table}; rollout mode ${record.change_mode}.`;
+  });
+  document.getElementById("infra-run-tests")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    runtime.submitted = true;
+    runtime.checksRun = true;
+    runtime.status = "validated";
+    const record = renderSelected();
+    if (!record) return;
+    const command = recordPortalCommand({
+      action: "Run infrastructure tests",
+      message: `${record.required_tests.length} tests passed; ${record.required_gates.length} gates ready`,
+      payload: { change_request: record },
+      status: "validated",
+      evidenceTarget: record.evidence_bundle,
+    });
+    const output = document.getElementById("infra-action-output");
+    if (output && record) output.textContent = `${command.command_id}: ${record.change_id}: ${record.required_tests.length} tests passed and ${record.required_gates.length} gates are ready for approval.`;
+  });
+  document.getElementById("infra-approve-change")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    runtime.submitted = true;
+    if (runtime.checksRun) {
+      runtime.approved = true;
+      runtime.status = "approved";
+    } else {
+      runtime.approved = false;
+      runtime.status = "blocked";
+    }
+    const record = renderSelected();
+    if (!record) return;
+    const command = recordPortalCommand({
+      action: "Approve infrastructure rollout",
+      message: runtime.approved
+        ? `${record.change_id} approved for ${record.change_mode}`
+        : `${record.change_id} blocked by queued validation`,
+      payload: { change_request: record },
+      status: runtime.approved ? "approved" : "blocked",
+      evidenceTarget: record.evidence_bundle,
+    });
+    const output = document.getElementById("infra-action-output");
+    if (output && record) {
+      output.textContent = runtime.approved
+        ? `${command.command_id}: ${record.change_id}: approved for ${record.change_mode}; evidence bundle ${record.evidence_bundle}.`
+        : `${command.command_id}: ${record.change_id}: approval blocked by queued validation.`;
+    }
+  });
+  document.getElementById("infra-download-change")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const context = infrastructureContext(workbench);
+    if (!context) return;
+    const record = infrastructureChangeRecord(context, runtime);
+    downloadJson(`${record.change_id.toLowerCase()}.json`, record);
+    const command = recordPortalCommand({
+      action: "Export infrastructure change JSON",
+      message: `${record.change_id} JSON change record generated`,
+      payload: { change_request: record },
+      status: "validated",
+      evidenceTarget: record.evidence_bundle,
+    });
+    const output = document.getElementById("infra-action-output");
+    if (output) output.textContent = `${command.command_id}: ${record.change_id}: JSON change record generated.`;
+  });
   wireDownloadButton("infra-export-workflows", "infra-workflows", "osdc-infrastructure-workflows.csv");
   wireDownloadButton("infra-export-adapters", "infra-adapters", "osdc-live-adapter-roadmap.csv");
+  wireDownloadButton("infra-export-proofs", "infra-adapter-proofs", "osdc-live-adapter-proofs.csv");
+  wireDownloadButton("infra-export-persistence", "infra-persistence-schema", "osdc-portal-persistence-schema.csv");
   wireDownloadButton("infra-export-tests", "infra-tests", "osdc-infrastructure-required-tests.csv");
   wireDownloadButton("infra-export-gates", "infra-gates", "osdc-infrastructure-required-gates.csv");
 }
@@ -2018,6 +3220,16 @@ async function hydratePlanner() {
   document.getElementById("planner-select-pilot")?.addEventListener("click", () => {
     selectedId = "S2";
     renderSelected();
+    recordPortalCommand({
+      action: "Select regional pilot scenario",
+      message: "250 kW regional pilot selected for planning",
+      payload: {
+        scenario_id: "S2",
+        surface: "planner",
+      },
+      status: "validated",
+      evidenceTarget: "data/costing/scenario-costs-2026.csv",
+    });
   });
 }
 
@@ -2082,6 +3294,17 @@ async function hydrateTenant() {
 
   document.getElementById("tenant-provision-focus")?.addEventListener("click", () => {
     document.getElementById("provision-name")?.focus();
+    recordPortalCommand({
+      action: "Start tenant provision request",
+      message: "Tenant provisioning request opened",
+      payload: {
+        service_id: document.getElementById("provision-service")?.value,
+        shape_id: document.getElementById("provision-shape")?.value,
+        environment: "tenant",
+      },
+      status: "draft",
+      evidenceTarget: "target/assurance/commands/tenant",
+    });
   });
 }
 
@@ -2446,6 +3669,89 @@ async function hydrateCommercial() {
   wireDownloadButton("commercial-export-audit", "commercial-audit", "osdc-audit-evidence.csv");
 }
 
+async function hydrateCustomers() {
+  const overview = await api("/api/customers/overview");
+
+  renderMetrics("customer-metrics", overview.metrics);
+  renderCustomerAccounts("customer-accounts", overview.accounts);
+  renderCustomerSites("customer-sites", overview.site_instances);
+  renderCustomerWorkflows("customer-workflows", overview.workflows);
+  renderCustomerMfaPolicies("customer-mfa-policies", overview.mfa_policies);
+  renderCustomerBillingPlans("customer-billing-plans", overview.billing_plans);
+  renderCustomerUsageMeters("customer-usage-meters", overview.usage_meters);
+  renderCustomerInvoices("customer-invoices", overview.invoice_preview);
+  renderCustomerConnectors("customer-connectors", overview.connectors);
+  populateCustomerSelects(overview);
+  renderCustomerCommandWorkspace(overview, "draft");
+
+  for (const id of [
+    "customer-select",
+    "customer-site-select",
+    "customer-workflow-select",
+    "customer-mfa-select",
+    "customer-plan-select",
+    "customer-operator",
+  ]) {
+    document.getElementById(id)?.addEventListener("change", () => {
+      if (id === "customer-select") populateCustomerSiteSelect(overview);
+      renderCustomerCommandWorkspace(overview, "draft");
+    });
+    document
+      .getElementById(id)
+      ?.addEventListener("input", () => renderCustomerCommandWorkspace(overview, "draft"));
+  }
+
+  attachTableFilters({ textInputId: "customer-account-filter", tbodyId: "customer-accounts" });
+  attachTableFilters({ textInputId: "customer-site-filter", tbodyId: "customer-sites" });
+  attachTableFilters({ textInputId: "customer-mfa-filter", tbodyId: "customer-mfa-policies" });
+  attachTableFilters({ textInputId: "customer-workflow-filter", tbodyId: "customer-workflows" });
+  attachMultiTableFilter("customer-billing-filter", [
+    "customer-billing-plans",
+    "customer-usage-meters",
+  ]);
+  attachTableFilters({ textInputId: "customer-invoice-filter", tbodyId: "customer-invoices" });
+  attachTableFilters({ textInputId: "customer-connector-filter", tbodyId: "customer-connectors" });
+
+  document.getElementById("customers-refresh")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    recordCustomerCommand(overview, "Refresh customer operations", "submitted");
+  });
+  document.getElementById("customers-preview")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    recordCustomerCommand(overview, "Preview customer command", "validated");
+  });
+  document.getElementById("customers-open-onboarding")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    recordCustomerCommand(overview, "Open customer onboarding", "submitted");
+  });
+  document.getElementById("customers-enforce-mfa")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    recordCustomerCommand(overview, "Enforce open-source MFA", "submitted");
+  });
+  document.getElementById("customers-provision-site")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    recordCustomerCommand(overview, "Provision customer site", "submitted");
+  });
+  document.getElementById("customers-preview-invoice")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    recordCustomerCommand(overview, "Preview invoice pack", "validated");
+  });
+  document.getElementById("customers-download-command")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const rendered = customerCommandRuntime.lastRecord
+      ? { record: customerCommandRuntime.lastRecord }
+      : renderCustomerCommandWorkspace(overview, "draft");
+    if (rendered?.record) {
+      downloadJson(`${rendered.record.command_id.toLowerCase()}.json`, rendered.record);
+    }
+  });
+
+  wireDownloadButton("customers-export-accounts", "customer-accounts", "osdc-customer-accounts.csv");
+  wireDownloadButton("customers-export-sites", "customer-sites", "osdc-customer-sites.csv");
+  wireDownloadButton("customers-export-billing", "customer-billing-plans", "osdc-billing-plans.csv");
+  wireDownloadButton("customers-export-invoices", "customer-invoices", "osdc-invoice-preview.csv");
+}
+
 async function hydrateAssurance() {
   const overview = await api("/api/assurance/overview");
 
@@ -2733,6 +4039,7 @@ async function hydrateEdge() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  ensurePortalCommandWorkspace();
   if (document.body.dataset.portal === "infrastructure") {
     hydrateInfrastructure().catch((error) => console.error(error));
   }
@@ -2753,6 +4060,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (document.body.dataset.portal === "commercial") {
     hydrateCommercial().catch((error) => console.error(error));
+  }
+  if (document.body.dataset.portal === "customers") {
+    hydrateCustomers().catch((error) => console.error(error));
   }
   if (document.body.dataset.portal === "assurance") {
     hydrateAssurance().catch((error) => console.error(error));

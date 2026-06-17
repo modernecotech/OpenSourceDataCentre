@@ -185,6 +185,39 @@ Core enums:
 - `RolloutStrategy`: GitOps pull request, staged canary, rack-by-rack, maintenance window, emergency fast track.
 - `SecretPolicy`: no secrets allowed, references only, encrypted values allowed.
 
+## Portal Persistence
+
+Represents OSDC-owned workflow state that should be stored in PostgreSQL once the portal moves beyond in-process prototype state. External systems remain authoritative for their own data; the portal persists requests, approvals, evidence, proof runs, and audit records around those systems.
+
+The initial migration is `crates/osdc-portal/migrations/0001_osdc_portal_state.sql`. The architecture note is [Portal Persistence](portal-persistence.md).
+
+- `PortalChangeStatus`: draft, submitted, approved, running, blocked, complete, rejected.
+- `ApprovalRecord`: approval ID, change ID, owner, decision, approver, decision time, evidence reference, notes.
+- `EvidenceBundle`: evidence bundle ID, change ID, workflow ID, bundle path, status, producer, summary.
+- `InfrastructureRequest`: request ID, workflow ID, resource name, owner, environment, change ID, evidence bundle ID, status, payload summary.
+- `AdapterProofRun`: run ID, proof ID, milestone ID, adapter target, mode, status, evidence path, summary.
+- `PersistedAuditEvent`: event ID, change ID, actor, action, timestamp, evidence reference, payload summary.
+- `CustomerAccount`: customer ID, display name, type, residency zone, primary region, identity realm, billing account, support tier, owner, status.
+- `CustomerSiteInstance`: site ID, customer ID, country, city, deployment stage, IT load, substrate, provisioner, residency zone, source of truth, owner, status.
+- `MfaPolicy`: policy ID, scope, provider stack, factors, enrolment flow, recovery method, enforcement point, evidence path, owner, status.
+- `BillingPlan`: plan ID, customer segment, included services, rating engine, invoice engine, currency, minimum commit, tax policy, approval owner, status.
+- `UsageMeter`: meter ID, service domain, source system, metric name, unit, cadence, rating plan, evidence path, owner, status.
+- `InvoicePreview`: invoice ID, customer ID, billing period, plan ID, usage summary, amount, credits, tax, status.
+
+## Customer Operations
+
+Represents the multi-customer operating layer for countries, universities, public agencies, regional datacentre companies, and telecom operators that run their own sites on OSDC.
+
+The customer model is intentionally split:
+
+- Customer account state belongs to the portal workflow and PostgreSQL.
+- Identity users, groups, roles, and sessions remain in Keycloak, privacyIDEA, or authentik.
+- Sites, racks, devices, circuits, and IPAM remain in NetBox or the selected source-of-truth tool.
+- Live cloud resources remain in Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, and bare-metal lifecycle tools.
+- Usage rating and invoice details remain in CloudKitty, OpenMeter, Lago, Kill Bill, or a local finance system.
+
+The portal stores the command, approval, evidence, and summary records that let an operator manage onboarding, MFA, site provisioning, usage metering, billing, invoice preview, and customer support from one browser UI.
+
 ## Model Artifact
 
 Represents an AI model or derived model.

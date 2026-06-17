@@ -234,6 +234,240 @@ pub struct AuditEvent {
     pub evidence_ref: String,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PortalChangeStatus {
+    Draft,
+    Submitted,
+    Approved,
+    Running,
+    Blocked,
+    Complete,
+    Rejected,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ApprovalDecision {
+    Pending,
+    Approved,
+    Rejected,
+    Waived,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ApprovalRecord {
+    pub approval_id: String,
+    pub change_id: String,
+    pub owner: String,
+    pub decision: ApprovalDecision,
+    #[serde(default)]
+    pub decided_by: Option<String>,
+    #[serde(default)]
+    pub decided_at_utc: Option<String>,
+    #[serde(default)]
+    pub evidence_ref: Option<String>,
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EvidenceBundleStatus {
+    Pending,
+    Passed,
+    Failed,
+    Waived,
+    Archived,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EvidenceBundle {
+    pub bundle_id: String,
+    #[serde(default)]
+    pub change_id: Option<String>,
+    pub workflow_id: String,
+    pub bundle_path: String,
+    pub status: EvidenceBundleStatus,
+    pub produced_by: String,
+    #[serde(default)]
+    pub summary: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum InfrastructureRequestStatus {
+    Draft,
+    Submitted,
+    Approved,
+    Running,
+    Blocked,
+    Complete,
+    Rejected,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InfrastructureRequest {
+    pub request_id: String,
+    pub workflow_id: String,
+    pub resource_name: String,
+    pub owner: String,
+    pub environment: String,
+    #[serde(default)]
+    pub change_id: Option<String>,
+    #[serde(default)]
+    pub evidence_bundle_id: Option<String>,
+    pub status: InfrastructureRequestStatus,
+    #[serde(default)]
+    pub payload_summary: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AdapterProofRun {
+    pub run_id: String,
+    pub proof_id: String,
+    pub milestone_id: String,
+    pub adapter_target: String,
+    pub mode: String,
+    pub status: EvidenceBundleStatus,
+    pub evidence_path: String,
+    #[serde(default)]
+    pub summary: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PersistedAuditEvent {
+    pub event_id: String,
+    #[serde(default)]
+    pub change_id: Option<String>,
+    pub actor: String,
+    pub action: String,
+    pub timestamp_utc: String,
+    #[serde(default)]
+    pub evidence_ref: Option<String>,
+    #[serde(default)]
+    pub payload_summary: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CustomerAccountStatus {
+    Prospect,
+    Onboarding,
+    Active,
+    Pilot,
+    Suspended,
+    Closed,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CustomerAccount {
+    pub customer_id: String,
+    pub display_name: String,
+    pub customer_type: String,
+    pub residency_zone: String,
+    pub primary_region: String,
+    pub identity_realm: String,
+    pub billing_account: String,
+    pub support_tier: String,
+    pub service_owner: String,
+    pub status: CustomerAccountStatus,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CustomerSiteStatus {
+    Planned,
+    Onboarding,
+    Pilot,
+    Active,
+    Suspended,
+    Closed,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CustomerSiteInstance {
+    pub site_id: String,
+    pub customer_id: String,
+    pub country: String,
+    pub city: String,
+    pub deployment_stage: String,
+    pub it_load_kw: u32,
+    pub substrate: String,
+    pub provisioner: String,
+    pub data_residency_zone: String,
+    pub source_of_truth: String,
+    pub ops_owner: String,
+    pub status: CustomerSiteStatus,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum MfaPolicyStatus {
+    Template,
+    Pilot,
+    Enforced,
+    Retired,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MfaPolicy {
+    pub policy_id: String,
+    pub scope: String,
+    pub provider_stack: String,
+    pub factors: Vec<String>,
+    pub enrollment_flow: String,
+    pub recovery_method: String,
+    pub enforcement_point: String,
+    pub evidence_path: String,
+    pub owner: String,
+    pub status: MfaPolicyStatus,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BillingRecordStatus {
+    Draft,
+    Review,
+    Approved,
+    Released,
+    Disputed,
+    Paid,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BillingPlan {
+    pub plan_id: String,
+    pub customer_segment: String,
+    pub services_included: Vec<String>,
+    pub rating_engine: String,
+    pub invoice_engine: String,
+    pub currency: String,
+    pub minimum_commit_usd: u32,
+    pub tax_policy: String,
+    pub approval_owner: String,
+    pub status: BillingRecordStatus,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UsageMeter {
+    pub meter_id: String,
+    pub service_domain: String,
+    pub source_system: String,
+    pub metric_name: String,
+    pub unit: String,
+    pub collection_cadence: String,
+    pub rating_plan: String,
+    pub evidence_path: String,
+    pub owner: String,
+    pub status: BillingRecordStatus,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct InvoicePreview {
+    pub invoice_id: String,
+    pub customer_id: String,
+    pub billing_period: String,
+    pub plan_id: String,
+    pub usage_summary: Vec<String>,
+    pub amount_usd: f64,
+    pub credits_usd: f64,
+    pub tax_usd: f64,
+    pub status: BillingRecordStatus,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct CostSummary {
     pub it_energy_kwh: f64,
@@ -410,5 +644,185 @@ mod tests {
         );
         assert_eq!(decoded.rollout_plan.strategy, RolloutStrategy::StagedCanary);
         assert_eq!(decoded.validations[0].status, ValidationStatus::Pending);
+    }
+
+    #[test]
+    fn serializes_portal_persistence_records() {
+        let approval = ApprovalRecord {
+            approval_id: "approval-0001".to_string(),
+            change_id: "cr-0001".to_string(),
+            owner: "platform-owner".to_string(),
+            decision: ApprovalDecision::Approved,
+            decided_by: Some("lead-operator".to_string()),
+            decided_at_utc: Some("2026-06-17T10:00:00Z".to_string()),
+            evidence_ref: Some("target/assurance/change/cr-0001".to_string()),
+            notes: Some("staging checks passed".to_string()),
+        };
+        let evidence = EvidenceBundle {
+            bundle_id: "evidence-0001".to_string(),
+            change_id: Some("cr-0001".to_string()),
+            workflow_id: "WF_VM_PROVISION".to_string(),
+            bundle_path: "target/assurance/change/cr-0001".to_string(),
+            status: EvidenceBundleStatus::Passed,
+            produced_by: "scripts/assurance-run.sh".to_string(),
+            summary: vec![
+                "cargo test passed".to_string(),
+                "GitOps diff attached".to_string(),
+            ],
+        };
+        let request = InfrastructureRequest {
+            request_id: "infra-0001".to_string(),
+            workflow_id: "WF_VM_PROVISION".to_string(),
+            resource_name: "health-api-staging".to_string(),
+            owner: "tenant-health".to_string(),
+            environment: "staging".to_string(),
+            change_id: Some("cr-0001".to_string()),
+            evidence_bundle_id: Some("evidence-0001".to_string()),
+            status: InfrastructureRequestStatus::Running,
+            payload_summary: vec!["2 vCPU".to_string(), "8 GiB RAM".to_string()],
+        };
+        let proof_run = AdapterProofRun {
+            run_id: "proof-run-0001".to_string(),
+            proof_id: "PROOF_POSTGRES_MIGRATION".to_string(),
+            milestone_id: "ADAPT_009".to_string(),
+            adapter_target: "PostgreSQL".to_string(),
+            mode: "plan".to_string(),
+            status: EvidenceBundleStatus::Passed,
+            evidence_path: "target/assurance/adapter-proofs/latest/postgresql.md".to_string(),
+            summary: vec!["six portal-state tables found".to_string()],
+        };
+        let audit = PersistedAuditEvent {
+            event_id: "audit-0001".to_string(),
+            change_id: Some("cr-0001".to_string()),
+            actor: "lead-operator".to_string(),
+            action: "approved".to_string(),
+            timestamp_utc: "2026-06-17T10:00:00Z".to_string(),
+            evidence_ref: Some("target/assurance/change/cr-0001".to_string()),
+            payload_summary: vec!["approval recorded".to_string()],
+        };
+
+        let raw = serde_json::to_string(&(
+            approval.clone(),
+            evidence.clone(),
+            request.clone(),
+            proof_run.clone(),
+            audit.clone(),
+        ))
+        .unwrap();
+        let decoded: (
+            ApprovalRecord,
+            EvidenceBundle,
+            InfrastructureRequest,
+            AdapterProofRun,
+            PersistedAuditEvent,
+        ) = serde_json::from_str(&raw).unwrap();
+
+        assert_eq!(decoded.0, approval);
+        assert_eq!(decoded.1.status, EvidenceBundleStatus::Passed);
+        assert_eq!(decoded.2.status, InfrastructureRequestStatus::Running);
+        assert_eq!(decoded.3.proof_id, "PROOF_POSTGRES_MIGRATION");
+        assert_eq!(decoded.4.action, "approved");
+    }
+
+    #[test]
+    fn serializes_customer_operations_records() {
+        let account = CustomerAccount {
+            customer_id: "CUST_HEALTH".to_string(),
+            display_name: "Ministry of Health".to_string(),
+            customer_type: "public-sector".to_string(),
+            residency_zone: "national-region-1".to_string(),
+            primary_region: "regional-pilot-1".to_string(),
+            identity_realm: "health.gov".to_string(),
+            billing_account: "BA_HEALTH".to_string(),
+            support_tier: "mission-critical".to_string(),
+            service_owner: "public-cloud-owner".to_string(),
+            status: CustomerAccountStatus::Active,
+        };
+        let site = CustomerSiteInstance {
+            site_id: "SITE_HEALTH_REGIONAL".to_string(),
+            customer_id: account.customer_id.clone(),
+            country: "Kenya".to_string(),
+            city: "Nairobi".to_string(),
+            deployment_stage: "250kw-regional-pilot".to_string(),
+            it_load_kw: 250,
+            substrate: "CloudStack+Kubernetes+Ceph".to_string(),
+            provisioner: "MAAS+Metal3".to_string(),
+            data_residency_zone: account.residency_zone.clone(),
+            source_of_truth: "NetBox".to_string(),
+            ops_owner: account.service_owner.clone(),
+            status: CustomerSiteStatus::Active,
+        };
+        let mfa = MfaPolicy {
+            policy_id: "MFA_TENANT_ADMIN".to_string(),
+            scope: "tenant admins".to_string(),
+            provider_stack: "Keycloak+privacyIDEA".to_string(),
+            factors: vec!["webauthn".to_string(), "totp".to_string()],
+            enrollment_flow: "admin-invitation".to_string(),
+            recovery_method: "recovery-codes+break-glass-approval".to_string(),
+            enforcement_point: "portal-command-queue".to_string(),
+            evidence_path: "docs/security/open-source-mfa.md".to_string(),
+            owner: "identity-owner".to_string(),
+            status: MfaPolicyStatus::Pilot,
+        };
+        let plan = BillingPlan {
+            plan_id: "BILL_PUBLIC_CRITICAL".to_string(),
+            customer_segment: "public-sector".to_string(),
+            services_included: vec!["vm".to_string(), "database".to_string()],
+            rating_engine: "CloudKitty+OpenMeter".to_string(),
+            invoice_engine: "Kill-Bill".to_string(),
+            currency: "USD".to_string(),
+            minimum_commit_usd: 25_000,
+            tax_policy: "local-tax-profile".to_string(),
+            approval_owner: "commercial-owner".to_string(),
+            status: BillingRecordStatus::Draft,
+        };
+        let meter = UsageMeter {
+            meter_id: "METER_VM_HOURS".to_string(),
+            service_domain: "compute".to_string(),
+            source_system: "OpenStack+CloudStack".to_string(),
+            metric_name: "instance_hours".to_string(),
+            unit: "hour".to_string(),
+            collection_cadence: "hourly".to_string(),
+            rating_plan: plan.plan_id.clone(),
+            evidence_path: "docs/commercial/billing-and-metering.md".to_string(),
+            owner: "cloud-owner".to_string(),
+            status: BillingRecordStatus::Draft,
+        };
+        let invoice = InvoicePreview {
+            invoice_id: "INV_HEALTH_2026_06".to_string(),
+            customer_id: account.customer_id.clone(),
+            billing_period: "2026-06".to_string(),
+            plan_id: plan.plan_id.clone(),
+            usage_summary: vec!["18800 vm-hours".to_string()],
+            amount_usd: 27_640.0,
+            credits_usd: 0.0,
+            tax_usd: 4_146.0,
+            status: BillingRecordStatus::Draft,
+        };
+
+        let raw = serde_json::to_string(&(
+            account.clone(),
+            site.clone(),
+            mfa.clone(),
+            plan.clone(),
+            meter.clone(),
+            invoice.clone(),
+        ))
+        .unwrap();
+        let decoded: (
+            CustomerAccount,
+            CustomerSiteInstance,
+            MfaPolicy,
+            BillingPlan,
+            UsageMeter,
+            InvoicePreview,
+        ) = serde_json::from_str(&raw).unwrap();
+
+        assert_eq!(decoded.0, account);
+        assert_eq!(decoded.1.status, CustomerSiteStatus::Active);
+        assert_eq!(decoded.2.status, MfaPolicyStatus::Pilot);
+        assert_eq!(decoded.3.minimum_commit_usd, 25_000);
+        assert_eq!(decoded.4.rating_plan, "BILL_PUBLIC_CRITICAL");
+        assert_eq!(decoded.5.status, BillingRecordStatus::Draft);
     }
 }

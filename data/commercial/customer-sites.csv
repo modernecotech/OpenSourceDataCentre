@@ -1,0 +1,4 @@
+site_id,customer_id,country,city,deployment_stage,it_load_kw,substrate,provisioner,data_residency_zone,source_of_truth,ops_owner,status
+SITE_HEALTH_REGIONAL,CUST_HEALTH,Kenya,Nairobi,250kw-regional-pilot,250,CloudStack+Kubernetes+Ceph,MAAS+Metal3,national-region-1,NetBox,public-cloud-owner,active
+SITE_UNIVERSITY_RESEARCH,CUST_UNIVERSITY,Kenya,Nairobi,250kw-regional-pilot,120,OpenStack+Kubernetes+Ceph,Ironic+Metal3,national-region-1,NetBox,education-cloud-owner,onboarding
+SITE_TELCO_EDGE,CUST_TELCO_EDGE,Kenya,Mombasa,50kw-edge-micro,50,Proxmox+Ceph+Edge-Shield,MAAS,national-edge-zone,NetBox,network-commercial-owner,pilot

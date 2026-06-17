@@ -1,0 +1,4 @@
+customer_id,display_name,customer_type,residency_zone,primary_region,identity_realm,billing_account,support_tier,service_owner,status
+CUST_HEALTH,Ministry of Health,public-sector,national-region-1,regional-pilot-1,health.gov,BA_HEALTH,mission-critical,public-cloud-owner,active
+CUST_UNIVERSITY,National Research University,education,national-region-1,regional-pilot-1,research.edu,BA_UNIVERSITY,research,education-cloud-owner,onboarding
+CUST_TELCO_EDGE,Regional Telecom Edge,carrier,national-edge-zone,edge-micro-1,telco.edge,BA_TELCO_EDGE,carrier-neutral,network-commercial-owner,pilot

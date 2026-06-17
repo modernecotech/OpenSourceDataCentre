@@ -14,6 +14,14 @@ pub enum AdapterTarget {
     Proxmox,
     OpenNebula,
     OpenStack,
+    PostgreSql,
+    PrivacyIdea,
+    Authentik,
+    CloudKitty,
+    OpenMeter,
+    KillBill,
+    Lago,
+    OpenCost,
     Kubernetes,
     Ceph,
     Redfish,
@@ -186,6 +194,194 @@ pub struct FindingIngestRequest {
     pub owner: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DnsZoneSummary {
+    pub zone_name: String,
+    pub owner_tenant: String,
+    pub dnssec_enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InventorySummary {
+    pub site_count: u16,
+    pub rack_count: u16,
+    pub device_count: u16,
+    pub circuit_count: u16,
+    pub ip_address_count: u16,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IdentitySummary {
+    pub realm: String,
+    pub group_count: u16,
+    pub role_count: u16,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SecretMountSummary {
+    pub mount_path: String,
+    pub policy_count: u16,
+    pub transit_enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GitOpsChangePreview {
+    pub change_id: String,
+    pub target_branch: String,
+    pub files_changed: u16,
+    pub requires_approval: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VirtualizationClusterSummary {
+    pub cluster_name: String,
+    pub vm_count: u16,
+    pub storage_pool_count: u16,
+    pub backup_job_count: u16,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OpenStackProjectSummary {
+    pub project_id: String,
+    pub instance_count: u16,
+    pub network_count: u16,
+    pub volume_count: u16,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PersistenceMigrationPlan {
+    pub schema_name: String,
+    pub migration_count: u16,
+    pub table_count: u16,
+    pub destructive: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MfaPolicySummary {
+    pub realm: String,
+    pub policy_id: String,
+    pub enrolled_subjects: u16,
+    pub unenrolled_subjects: u16,
+    pub recovery_enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MfaEnrollmentRequest {
+    pub tenant_id: String,
+    pub subject: String,
+    pub policy_id: String,
+    pub factors: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CustomerSiteProvisionRequest {
+    pub customer_id: String,
+    pub site_id: String,
+    pub deployment_profile: String,
+    pub residency_zone: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CustomerSiteSummary {
+    pub customer_id: String,
+    pub site_count: u16,
+    pub active_sites: u16,
+    pub residency_zones: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UsageMeterSummary {
+    pub meter_id: String,
+    pub customer_id: String,
+    pub metric_name: String,
+    pub quantity: u64,
+    pub unit: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UsageRatingRequest {
+    pub customer_id: String,
+    pub meter_id: String,
+    pub quantity: u64,
+    pub billing_period: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct InvoicePreviewSummary {
+    pub invoice_id: String,
+    pub customer_id: String,
+    pub billing_period: String,
+    pub amount_usd: f64,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InvoiceGenerationRequest {
+    pub customer_id: String,
+    pub billing_period: String,
+    pub plan_id: String,
+    pub approval_ref: String,
+}
+
+pub trait DnsReadAdapter {
+    fn list_zones(&self) -> AdapterResult<Vec<DnsZoneSummary>>;
+}
+
+pub trait InventoryReadAdapter {
+    fn inventory_summary(&self) -> AdapterResult<InventorySummary>;
+}
+
+pub trait IdentityReadAdapter {
+    fn identity_summary(&self) -> AdapterResult<IdentitySummary>;
+}
+
+pub trait SecretsReadAdapter {
+    fn secret_mounts(&self) -> AdapterResult<Vec<SecretMountSummary>>;
+}
+
+pub trait GitOpsReadAdapter {
+    fn preview_change(&self, request: &ChangeRequest) -> AdapterResult<GitOpsChangePreview>;
+}
+
+pub trait VirtualizationReadAdapter {
+    fn cluster_summary(&self) -> AdapterResult<VirtualizationClusterSummary>;
+}
+
+pub trait OpenStackReadAdapter {
+    fn project_summary(&self, project_id: &str) -> AdapterResult<OpenStackProjectSummary>;
+}
+
+pub trait PortalPersistenceAdapter {
+    fn migration_plan(&self) -> AdapterResult<PersistenceMigrationPlan>;
+}
+
+pub trait IdentityMfaAdapter {
+    fn mfa_summary(&self, tenant_id: &str) -> AdapterResult<MfaPolicySummary>;
+    fn enforce_mfa_policy(&self, request: &MfaEnrollmentRequest) -> AdapterResult<AdapterReceipt>;
+}
+
+pub trait CustomerOperationsAdapter {
+    fn customer_site_summary(&self, customer_id: &str) -> AdapterResult<CustomerSiteSummary>;
+    fn provision_customer_site(
+        &self,
+        request: &CustomerSiteProvisionRequest,
+    ) -> AdapterResult<AdapterReceipt>;
+}
+
+pub trait UsageMeteringAdapter {
+    fn meter_summary(&self, customer_id: &str) -> AdapterResult<Vec<UsageMeterSummary>>;
+    fn rate_usage(&self, request: &UsageRatingRequest) -> AdapterResult<AdapterReceipt>;
+}
+
+pub trait BillingAdapter {
+    fn preview_invoice(
+        &self,
+        request: &InvoiceGenerationRequest,
+    ) -> AdapterResult<InvoicePreviewSummary>;
+    fn generate_invoice(&self, request: &InvoiceGenerationRequest)
+        -> AdapterResult<AdapterReceipt>;
+}
+
 pub trait IdentityAdapter {
     fn create_tenant(&self, request: &TenantRequest) -> AdapterResult<AdapterReceipt>;
     fn assign_role(&self, request: &RoleAssignmentRequest) -> AdapterResult<AdapterReceipt>;
@@ -276,6 +472,41 @@ impl PlanningInfrastructureAdapter {
             status: AdapterStatus::Planned,
         }
     }
+
+    fn target_name(&self) -> &'static str {
+        match self.target {
+            AdapterTarget::Keycloak => "keycloak",
+            AdapterTarget::PowerDns => "powerdns",
+            AdapterTarget::NetBox => "netbox",
+            AdapterTarget::OpenBao => "openbao",
+            AdapterTarget::ArgoCd => "argocd",
+            AdapterTarget::Flux => "flux",
+            AdapterTarget::CloudStack => "cloudstack",
+            AdapterTarget::Proxmox => "proxmox",
+            AdapterTarget::OpenNebula => "opennebula",
+            AdapterTarget::OpenStack => "openstack",
+            AdapterTarget::PostgreSql => "postgresql",
+            AdapterTarget::PrivacyIdea => "privacyidea",
+            AdapterTarget::Authentik => "authentik",
+            AdapterTarget::CloudKitty => "cloudkitty",
+            AdapterTarget::OpenMeter => "openmeter",
+            AdapterTarget::KillBill => "killbill",
+            AdapterTarget::Lago => "lago",
+            AdapterTarget::OpenCost => "opencost",
+            AdapterTarget::Kubernetes => "kubernetes",
+            AdapterTarget::Ceph => "ceph",
+            AdapterTarget::Redfish => "redfish",
+            AdapterTarget::Maas => "maas",
+            AdapterTarget::Foreman => "foreman",
+            AdapterTarget::Ironic => "ironic",
+            AdapterTarget::Metal3 => "metal3",
+            AdapterTarget::Tinkerbell => "tinkerbell",
+            AdapterTarget::Harbor => "harbor",
+            AdapterTarget::DefectDojo => "defectdojo",
+            AdapterTarget::DependencyTrack => "dependency-track",
+            AdapterTarget::Wazuh => "wazuh",
+        }
+    }
 }
 
 impl HealthProbeAdapter for PlanningInfrastructureAdapter {
@@ -286,6 +517,194 @@ impl HealthProbeAdapter for PlanningInfrastructureAdapter {
             reachable: false,
             mode: self.mode,
         })
+    }
+}
+
+impl DnsReadAdapter for PlanningInfrastructureAdapter {
+    fn list_zones(&self) -> AdapterResult<Vec<DnsZoneSummary>> {
+        Ok(vec![DnsZoneSummary {
+            zone_name: format!("{}.example.gov", self.target_name()),
+            owner_tenant: "ministry-health".to_string(),
+            dnssec_enabled: true,
+        }])
+    }
+}
+
+impl InventoryReadAdapter for PlanningInfrastructureAdapter {
+    fn inventory_summary(&self) -> AdapterResult<InventorySummary> {
+        Ok(InventorySummary {
+            site_count: 1,
+            rack_count: 10,
+            device_count: 64,
+            circuit_count: 4,
+            ip_address_count: 512,
+        })
+    }
+}
+
+impl IdentityReadAdapter for PlanningInfrastructureAdapter {
+    fn identity_summary(&self) -> AdapterResult<IdentitySummary> {
+        Ok(IdentitySummary {
+            realm: "osdc".to_string(),
+            group_count: 6,
+            role_count: 12,
+        })
+    }
+}
+
+impl SecretsReadAdapter for PlanningInfrastructureAdapter {
+    fn secret_mounts(&self) -> AdapterResult<Vec<SecretMountSummary>> {
+        Ok(vec![SecretMountSummary {
+            mount_path: "tenants/ministry-health".to_string(),
+            policy_count: 3,
+            transit_enabled: true,
+        }])
+    }
+}
+
+impl GitOpsReadAdapter for PlanningInfrastructureAdapter {
+    fn preview_change(&self, request: &ChangeRequest) -> AdapterResult<GitOpsChangePreview> {
+        Ok(GitOpsChangePreview {
+            change_id: request.id.clone(),
+            target_branch: format!("osdc/{}", request.target_environment),
+            files_changed: request.files.len() as u16,
+            requires_approval: !request.rollout_plan.required_approvers.is_empty(),
+        })
+    }
+}
+
+impl VirtualizationReadAdapter for PlanningInfrastructureAdapter {
+    fn cluster_summary(&self) -> AdapterResult<VirtualizationClusterSummary> {
+        Ok(VirtualizationClusterSummary {
+            cluster_name: format!("{}-regional-pilot", self.target_name()),
+            vm_count: 28,
+            storage_pool_count: 3,
+            backup_job_count: 4,
+        })
+    }
+}
+
+impl OpenStackReadAdapter for PlanningInfrastructureAdapter {
+    fn project_summary(&self, project_id: &str) -> AdapterResult<OpenStackProjectSummary> {
+        Ok(OpenStackProjectSummary {
+            project_id: project_id.to_string(),
+            instance_count: 18,
+            network_count: 5,
+            volume_count: 24,
+        })
+    }
+}
+
+impl PortalPersistenceAdapter for PlanningInfrastructureAdapter {
+    fn migration_plan(&self) -> AdapterResult<PersistenceMigrationPlan> {
+        Ok(PersistenceMigrationPlan {
+            schema_name: "osdc_portal".to_string(),
+            migration_count: 1,
+            table_count: 11,
+            destructive: false,
+        })
+    }
+}
+
+impl IdentityMfaAdapter for PlanningInfrastructureAdapter {
+    fn mfa_summary(&self, tenant_id: &str) -> AdapterResult<MfaPolicySummary> {
+        Ok(MfaPolicySummary {
+            realm: tenant_id.to_string(),
+            policy_id: "MFA_TENANT_ADMIN".to_string(),
+            enrolled_subjects: 24,
+            unenrolled_subjects: 2,
+            recovery_enabled: true,
+        })
+    }
+
+    fn enforce_mfa_policy(&self, request: &MfaEnrollmentRequest) -> AdapterResult<AdapterReceipt> {
+        Ok(self.planned(
+            "mfa-policy",
+            &format!(
+                "{}:{}:{}",
+                request.tenant_id, request.subject, request.policy_id
+            ),
+        ))
+    }
+}
+
+impl CustomerOperationsAdapter for PlanningInfrastructureAdapter {
+    fn customer_site_summary(&self, customer_id: &str) -> AdapterResult<CustomerSiteSummary> {
+        Ok(CustomerSiteSummary {
+            customer_id: customer_id.to_string(),
+            site_count: 2,
+            active_sites: 1,
+            residency_zones: vec!["national-region-1".to_string()],
+        })
+    }
+
+    fn provision_customer_site(
+        &self,
+        request: &CustomerSiteProvisionRequest,
+    ) -> AdapterResult<AdapterReceipt> {
+        Ok(self.planned(
+            "customer-site",
+            &format!("{}:{}", request.customer_id, request.site_id),
+        ))
+    }
+}
+
+impl UsageMeteringAdapter for PlanningInfrastructureAdapter {
+    fn meter_summary(&self, customer_id: &str) -> AdapterResult<Vec<UsageMeterSummary>> {
+        Ok(vec![
+            UsageMeterSummary {
+                meter_id: "METER_VM_HOURS".to_string(),
+                customer_id: customer_id.to_string(),
+                metric_name: "instance_hours".to_string(),
+                quantity: 18_800,
+                unit: "hour".to_string(),
+            },
+            UsageMeterSummary {
+                meter_id: "METER_OBJECT_GB".to_string(),
+                customer_id: customer_id.to_string(),
+                metric_name: "object_storage_gb_month".to_string(),
+                quantity: 2_100,
+                unit: "gb-month".to_string(),
+            },
+        ])
+    }
+
+    fn rate_usage(&self, request: &UsageRatingRequest) -> AdapterResult<AdapterReceipt> {
+        Ok(self.planned(
+            "rated-usage",
+            &format!(
+                "{}:{}:{}",
+                request.customer_id, request.meter_id, request.billing_period
+            ),
+        ))
+    }
+}
+
+impl BillingAdapter for PlanningInfrastructureAdapter {
+    fn preview_invoice(
+        &self,
+        request: &InvoiceGenerationRequest,
+    ) -> AdapterResult<InvoicePreviewSummary> {
+        Ok(InvoicePreviewSummary {
+            invoice_id: format!("INV_{}_{}", request.customer_id, request.billing_period),
+            customer_id: request.customer_id.clone(),
+            billing_period: request.billing_period.clone(),
+            amount_usd: 27_640.0,
+            status: "draft".to_string(),
+        })
+    }
+
+    fn generate_invoice(
+        &self,
+        request: &InvoiceGenerationRequest,
+    ) -> AdapterResult<AdapterReceipt> {
+        Ok(self.planned(
+            "invoice",
+            &format!(
+                "{}:{}:{}",
+                request.customer_id, request.plan_id, request.billing_period
+            ),
+        ))
     }
 }
 
@@ -625,6 +1044,80 @@ mod tests {
     }
 
     #[test]
+    fn planning_adapter_models_customer_ops_mfa_metering_and_billing() {
+        let mfa =
+            PlanningInfrastructureAdapter::new(AdapterTarget::PrivacyIdea, AdapterMode::GuardedApi);
+        let summary = mfa.mfa_summary("health.gov").unwrap();
+        assert_eq!(summary.realm, "health.gov");
+        assert!(summary.recovery_enabled);
+
+        let mfa_receipt = mfa
+            .enforce_mfa_policy(&MfaEnrollmentRequest {
+                tenant_id: "CUST_HEALTH".to_string(),
+                subject: "tenant-admins".to_string(),
+                policy_id: "MFA_TENANT_ADMIN".to_string(),
+                factors: vec!["webauthn".to_string(), "totp".to_string()],
+            })
+            .unwrap();
+        assert_eq!(
+            mfa_receipt.external_id,
+            "mfa-policy:CUST_HEALTH:tenant-admins:MFA_TENANT_ADMIN"
+        );
+
+        let customer_ops =
+            PlanningInfrastructureAdapter::new(AdapterTarget::NetBox, AdapterMode::GuardedApi);
+        let site_summary = customer_ops.customer_site_summary("CUST_HEALTH").unwrap();
+        assert_eq!(site_summary.active_sites, 1);
+        let site_receipt = customer_ops
+            .provision_customer_site(&CustomerSiteProvisionRequest {
+                customer_id: "CUST_HEALTH".to_string(),
+                site_id: "SITE_HEALTH_REGIONAL".to_string(),
+                deployment_profile: "DSP_250KW_REGIONAL".to_string(),
+                residency_zone: "national-region-1".to_string(),
+            })
+            .unwrap();
+        assert_eq!(
+            site_receipt.external_id,
+            "customer-site:CUST_HEALTH:SITE_HEALTH_REGIONAL"
+        );
+
+        let metering =
+            PlanningInfrastructureAdapter::new(AdapterTarget::OpenMeter, AdapterMode::GuardedApi);
+        let meters = metering.meter_summary("CUST_HEALTH").unwrap();
+        assert!(meters
+            .iter()
+            .any(|meter| meter.meter_id == "METER_VM_HOURS"));
+        let rating = metering
+            .rate_usage(&UsageRatingRequest {
+                customer_id: "CUST_HEALTH".to_string(),
+                meter_id: "METER_VM_HOURS".to_string(),
+                quantity: 18_800,
+                billing_period: "2026-06".to_string(),
+            })
+            .unwrap();
+        assert_eq!(
+            rating.external_id,
+            "rated-usage:CUST_HEALTH:METER_VM_HOURS:2026-06"
+        );
+
+        let billing =
+            PlanningInfrastructureAdapter::new(AdapterTarget::KillBill, AdapterMode::GuardedApi);
+        let invoice_request = InvoiceGenerationRequest {
+            customer_id: "CUST_HEALTH".to_string(),
+            billing_period: "2026-06".to_string(),
+            plan_id: "BILL_PUBLIC_CRITICAL".to_string(),
+            approval_ref: "APPROVAL-001".to_string(),
+        };
+        let preview = billing.preview_invoice(&invoice_request).unwrap();
+        assert_eq!(preview.invoice_id, "INV_CUST_HEALTH_2026-06");
+        let invoice = billing.generate_invoice(&invoice_request).unwrap();
+        assert_eq!(
+            invoice.external_id,
+            "invoice:CUST_HEALTH:BILL_PUBLIC_CRITICAL:2026-06"
+        );
+    }
+
+    #[test]
     fn planning_adapter_models_small_site_virtualization_profiles() {
         let proxmox =
             PlanningInfrastructureAdapter::new(AdapterTarget::Proxmox, AdapterMode::GuardedApi);
@@ -672,5 +1165,91 @@ mod tests {
         assert_eq!(health.endpoint, "https://netbox.internal.example");
         assert!(!health.reachable);
         assert_eq!(health.mode, AdapterMode::ReadOnly);
+    }
+
+    #[test]
+    fn read_first_contracts_cover_all_live_adapter_roadmap_targets() {
+        let powerdns =
+            PlanningInfrastructureAdapter::new(AdapterTarget::PowerDns, AdapterMode::ReadOnly);
+        let zones = powerdns.list_zones().unwrap();
+        assert_eq!(zones[0].owner_tenant, "ministry-health");
+        assert!(zones[0].dnssec_enabled);
+
+        let netbox =
+            PlanningInfrastructureAdapter::new(AdapterTarget::NetBox, AdapterMode::ReadOnly);
+        let inventory = netbox.inventory_summary().unwrap();
+        assert_eq!(inventory.site_count, 1);
+        assert!(inventory.device_count >= 64);
+
+        let keycloak =
+            PlanningInfrastructureAdapter::new(AdapterTarget::Keycloak, AdapterMode::ReadOnly);
+        let identity = keycloak.identity_summary().unwrap();
+        assert_eq!(identity.realm, "osdc");
+        assert!(identity.role_count >= 12);
+
+        let openbao =
+            PlanningInfrastructureAdapter::new(AdapterTarget::OpenBao, AdapterMode::ReadOnly);
+        let mounts = openbao.secret_mounts().unwrap();
+        assert_eq!(mounts[0].mount_path, "tenants/ministry-health");
+        assert!(mounts[0].transit_enabled);
+
+        let gitops = PlanningInfrastructureAdapter::new(AdapterTarget::ArgoCd, AdapterMode::GitOps);
+        let change = ChangeRequest {
+            id: "cr-live-001".to_string(),
+            title: "stage regional pilot VM".to_string(),
+            requester: "platform-owner".to_string(),
+            target_system: "cloudstack".to_string(),
+            target_environment: "staging".to_string(),
+            change_type: osdc_models::ChangeType::InfrastructurePlan,
+            risk: osdc_models::ChangeRisk::Medium,
+            files: vec![osdc_models::ConfigArtifact {
+                path: "clusters/staging/apps/tenant-api.yaml".to_string(),
+                owner: "platform-owner".to_string(),
+                language: "yaml".to_string(),
+                secret_policy: osdc_models::SecretPolicy::ReferencesOnly,
+            }],
+            validations: Vec::new(),
+            rollout_plan: osdc_models::RolloutPlan {
+                strategy: osdc_models::RolloutStrategy::GitOpsPullRequest,
+                stages: Vec::new(),
+                required_approvers: vec!["platform-owner".to_string()],
+            },
+            rollback_plan: osdc_models::RollbackPlan {
+                trigger_conditions: Vec::new(),
+                restore_actions: Vec::new(),
+                evidence_required: Vec::new(),
+            },
+            audit_events: Vec::new(),
+        };
+        let preview = gitops.preview_change(&change).unwrap();
+        assert_eq!(preview.change_id, "cr-live-001");
+        assert_eq!(preview.target_branch, "osdc/staging");
+        assert_eq!(preview.files_changed, 1);
+        assert!(preview.requires_approval);
+
+        let proxmox =
+            PlanningInfrastructureAdapter::new(AdapterTarget::Proxmox, AdapterMode::ReadOnly);
+        let proxmox_cluster = proxmox.cluster_summary().unwrap();
+        assert!(proxmox_cluster.cluster_name.contains("proxmox"));
+        assert!(proxmox_cluster.backup_job_count > 0);
+
+        let cloudstack =
+            PlanningInfrastructureAdapter::new(AdapterTarget::CloudStack, AdapterMode::ReadOnly);
+        let cloudstack_cluster = cloudstack.cluster_summary().unwrap();
+        assert!(cloudstack_cluster.cluster_name.contains("cloudstack"));
+        assert!(cloudstack_cluster.storage_pool_count > 0);
+
+        let openstack =
+            PlanningInfrastructureAdapter::new(AdapterTarget::OpenStack, AdapterMode::ReadOnly);
+        let project = openstack.project_summary("ministry-health").unwrap();
+        assert_eq!(project.project_id, "ministry-health");
+        assert!(project.instance_count > 0);
+
+        let postgres =
+            PlanningInfrastructureAdapter::new(AdapterTarget::PostgreSql, AdapterMode::PlanOnly);
+        let migrations = postgres.migration_plan().unwrap();
+        assert_eq!(migrations.schema_name, "osdc_portal");
+        assert!(migrations.table_count >= 9);
+        assert!(!migrations.destructive);
     }
 }

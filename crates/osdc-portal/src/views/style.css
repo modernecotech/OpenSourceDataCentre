@@ -263,6 +263,27 @@ button.warning {
   padding: 8px 10px;
 }
 
+.command-workspace .panel-body {
+  display: grid;
+  gap: 14px;
+}
+
+.command-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.75fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.command-workspace table {
+  table-layout: fixed;
+}
+
+.command-workspace td,
+.command-workspace th {
+  overflow-wrap: anywhere;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(160px, 1fr));
@@ -558,6 +579,7 @@ td a {
   .dashboard-grid,
   .split,
   .editor-grid,
+  .command-layout,
   .lifecycle-stage-grid {
     grid-template-columns: 1fr;
   }

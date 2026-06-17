@@ -77,13 +77,18 @@ unique_columns = {
     Path("data/commissioning/commissioning-evidence-register.csv"): "evidence_id",
     Path("data/commercial/audit-evidence.csv"): "evidence_id",
     Path("data/commercial/access-roles.csv"): "access_role_id",
+    Path("data/commercial/billing-plans.csv"): "plan_id",
     Path("data/commercial/colocation-products.csv"): "product_id",
     Path("data/commercial/commercial-gap-register.csv"): "gap_id",
     Path("data/commercial/cross-connect-products.csv"): "product_id",
+    Path("data/commercial/customer-accounts.csv"): "customer_id",
+    Path("data/commercial/customer-sites.csv"): "site_id",
+    Path("data/commercial/invoice-preview.csv"): "invoice_id",
     Path("data/commercial/remote-hands-pricebook.csv"): "pricebook_id",
     Path("data/commercial/remote-hands-products.csv"): "product_id",
     Path("data/commercial/sla-classes.csv"): "sla_class_id",
     Path("data/commercial/standards-control-matrix.csv"): "requirement_id",
+    Path("data/commercial/usage-meters.csv"): "meter_id",
     Path("data/costing/marketplace-price-basis-2026.csv"): "item_family",
     Path("data/costing/scenario-costs-2026.csv"): "scenario_id",
     Path("data/delivery/action-tracker.csv"): "action_id",
@@ -103,6 +108,7 @@ unique_columns = {
     Path("data/software/assurance-automation-jobs.csv"): "job_id",
     Path("data/software/config-script-catalogue.csv"): "script_id",
     Path("data/software/core-cloud-services.csv"): "service_id",
+    Path("data/software/customer-operations-workflows.csv"): "workflow_id",
     Path("data/software/data-access-policies.csv"): "policy_id",
     Path("data/software/data-ontology-objects.csv"): "object_id",
     Path("data/software/data-pipelines.csv"): "pipeline_id",
@@ -116,7 +122,9 @@ unique_columns = {
     Path("data/software/deployment-environments.csv"): "environment_id",
     Path("data/software/edge-shield-service-map.csv"): "service_id",
     Path("data/software/edge-shield-services.csv"): "service_id",
+    Path("data/software/identity-mfa-policies.csv"): "policy_id",
     Path("data/software/infrastructure-workflows.csv"): "workflow_id",
+    Path("data/software/live-adapter-proof-catalogue.csv"): "proof_id",
     Path("data/software/live-adapter-roadmap.csv"): "milestone_id",
     Path("data/software/open-cloud-service-map.csv"): "cloud_domain",
     Path("data/software/proprietary-open-source-equivalents.csv"): "proprietary_service",
@@ -261,6 +269,38 @@ if commercial_gap_register.exists():
                 fail(
                     f"{commercial_gap_register}:{number} has unsupported status {row.get('status')!r}"
                 )
+
+customer_status_files = {
+    Path("data/commercial/customer-accounts.csv"): {
+        "active",
+        "onboarding",
+        "pilot",
+        "suspended",
+        "closed",
+    },
+    Path("data/commercial/customer-sites.csv"): {
+        "planned",
+        "active",
+        "onboarding",
+        "pilot",
+        "suspended",
+        "closed",
+    },
+    Path("data/commercial/billing-plans.csv"): {"template", "pilot", "approved", "retired"},
+    Path("data/commercial/usage-meters.csv"): {"template", "pilot", "approved", "retired"},
+    Path("data/commercial/invoice-preview.csv"): {"draft", "review", "approved", "released", "disputed", "paid"},
+    Path("data/software/customer-operations-workflows.csv"): {"template", "pilot", "implemented", "retired"},
+    Path("data/software/identity-mfa-policies.csv"): {"template", "pilot", "implemented", "retired"},
+}
+for relative, allowed_statuses in customer_status_files.items():
+    path = ROOT / relative
+    if not path.exists():
+        continue
+    with path.open(newline="", encoding="utf-8") as handle:
+        for number, row in enumerate(csv.DictReader(handle), start=2):
+            if row.get("status") not in allowed_statuses:
+                fail(f"{path}:{number} has unsupported status {row.get('status')!r}")
+
 site_scorecard = ROOT / "data/site-selection/site-selection-scorecard.csv"
 if site_scorecard.exists():
     with site_scorecard.open(newline="", encoding="utf-8") as handle:
@@ -380,12 +420,38 @@ if portal_doc.exists() and portal_source.exists():
         route
         for route in source_routes
         if route.startswith("/api/")
-        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/hardware", "/developer", "/data-platform", "/health"}
+        or route in {"/user", "/operator", "/edge", "/planner", "/lifecycle", "/hardware", "/developer", "/data-platform", "/commercial", "/customers", "/assurance", "/health"}
     }
     for route in sorted(doc_routes - source_routes):
         fail(f"{portal_doc}: documents missing portal route {route}")
     for route in sorted(documentable_routes - doc_routes):
         fail(f"{portal_doc}: missing route documentation for {route}")
+
+portal_migration = ROOT / "crates/osdc-portal/migrations/0001_osdc_portal_state.sql"
+if not portal_migration.exists():
+    fail(f"{portal_migration}: missing initial portal persistence migration")
+else:
+    migration_sql = portal_migration.read_text(encoding="utf-8")
+    required_tables = [
+        "change_requests",
+        "approval_records",
+        "evidence_bundles",
+        "audit_events",
+        "infrastructure_requests",
+        "adapter_proof_runs",
+        "customer_accounts",
+        "customer_site_instances",
+        "identity_mfa_policies",
+        "usage_meter_snapshots",
+        "invoice_previews",
+    ]
+    for table in required_tables:
+        pattern = rf"CREATE TABLE IF NOT EXISTS\s+osdc_portal\.{table}\b"
+        if not re.search(pattern, migration_sql, flags=re.IGNORECASE):
+            fail(f"{portal_migration}: missing table {table}")
+    for required in ["jsonb", "timestamptz", "CREATE INDEX IF NOT EXISTS"]:
+        if required not in migration_sql:
+            fail(f"{portal_migration}: expected {required} usage")
 
 if failures:
     print("repository verification failed:", file=sys.stderr)
