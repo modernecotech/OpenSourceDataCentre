@@ -7,6 +7,7 @@
 - A set of open BOMs, calculators, software adapters, mechanical designs, and commissioning tests.
 - A way for countries to reduce dependency on closed cloud platforms and proprietary datacentre management stacks.
 - A structure for local training, maintenance, spares, and second-source procurement.
+- An integration and lifecycle layer over mature systems such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Keycloak, OpenBao, PowerDNS, and GitOps.
 
 ## What This Project Is Not
 
@@ -14,6 +15,7 @@
 - It is not a substitute for licensed local engineers, fire engineers, electrical engineers, code approval, or authority review.
 - It is not a promise that marketplace parts are safe, compliant, or suitable for life-safety and critical-power systems.
 - It is not a hyperscaler clone.
+- It is not a replacement for mature infrastructure platforms such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, OpenBMC, or OCP.
 - It is not a reason to skip commissioning, documentation, training, spare parts, security review, backup, or disaster recovery.
 
 ## Safety Boundary

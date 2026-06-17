@@ -306,12 +306,15 @@ table {
 }
 
 body[data-portal="assurance"] table,
+body[data-portal="infrastructure"] table,
 body[data-portal="hardware"] table {
   table-layout: fixed;
 }
 
 body[data-portal="assurance"] th,
 body[data-portal="assurance"] td,
+body[data-portal="infrastructure"] th,
+body[data-portal="infrastructure"] td,
 body[data-portal="hardware"] th,
 body[data-portal="hardware"] td {
   overflow-wrap: anywhere;

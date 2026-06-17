@@ -14,6 +14,8 @@ This directory stores CSV catalogues for the open-source cloud and edge stack.
 - `developer-platform-services.csv`, `developer-templates.csv`, `deployment-environments.csv`, `developer-promotion-gates.csv`, and `vscode-workflows.csv` define the Forgejo/CI/Harbor/GitOps/OpenTofu/VS Code developer platform.
 - `data-platform-services.csv`, `data-products.csv`, `data-pipelines.csv`, `data-ontology-objects.csv`, `data-access-policies.csv`, and `data-platform-templates.csv` define the optional open-source data platform service.
 - `test-harness-catalogue.csv`, `upgrade-rings.csv`, `upgrade-test-gates.csv`, and `assurance-automation-jobs.csv` define the assurance testing and automated upgrade control plane.
+- `deployment-stack-profiles.csv` defines the recommended mature infrastructure substrate by deployment scale, including where Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, MAAS, Ironic, Metal3, Edge Shield, and GitOps fit.
+- `infrastructure-workflows.csv` defines the front-door workbench workflows and must map each user action to connector IDs, required test IDs, required gate IDs, an automation job, an owner, and an evidence path.
 
 Every row in `service-catalogue-v1.csv` must include a maturity value:
 
@@ -25,6 +27,8 @@ Every row in `service-catalogue-v1.csv` must include a maturity value:
 
 - `open-cloud-service-map.csv` maps broad datacentre service domains to open-source systems.
 - `core-cloud-services.csv` captures the AWS/Azure-like services selected for first implementation in the portal.
+- `deployment-stack-profiles.csv` captures the 50 kW, 250 kW, 1 MW, and 5 MW stack pairings so OSDC acts as an integration layer over mature substrates rather than pretending one cloud stack fits every site.
+- `infrastructure-workflows.csv` maps create/manage/upgrade/scan actions to deployment profiles, connector contracts, assurance tests, upgrade gates, automation jobs, owners, and evidence targets for the `/infrastructure` UI.
 - `edge-shield-services.csv` captures the Cloudflare-equivalent Edge Shield functions for Radxa nodes.
 - `edge-shield-service-map.csv` expands Edge Shield into default production and simple deployment stacks.
 - `security-control-map.csv` maps security control areas to open tools and required evidence.

@@ -15,7 +15,9 @@ The 50 kW edge micro pattern is the first proof point for local operation. It is
 - Compact DC-first power path with metering and documented isolation points.
 - Small BESS and generator or rental-generator input where grid reliability requires it.
 - Air or rear-door heat exchanger cooling depending on climate and density.
-- NetBox/openDCIM, Keycloak, OPA, Prometheus/VictoriaMetrics, Grafana, Kubernetes, Ceph or local replicated storage, and Rust API adapters.
+- Proxmox VE or Apache CloudStack as the default small-site compute substrate; OpenStack should be avoided unless the operator already has the skills to run it.
+- Ceph small cluster, ZFS, or Proxmox Backup for storage and recovery depending on operator maturity.
+- NetBox/openDCIM, Keycloak, OPA, PowerDNS, Edge Shield, Prometheus/VictoriaMetrics, Grafana, lightweight Kubernetes, and Rust API adapters.
 
 ## Exit Criteria
 

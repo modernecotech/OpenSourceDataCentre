@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OSDC Infrastructure Workbench</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-portal="infrastructure">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <strong>OSDC Workbench</strong>
+          <span>create manage assure</span>
+        </div>
+        <nav class="nav-list" aria-label="Infrastructure navigation">
+          <a class="active" href="/infrastructure"><span class="nav-icon">I</span>Infrastructure</a>
+          <a href="/user"><span class="nav-icon">U</span>Tenant</a>
+          <a href="/hardware"><span class="nav-icon">H</span>Hardware</a>
+          <a href="/assurance"><span class="nav-icon">A</span>Assurance</a>
+          <a href="/developer"><span class="nav-icon">D</span>Developer</a>
+          <a href="/data-platform"><span class="nav-icon">A</span>Data</a>
+          <a href="/operator"><span class="nav-icon">O</span>Operator</a>
+          <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
+          <a href="/planner"><span class="nav-icon">P</span>Planner</a>
+          <a href="/edge"><span class="nav-icon">E</span>Edge</a>
+        </nav>
+        <small>mode: guided workflow</small>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Infrastructure Workbench</h1>
+            <p>Create and manage infrastructure with connector paths, required tests, rollout gates, and evidence in one place</p>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="infra-refresh" aria-label="Refresh infrastructure workbench">R</button>
+            <button id="infra-run-tests">Run required tests</button>
+            <button class="primary" id="infra-open-change">Open change</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="metric-grid" id="infra-metrics">
+            <div class="metric"><span>Workflows</span><strong>10</strong><em>create manage scan</em></div>
+            <div class="metric"><span>Guarded connectors</span><strong>8</strong><em>approval required</em></div>
+            <div class="metric"><span>Test harnesses</span><strong>12</strong><em>mapped to actions</em></div>
+            <div class="metric"><span>Blocking gates</span><strong>9</strong><em>promotion controls</em></div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Guided Request</h2>
+              <div class="panel-tools">
+                <button id="infra-preview">Refresh preview</button>
+                <button id="infra-export-workflows">Export workflows</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <form class="form-grid">
+                <label>Workflow<select id="infra-workflow-select"></select></label>
+                <label>Deployment profile<select id="infra-stack-select"></select></label>
+                <label>Environment
+                  <select id="infra-environment">
+                    <option>development</option>
+                    <option>staging</option>
+                    <option>production-canary</option>
+                    <option>production</option>
+                  </select>
+                </label>
+                <label>Name<input id="infra-resource-name" value="clinic-api-01"></label>
+                <label>Owner
+                  <select id="infra-owner">
+                    <option>platform-owner</option>
+                    <option>cloud-owner</option>
+                    <option>security-owner</option>
+                    <option>data-owner</option>
+                    <option>hardware-owner</option>
+                  </select>
+                </label>
+                <label>Change mode
+                  <select id="infra-change-mode">
+                    <option>gitops-pr</option>
+                    <option>guarded-api-action</option>
+                    <option>read-only-review</option>
+                    <option>evidence-ingest</option>
+                  </select>
+                </label>
+              </form>
+              <div class="action-output" id="infra-action-output">Choose a workflow to see connectors, tests, gates, and evidence before opening a change.</div>
+            </div>
+          </section>
+
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Workflow Plan</h2>
+                <span class="status info" id="infra-selected-status">template</span>
+              </div>
+              <div class="panel-body">
+                <div class="flow-grid" id="infra-plan-flow">
+                  <div class="flow-step"><strong>Request</strong><span>select workflow</span></div>
+                  <div class="flow-step"><strong>Policy</strong><span>quota owner evidence</span></div>
+                  <div class="flow-step"><strong>Tests</strong><span>required gates</span></div>
+                  <div class="flow-step"><strong>Rollout</strong><span>GitOps or guarded API</span></div>
+                  <div class="flow-step"><strong>Audit</strong><span>evidence bundle</span></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header"><h2>Selected Stack</h2><span class="status" id="infra-stack-status">profile</span></div>
+              <div class="panel-body">
+                <div class="flow-grid" id="infra-stack-flow">
+                  <div class="flow-step"><strong>Cloud</strong><span>select profile</span></div>
+                  <div class="flow-step"><strong>Storage</strong><span>Ceph/ZFS</span></div>
+                  <div class="flow-step"><strong>Source</strong><span>NetBox</span></div>
+                  <div class="flow-step"><strong>Security</strong><span>Edge Shield</span></div>
+                  <div class="flow-step"><strong>GitOps</strong><span>Forgejo/Flux</span></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Workflow Catalogue</h2>
+              <div class="panel-tools">
+                <input id="infra-workflow-filter" type="search" placeholder="Filter workflows">
+                <select id="infra-workflow-status" aria-label="Workflow status filter">
+                  <option value="">All status</option>
+                  <option value="implemented">implemented</option>
+                  <option value="pilot">pilot</option>
+                  <option value="template">template</option>
+                </select>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Workflow</th><th>Goal</th><th>Domain</th><th>Substrate</th><th>Connectors</th><th>Tests</th><th>Gates</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="infra-workflows"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Selected Connectors</h2>
+              <div class="panel-tools">
+                <input id="infra-connector-filter" type="search" placeholder="Filter connectors">
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Connector</th><th>System</th><th>Capability</th><th>Pattern</th><th>Write mode</th><th>Owner</th><th>Status</th></tr>
+              </thead>
+              <tbody id="infra-connectors"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Required Test Harnesses</h2>
+              <div class="panel-tools">
+                <input id="infra-test-filter" type="search" placeholder="Filter tests">
+                <button id="infra-export-tests">Export tests</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Test</th><th>Area</th><th>Target</th><th>Type</th><th>Tools</th><th>Trigger</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="infra-tests"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Blocking Gates and Automation</h2>
+              <div class="panel-tools">
+                <input id="infra-gate-filter" type="search" placeholder="Filter gates">
+                <button id="infra-export-gates">Export gates</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Gate</th><th>Stage</th><th>Applies to</th><th>Checks</th><th>Automation</th><th>Blocking</th><th>Owner</th><th>Status</th><th>Evidence</th></tr>
+              </thead>
+              <tbody id="infra-gates"></tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="/portal.js"></script>
+  </body>
+</html>

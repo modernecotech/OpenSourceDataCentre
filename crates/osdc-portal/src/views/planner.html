@@ -15,6 +15,7 @@
         </div>
         <nav class="nav-list" aria-label="Planner navigation">
           <a class="active" href="/planner"><span class="nav-icon">P</span>Planner</a>
+          <a href="/infrastructure"><span class="nav-icon">I</span>Infrastructure</a>
           <a href="/hardware"><span class="nav-icon">H</span>Hardware</a>
           <a href="/lifecycle"><span class="nav-icon">L</span>Lifecycle</a>
           <a href="/commercial"><span class="nav-icon">C</span>Commercial</a>
@@ -60,6 +61,24 @@
               </thead>
               <tbody id="planner-scenarios">
                 <tr><td>Regional pilot</td><td>250 kW</td><td>10</td><td>300 m2</td><td>$1.02M-$1.92M</td><td>$180k-$550k</td><td>$1.20M-$2.47M</td><td>14-24 weeks</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Deployment Stack Pairings</h2>
+              <div class="panel-tools">
+                <input id="planner-stack-filter" type="search" placeholder="Filter stack profiles">
+                <button id="planner-stack-export">Export stack profiles</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Stage</th><th>Default substrate</th><th>Alternative</th><th>Storage</th><th>Bare metal</th><th>GitOps</th><th>Use when</th><th>Status</th></tr>
+              </thead>
+              <tbody id="planner-stack-profiles">
+                <tr><td>50 kW edge micro</td><td>Proxmox or CloudStack</td><td>OpenNebula</td><td>Ceph or ZFS</td><td>MAAS optional</td><td>Forgejo + Flux</td><td>simple local operation first</td><td><span class="status info">pilot</span></td></tr>
               </tbody>
             </table>
           </section>

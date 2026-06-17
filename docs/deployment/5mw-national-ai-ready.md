@@ -14,6 +14,9 @@ The 5 MW national/AI-ready pattern is strategic compute infrastructure. It shoul
 - Modular power and cooling blocks that can be maintained without full-site outage.
 - AI-ready rack rows with liquid-cooling interfaces where supply chain and skills support them.
 - Stronger fibre diversity, physical security, fire zones, and disaster-recovery integration.
+- OpenStack, Ironic, Metal3, Ceph NVMe tiers, Kubernetes, Slurm, and Kueue as the default strategic compute substrate.
+- OpenBMC/Redfish and SONiC where hardware support and local operating skills are proven.
+- OCP, Open19, Open Rack V3, or Open Rack Wide profiles where procurement and maintenance paths are credible.
 - National identity, key management, audit, logging, and tenant-isolation controls.
 
 ## Required Maturity

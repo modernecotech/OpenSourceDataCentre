@@ -4,12 +4,12 @@ The project uses a deployment ladder because most countries should not begin wit
 
 ## Deployment Ladder
 
-| Stage | Use case | Main goal |
-| --- | --- | --- |
-| 50 kW edge micro | University, hospital group, ministry edge, ISP edge | Prove local operations, local identity, backup, monitoring, and basic sovereign services. |
-| 250 kW regional pilot | First serious public-sector cloud | Validate power, cooling, software stack, operator training, procurement assumptions, and commissioning discipline. |
-| 1 MW regional production | National health, education, government apps, research | Provide reliable sovereign cloud capacity for priority workloads. |
-| 5 MW national/AI-ready | National AI, HPC, larger public cloud | Deliver strategic compute infrastructure with AI and public-sector tenant isolation. |
+| Stage | Use case | Main goal | Default substrate posture |
+| --- | --- | --- | --- |
+| 50 kW edge micro | University, hospital group, ministry edge, ISP edge | Prove local operations, local identity, backup, monitoring, and basic sovereign services. | Proxmox VE or CloudStack before OpenStack. |
+| 250 kW regional pilot | First serious public-sector cloud | Validate power, cooling, software stack, operator training, procurement assumptions, and commissioning discipline. | CloudStack or OpenStack with Ceph, Kubernetes, NetBox, MAAS/Ironic/Metal3. |
+| 1 MW regional production | National health, education, government apps, research | Provide reliable sovereign cloud capacity for priority workloads. | OpenStack, Ceph, Kubernetes, Kueue/Slurm, full assurance and commercial evidence. |
+| 5 MW national/AI-ready | National AI, HPC, larger public cloud | Deliver strategic compute infrastructure with AI and public-sector tenant isolation. | OpenStack/Ironic/Metal3, Ceph NVMe tiers, Kubernetes, Slurm/Kueue, OpenBMC/Redfish, SONiC where supportable. |
 
 ## Flagship Pilot
 
@@ -21,6 +21,7 @@ The 250 kW regional pilot is the reference point for developing-world adoption:
 - Solar-first, DC-first power path using PV, sodium-ion BESS, 380-400 VDC facility backbone, and 48 VDC rack or row buses.
 - Fallback generator or rental-generator connection for extended outage.
 - Open-source management stack with Rust adapters.
+- Deployment substrate selected from `data/software/deployment-stack-profiles.csv`.
 - Local fabrication where safe and licensed review where required.
 
 ## Planning Assumptions

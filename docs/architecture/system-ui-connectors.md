@@ -57,6 +57,18 @@ Hardware provisioning needs several connectors to cooperate:
 5. OpenStack, Kubernetes, Ceph, or the data platform receives the node.
 6. The assurance system closes the request only when evidence exists.
 
+## Deployment Substrate Connector Pattern
+
+The portal should expose Proxmox, CloudStack, and OpenStack as deployment substrates, not as competing OSDC replacements.
+
+| Substrate | Best fit | Connector posture |
+| --- | --- | --- |
+| Proxmox VE | 50 kW edge micro and small institutional deployments. | Guarded API actions for VM/LXC lifecycle, storage, backup, and cluster status with simple operator approval. |
+| Apache CloudStack | 50 kW to 250 kW sites that need a simpler IaaS operating model. | API-with-quota-policy for accounts, zones, templates, networks, and VMs. |
+| OpenStack | 250 kW+ regional and national sovereign clouds. | API-with-quota-policy plus GitOps/audit for Nova, Neutron, Glance, Cinder, Keystone, and Ironic workflows. |
+
+OSDC should choose the substrate by site scale and operator maturity, then provide the same sovereign workflow surface: tenant request, quota check, evidence, approval, deployment, health, cost, and audit.
+
 ## Source Notes
 
 - NetBox REST API documentation: https://netboxlabs.com/docs/netbox/integrations/rest-api/

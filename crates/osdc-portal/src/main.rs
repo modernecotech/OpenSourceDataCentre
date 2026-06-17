@@ -13,6 +13,7 @@ const USER_HTML: &str = include_str!("views/user.html");
 const OPERATOR_HTML: &str = include_str!("views/operator.html");
 const EDGE_HTML: &str = include_str!("views/edge.html");
 const PLANNER_HTML: &str = include_str!("views/planner.html");
+const INFRASTRUCTURE_HTML: &str = include_str!("views/infrastructure.html");
 const LIFECYCLE_HTML: &str = include_str!("views/lifecycle.html");
 const HARDWARE_HTML: &str = include_str!("views/hardware.html");
 const DEVELOPER_HTML: &str = include_str!("views/developer.html");
@@ -31,8 +32,22 @@ const EDGE_CROWDSEC_ACQUIS: &str =
     include_str!("../../../examples/config-scripts/edge/crowdsec-acquis.yaml");
 const EDGE_WIREGUARD_CONF: &str =
     include_str!("../../../examples/config-scripts/edge/wireguard-osdc-edge.conf");
+const EDGE_SHIELD_SERVICES_CSV: &str =
+    include_str!("../../../data/software/edge-shield-services.csv");
 const SOVEREIGN_SERVICE_CATALOGUE_CSV: &str =
     include_str!("../../../data/software/service-catalogue-v1.csv");
+const CONFIG_SCRIPT_CATALOGUE_CSV: &str =
+    include_str!("../../../data/software/config-script-catalogue.csv");
+const UPGRADE_POLICY_CSV: &str = include_str!("../../../data/software/upgrade-policy.csv");
+const SCENARIO_COSTS_CSV: &str = include_str!("../../../data/costing/scenario-costs-2026.csv");
+const SCENARIO_CATEGORY_COSTS_CSV: &str =
+    include_str!("../../../data/costing/scenario-category-costs-2026.csv");
+const MARKETPLACE_PRICE_BASIS_CSV: &str =
+    include_str!("../../../data/costing/marketplace-price-basis-2026.csv");
+const DEPLOYMENT_STACK_PROFILES_CSV: &str =
+    include_str!("../../../data/software/deployment-stack-profiles.csv");
+const INFRASTRUCTURE_WORKFLOWS_CSV: &str =
+    include_str!("../../../data/software/infrastructure-workflows.csv");
 const COMMERCIAL_GAP_REGISTER_CSV: &str =
     include_str!("../../../data/commercial/commercial-gap-register.csv");
 const STANDARDS_CONTROL_MATRIX_CSV: &str =
@@ -54,6 +69,8 @@ const PHYSICAL_SECURITY_CONTROLS_CSV: &str =
     include_str!("../../../data/security/physical-security-controls.csv");
 const SUSTAINABILITY_METRICS_CSV: &str =
     include_str!("../../../data/sustainability/sustainability-metrics.csv");
+const HARDWARE_COMPUTE_BASELINE_CSV: &str =
+    include_str!("../../../data/hardware/compute-baseline-2026.csv");
 const AI_RACK_CLASSES_CSV: &str =
     include_str!("../../../data/ai-ready/high-density-rack-classes.csv");
 const HARDWARE_PROVISIONING_PIPELINE_CSV: &str =
@@ -91,6 +108,10 @@ const DATA_ACCESS_POLICIES_CSV: &str =
     include_str!("../../../data/software/data-access-policies.csv");
 const DATA_PLATFORM_TEMPLATES_CSV: &str =
     include_str!("../../../data/software/data-platform-templates.csv");
+const OPEN_CLOUD_SERVICE_MAP_CSV: &str =
+    include_str!("../../../data/software/open-cloud-service-map.csv");
+const CORE_CLOUD_SERVICES_CSV: &str =
+    include_str!("../../../data/software/core-cloud-services.csv");
 const ASSURANCE_AUTOMATION_JOBS_CSV: &str =
     include_str!("../../../data/software/assurance-automation-jobs.csv");
 const SYSTEM_UI_CONNECTORS_CSV: &str =
@@ -114,6 +135,7 @@ fn main() -> std::io::Result<()> {
     println!("operator console: http://{addr}/operator");
     println!("edge shield console: http://{addr}/edge");
     println!("planning console: http://{addr}/planner");
+    println!("infrastructure workbench: http://{addr}/infrastructure");
     println!("lifecycle console: http://{addr}/lifecycle");
     println!("hardware provisioning console: http://{addr}/hardware");
     println!("commercial console: http://{addr}/commercial");
@@ -161,11 +183,12 @@ fn handle_connection(mut stream: TcpStream) -> std::io::Result<()> {
 
 fn route_response(method: &str, path: &str) -> Vec<u8> {
     match (method, path) {
-        ("GET", "/") => redirect("/user"),
+        ("GET", "/") => redirect("/infrastructure"),
         ("GET", "/user") => html(USER_HTML),
         ("GET", "/operator") => html(OPERATOR_HTML),
         ("GET", "/edge") => html(EDGE_HTML),
         ("GET", "/planner") => html(PLANNER_HTML),
+        ("GET", "/infrastructure") => html(INFRASTRUCTURE_HTML),
         ("GET", "/lifecycle") => html(LIFECYCLE_HTML),
         ("GET", "/hardware") => html(HARDWARE_HTML),
         ("GET", "/developer") => html(DEVELOPER_HTML),
@@ -201,6 +224,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/cost/scenarios") => json(&cost_scenarios()),
         ("GET", "/api/cost/categories") => json(&cost_categories()),
         ("GET", "/api/cost/price-basis") => json(&price_basis()),
+        ("GET", "/api/deployment/stack-profiles") => json(&deployment_stack_profiles()),
         ("GET", "/api/commercial/gaps") => json(&commercial_gaps()),
         ("GET", "/api/commercial/standards") => json(&commercial_standards()),
         ("GET", "/api/commercial/sla-classes") => json(&sla_classes()),
@@ -231,6 +255,7 @@ fn route_response(method: &str, path: &str) -> Vec<u8> {
         ("GET", "/api/assurance/threat-stack") => json(&threat_management_stack()),
         ("GET", "/api/assurance/scanner-coverage") => json(&scanner_coverage()),
         ("GET", "/api/assurance/automation-jobs") => json(&assurance_automation_jobs()),
+        ("GET", "/api/infrastructure/workbench") => json(&infrastructure_workbench()),
         ("GET", "/assets/rack-thermal-spine-cutaway.png") => {
             bytes("200 OK", "image/png", RACK_IMAGE)
         }
@@ -265,6 +290,20 @@ fn csv_rows<T: DeserializeOwned>(raw: &str, source: &str) -> Vec<T> {
             row.unwrap_or_else(|err| panic!("embedded CSV {source} must deserialize: {err}"))
         })
         .collect()
+}
+
+fn yes_no_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+    match value.trim().to_ascii_lowercase().as_str() {
+        "yes" | "true" | "1" => Ok(true),
+        "no" | "false" | "0" => Ok(false),
+        other => Err(serde::de::Error::custom(format!(
+            "expected yes/no boolean, got {other:?}"
+        ))),
+    }
 }
 
 fn redirect(location: &str) -> Vec<u8> {
@@ -331,18 +370,24 @@ fn text_content_type(path: &Path) -> &'static str {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct HardwareProfile {
-    id: &'static str,
-    role: &'static str,
-    hardware: &'static str,
-    linux_stack: &'static str,
-    accelerator: &'static str,
-    memory: &'static str,
+    #[serde(rename(deserialize = "profile_id"))]
+    id: String,
+    role: String,
+    #[serde(rename(deserialize = "baseline_hardware"))]
+    hardware: String,
+    linux_stack: String,
+    accelerator: String,
+    #[serde(rename(deserialize = "ram_or_vram"))]
+    memory: String,
+    #[serde(rename(deserialize = "power_design_w"))]
     power_w: u16,
+    #[serde(rename(deserialize = "unit_price_low_usd"))]
     price_low_usd: u16,
+    #[serde(rename(deserialize = "unit_price_high_usd"))]
     price_high_usd: u16,
-    default_use: &'static str,
+    default_use: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -415,29 +460,41 @@ struct HardwareProvisioningRequest {
     status: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct CloudService {
-    domain: &'static str,
-    user_service: &'static str,
-    stack: &'static str,
-    source_of_truth: &'static str,
+    #[serde(rename(deserialize = "cloud_domain"))]
+    domain: String,
+    user_service: String,
+    #[serde(rename(deserialize = "baseline_open_source_stack"))]
+    stack: String,
+    #[serde(rename(deserialize = "operator_source_of_truth"))]
+    source_of_truth: String,
+    #[serde(deserialize_with = "yes_no_bool")]
     tenant_visible: bool,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct CoreCloudService {
-    id: &'static str,
-    display_name: &'static str,
-    priority: &'static str,
-    aws_equivalent: &'static str,
-    azure_equivalent: &'static str,
-    open_source_stack: &'static str,
+    #[serde(rename(deserialize = "service_id"))]
+    id: String,
+    display_name: String,
+    priority: String,
+    aws_equivalent: String,
+    azure_equivalent: String,
+    open_source_stack: String,
+    #[serde(deserialize_with = "yes_no_bool")]
     tenant_visible: bool,
+    #[serde(deserialize_with = "yes_no_bool")]
     operator_visible: bool,
+    #[serde(deserialize_with = "yes_no_bool")]
     provisionable: bool,
-    default_shape: &'static str,
-    status: &'static str,
-    status_kind: &'static str,
+    default_shape: String,
+    #[serde(rename(deserialize = "notes"), skip_serializing)]
+    _notes: String,
+    #[serde(default)]
+    status: String,
+    #[serde(default)]
+    status_kind: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -1040,29 +1097,33 @@ impl From<SovereignCloudServiceRow> for SovereignCloudService {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct UpgradePolicy {
-    update_class: &'static str,
-    frequency: &'static str,
-    target_window: &'static str,
-    required_gates: &'static str,
-    approval_owner: &'static str,
-    rollback_requirement: &'static str,
+    update_class: String,
+    frequency: String,
+    target_window: String,
+    required_gates: String,
+    approval_owner: String,
+    rollback_requirement: String,
+    #[serde(rename(deserialize = "notes"), skip_serializing)]
+    _notes: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ConfigScript {
-    id: &'static str,
-    tool: &'static str,
-    path: &'static str,
-    owner: &'static str,
-    language: &'static str,
-    edit_mode: &'static str,
-    validation_command: &'static str,
-    rollout_target: &'static str,
-    risk: &'static str,
-    notes: &'static str,
-    content: &'static str,
+    #[serde(rename(deserialize = "script_id"))]
+    id: String,
+    tool: String,
+    path: String,
+    owner: String,
+    language: String,
+    edit_mode: String,
+    validation_command: String,
+    rollout_target: String,
+    risk: String,
+    notes: String,
+    #[serde(default)]
+    content: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -1186,16 +1247,20 @@ struct OperationItem {
     status_kind: &'static str,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct EdgeShieldService {
-    id: &'static str,
-    cloudflare_equivalent: &'static str,
-    open_source_stack: &'static str,
-    radxa_role: &'static str,
-    criticality: &'static str,
-    protocol: &'static str,
-    status: &'static str,
-    status_kind: &'static str,
+    #[serde(rename(deserialize = "service_id"))]
+    id: String,
+    cloudflare_equivalent: String,
+    open_source_stack: String,
+    radxa_role: String,
+    criticality: String,
+    #[serde(rename(deserialize = "default_port_or_protocol"))]
+    protocol: String,
+    #[serde(default)]
+    status: String,
+    #[serde(default)]
+    status_kind: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -1222,12 +1287,42 @@ struct CostPlanning {
     scenarios: Vec<CostScenario>,
     categories: Vec<CostCategory>,
     price_basis: Vec<PriceBasis>,
+    deployment_profiles: Vec<DeploymentStackProfile>,
 }
 
 #[derive(Debug, Serialize)]
+struct InfrastructureWorkbench {
+    metrics: Vec<LifecycleMetric>,
+    workflows: Vec<InfrastructureWorkflow>,
+    stack_profiles: Vec<DeploymentStackProfile>,
+    connectors: Vec<SystemUiConnector>,
+    test_harnesses: Vec<TestHarness>,
+    upgrade_gates: Vec<UpgradeTestGate>,
+    automation_jobs: Vec<AssuranceAutomationJob>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct InfrastructureWorkflow {
+    workflow_id: String,
+    workflow_name: String,
+    user_goal: String,
+    primary_surface: String,
+    service_domain: String,
+    default_substrate: String,
+    connector_ids: String,
+    required_test_ids: String,
+    required_gate_ids: String,
+    automation_job_id: String,
+    evidence_path: String,
+    owner: String,
+    status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct CostScenario {
-    id: &'static str,
-    name: &'static str,
+    #[serde(rename(deserialize = "scenario_id"))]
+    id: String,
+    name: String,
     it_load_kw: u32,
     racks: u16,
     building_area_m2: u32,
@@ -1235,32 +1330,54 @@ struct CostScenario {
     core_facility_high_usd: u32,
     starter_it_low_usd: u32,
     starter_it_high_usd: u32,
+    #[serde(rename(deserialize = "dc_microgrid_included_usd"), skip_serializing)]
+    _dc_microgrid_included_usd: String,
     total_with_it_low_usd: u32,
     total_with_it_high_usd: u32,
     build_time_low_weeks: u16,
     build_time_high_weeks: u16,
-    default_building_system: &'static str,
-    notes: &'static str,
+    default_building_system: String,
+    notes: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct CostCategory {
-    scenario_id: &'static str,
-    category: &'static str,
+    scenario_id: String,
+    category: String,
     low_usd: u32,
     high_usd: u32,
-    notes: &'static str,
+    notes: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct PriceBasis {
-    item_family: &'static str,
-    unit: &'static str,
+    item_family: String,
+    unit: String,
     low_usd: f64,
     high_usd: f64,
     planning_selected_usd: f64,
-    source_marketplace: &'static str,
-    project_use: &'static str,
+    source_marketplace: String,
+    #[serde(rename(deserialize = "source_note"), skip_serializing)]
+    _source_note: String,
+    project_use: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct DeploymentStackProfile {
+    profile_id: String,
+    stage: String,
+    it_load_kw: u32,
+    default_cloud_substrate: String,
+    alternate_cloud_substrate: String,
+    storage_substrate: String,
+    container_substrate: String,
+    bare_metal_lifecycle: String,
+    source_of_truth: String,
+    edge_security: String,
+    developer_gitops: String,
+    operations_focus: String,
+    when_to_use: String,
+    maturity: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -1278,56 +1395,10 @@ struct GeneratedFile {
 }
 
 fn hardware_catalog() -> Vec<HardwareProfile> {
-    vec![
-        HardwareProfile {
-            id: "sbc.rk3588.control",
-            role: "facility_gateway",
-            hardware: "Radxa ROCK 5B+ RK3588 16-32GB",
-            linux_stack: "Debian or Armbian",
-            accelerator: "RK3588 NPU 6 TOPS",
-            memory: "16-32GB system RAM",
-            power_w: 30,
-            price_low_usd: 140,
-            price_high_usd: 260,
-            default_use: "facility telemetry, OT gateways, local console, edge management",
-        },
-        HardwareProfile {
-            id: "sbc.rk3588.edge",
-            role: "tenant_edge",
-            hardware: "Radxa ROCK 5B+ or Orange Pi 5 Plus RK3588",
-            linux_stack: "Debian or Armbian",
-            accelerator: "RK3588 NPU 6 TOPS",
-            memory: "16-32GB system RAM",
-            power_w: 30,
-            price_low_usd: 120,
-            price_high_usd: 240,
-            default_use: "low-power tenant services and small edge clusters",
-        },
-        HardwareProfile {
-            id: "gpu.rocm.16g.default",
-            role: "tenant_gpu",
-            hardware: "AMD Radeon RX 9060 XT 16GB",
-            linux_stack: "x86 Linux with Mesa, AMDGPU, and ROCm",
-            accelerator: "ROCm, HIP, OpenCL, Vulkan",
-            memory: "16GB GDDR6",
-            power_w: 160,
-            price_low_usd: 350,
-            price_high_usd: 430,
-            default_use: "default open-driver GPU instance and AI inference lane",
-        },
-        HardwareProfile {
-            id: "gpu.xpu.16g.lowpower",
-            role: "tenant_gpu_low_power",
-            hardware: "Intel Arc Pro B50 16GB",
-            linux_stack: "x86 Linux with Mesa, Xe driver, Level Zero, OpenCL",
-            accelerator: "oneAPI Level Zero, OpenCL, OpenVINO",
-            memory: "16GB GDDR6",
-            power_w: 70,
-            price_low_usd: 350,
-            price_high_usd: 450,
-            default_use: "low-power GPU visualization, media, and inference lane",
-        },
-    ]
+    csv_rows(
+        HARDWARE_COMPUTE_BASELINE_CSV,
+        "data/hardware/compute-baseline-2026.csv",
+    )
 }
 
 fn system_ui_connectors() -> Vec<SystemUiConnector> {
@@ -1417,155 +1488,34 @@ fn hardware_provisioning_overview() -> HardwareProvisioningOverview {
 }
 
 fn service_catalog() -> Vec<CloudService> {
-    vec![
-        CloudService {
-            domain: "compute",
-            user_service: "VM instances, images, keypairs, security groups",
-            stack: "OpenStack Nova, Glance, Neutron, KVM, libvirt",
-            source_of_truth: "OpenStack and NetBox",
-            tenant_visible: true,
-        },
-        CloudService {
-            domain: "bare_metal",
-            user_service: "Dedicated servers and GPU nodes",
-            stack: "OpenStack Ironic, Metal3, Redfish, OpenBMC",
-            source_of_truth: "NetBox and Ironic",
-            tenant_visible: true,
-        },
-        CloudService {
-            domain: "object_storage",
-            user_service: "Buckets, lifecycle, S3-compatible API",
-            stack: "Ceph RGW",
-            source_of_truth: "Ceph",
-            tenant_visible: true,
-        },
-        CloudService {
-            domain: "kubernetes",
-            user_service: "Managed clusters and node pools",
-            stack: "Cluster API, Metal3, Cilium, Talos or kubeadm",
-            source_of_truth: "Kubernetes and GitOps",
-            tenant_visible: true,
-        },
-        CloudService {
-            domain: "ai_serving",
-            user_service: "Model endpoints and GPU queues",
-            stack: "KServe, vLLM, SGLang, llama.cpp, Kueue",
-            source_of_truth: "Kubernetes, Kueue, and model registry",
-            tenant_visible: true,
-        },
-        CloudService {
-            domain: "dcim",
-            user_service: "Racks, devices, circuits, IPAM",
-            stack: "NetBox, openDCIM",
-            source_of_truth: "NetBox",
-            tenant_visible: false,
-        },
-    ]
+    csv_rows(
+        OPEN_CLOUD_SERVICE_MAP_CSV,
+        "data/software/open-cloud-service-map.csv",
+    )
 }
 
 fn edge_shield_services() -> Vec<EdgeShieldService> {
-    vec![
-        EdgeShieldService {
-            id: "edge_dns_authoritative",
-            cloudflare_equivalent: "Cloudflare DNS",
-            open_source_stack: "PowerDNS Authoritative, dnsdist",
-            radxa_role: "authoritative DNS edge and DNSSEC host",
-            criticality: "critical",
-            protocol: "DNS 53 TCP/UDP",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_reverse_proxy",
-            cloudflare_equivalent: "Cloudflare CDN proxy",
-            open_source_stack: "Caddy, Envoy, HAProxy, Traefik",
-            radxa_role: "TLS termination and origin routing",
-            criticality: "critical",
-            protocol: "HTTP 80 HTTPS 443",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_cache",
-            cloudflare_equivalent: "Cloudflare CDN cache",
-            open_source_stack: "Varnish/Vinyl Cache or Nginx cache",
-            radxa_role: "static and API response cache",
-            criticality: "critical",
-            protocol: "HTTP local",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_waf",
-            cloudflare_equivalent: "Cloudflare WAF",
-            open_source_stack: "OWASP Coraza with OWASP CRS",
-            radxa_role: "request inspection and blocking",
-            criticality: "critical",
-            protocol: "HTTP filter",
-            status: "detection",
-            status_kind: "info",
-        },
-        EdgeShieldService {
-            id: "edge_rate_limit",
-            cloudflare_equivalent: "Rate limiting and DDoS rules",
-            open_source_stack: "CrowdSec, nftables, HAProxy stick tables",
-            radxa_role: "abuse detection and local blocking",
-            criticality: "critical",
-            protocol: "L3/L4/L7",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_load_balance",
-            cloudflare_equivalent: "Cloudflare Load Balancing",
-            open_source_stack: "HAProxy, Traefik, Envoy, dnsdist",
-            radxa_role: "origin failover and regional routing",
-            criticality: "critical",
-            protocol: "HTTP TCP DNS",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_tunnel",
-            cloudflare_equivalent: "Cloudflare Tunnel",
-            open_source_stack: "WireGuard, Headscale, NetBird, OpenZiti",
-            radxa_role: "private origin tunnel endpoint",
-            criticality: "important",
-            protocol: "WireGuard UDP",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_access",
-            cloudflare_equivalent: "Cloudflare Access",
-            open_source_stack: "Keycloak, OPA, Authelia, Authentik",
-            radxa_role: "zero-trust app access",
-            criticality: "critical",
-            protocol: "HTTPS OIDC",
-            status: "ready",
-            status_kind: "normal",
-        },
-        EdgeShieldService {
-            id: "edge_functions",
-            cloudflare_equivalent: "Cloudflare Workers",
-            open_source_stack: "WASI, Wasmtime, Spin, wasmCloud",
-            radxa_role: "small edge functions and transforms",
-            criticality: "optional",
-            protocol: "WASI HTTP",
-            status: "preview",
-            status_kind: "info",
-        },
-        EdgeShieldService {
-            id: "edge_observability",
-            cloudflare_equivalent: "Cloudflare Analytics and logs",
-            open_source_stack: "Prometheus, OpenTelemetry, Loki, Grafana",
-            radxa_role: "node and service telemetry",
-            criticality: "critical",
-            protocol: "Prometheus 9100 OTLP",
-            status: "ready",
-            status_kind: "normal",
-        },
-    ]
+    let mut services: Vec<EdgeShieldService> = csv_rows(
+        EDGE_SHIELD_SERVICES_CSV,
+        "data/software/edge-shield-services.csv",
+    );
+    for service in &mut services {
+        match service.id.as_str() {
+            "edge_waf" => {
+                service.status = "detection".to_string();
+                service.status_kind = "info".to_string();
+            }
+            _ if service.criticality == "optional" => {
+                service.status = "preview".to_string();
+                service.status_kind = "info".to_string();
+            }
+            _ => {
+                service.status = "ready".to_string();
+                service.status_kind = "normal".to_string();
+            }
+        }
+    }
+    services
 }
 
 fn edge_shield_status() -> EdgeShieldStatus {
@@ -1727,703 +1677,112 @@ fn cost_planning() -> CostPlanning {
         scenarios: cost_scenarios(),
         categories: cost_categories(),
         price_basis: price_basis(),
+        deployment_profiles: deployment_stack_profiles(),
     }
 }
 
 fn cost_scenarios() -> Vec<CostScenario> {
-    vec![
-        CostScenario {
-            id: "S1",
-            name: "Edge micro",
-            it_load_kw: 50,
-            racks: 4,
-            building_area_m2: 120,
-            core_facility_low_usd: 340_000,
-            core_facility_high_usd: 580_000,
-            starter_it_low_usd: 80_000,
-            starter_it_high_usd: 220_000,
-            total_with_it_low_usd: 420_000,
-            total_with_it_high_usd: 800_000,
-            build_time_low_weeks: 8,
-            build_time_high_weeks: 14,
-            default_building_system:
-                "insulated sandwich panel building with solar sodium-ion DC microgrid bus",
-            notes: "excludes land, major utility upgrade, and fibre buildout",
-        },
-        CostScenario {
-            id: "S2",
-            name: "Regional pilot",
-            it_load_kw: 250,
-            racks: 10,
-            building_area_m2: 300,
-            core_facility_low_usd: 1_020_000,
-            core_facility_high_usd: 1_920_000,
-            starter_it_low_usd: 180_000,
-            starter_it_high_usd: 550_000,
-            total_with_it_low_usd: 1_200_000,
-            total_with_it_high_usd: 2_470_000,
-            build_time_low_weeks: 14,
-            build_time_high_weeks: 24,
-            default_building_system:
-                "insulated panel hall with service trench and solar sodium-ion DC microgrid bus",
-            notes: "includes adsorption chiller as optional pilot allowance",
-        },
-        CostScenario {
-            id: "S3",
-            name: "Regional production",
-            it_load_kw: 1_000,
-            racks: 40,
-            building_area_m2: 1_000,
-            core_facility_low_usd: 3_650_000,
-            core_facility_high_usd: 6_650_000,
-            starter_it_low_usd: 900_000,
-            starter_it_high_usd: 3_200_000,
-            total_with_it_low_usd: 4_550_000,
-            total_with_it_high_usd: 9_850_000,
-            build_time_low_weeks: 28,
-            build_time_high_weeks: 44,
-            default_building_system:
-                "multi-zone insulated panel halls with solar sodium-ion DC microgrid bus",
-            notes: "requires stronger local engineering and authority review",
-        },
-        CostScenario {
-            id: "S4",
-            name: "National AI-ready",
-            it_load_kw: 5_000,
-            racks: 160,
-            building_area_m2: 4_500,
-            core_facility_low_usd: 18_500_000,
-            core_facility_high_usd: 36_500_000,
-            starter_it_low_usd: 5_000_000,
-            starter_it_high_usd: 30_000_000,
-            total_with_it_low_usd: 23_500_000,
-            total_with_it_high_usd: 66_500_000,
-            build_time_low_weeks: 52,
-            build_time_high_weeks: 90,
-            default_building_system:
-                "large insulated panel campus with solar sodium-ion DC microgrid blocks",
-            notes: "marketplace sourcing is useful for commodities only at this scale",
-        },
-    ]
+    csv_rows(SCENARIO_COSTS_CSV, "data/costing/scenario-costs-2026.csv")
 }
-
 fn cost_categories() -> Vec<CostCategory> {
-    vec![
-        CostCategory {
-            scenario_id: "S1",
-            category: "panel_building_civil_trench_security_shell",
-            low_usd: 70_000,
-            high_usd: 130_000,
-            notes: "120 m2 insulated panel shell with service trench and simple perimeter",
-        },
-        CostCategory {
-            scenario_id: "S1",
-            category: "dc_microgrid_solar_sodium_single_fallback_power",
-            low_usd: 115_000,
-            high_usd: 190_000,
-            notes: "75 kWp PV, 150 kWh sodium-ion BESS, 75 kW DC microgrid converters, 380-400 VDC bus, 48 V racks, and one fallback generator path",
-        },
-        CostCategory {
-            scenario_id: "S1",
-            category: "rack_thermal_spine_cooling",
-            low_usd: 70_000,
-            high_usd: 140_000,
-            notes: "4 rear-door heat exchangers, small pump skid, dry cooler, backup chiller, and controls",
-        },
-        CostCategory {
-            scenario_id: "S1",
-            category: "fire_access_cctv",
-            low_usd: 30_000,
-            high_usd: 65_000,
-            notes: "local-code approved detection, suppression, and basic security",
-        },
-        CostCategory {
-            scenario_id: "S1",
-            category: "racks_cabling_basic_network",
-            low_usd: 35_000,
-            high_usd: 75_000,
-            notes: "4 racks, DC rack power, OOB, and modest switching",
-        },
-        CostCategory {
-            scenario_id: "S1",
-            category: "commissioning_spares_tools_docs",
-            low_usd: 45_000,
-            high_usd: 90_000,
-            notes: "load testing, spares, operator tools, and runbooks",
-        },
-        CostCategory {
-            scenario_id: "S2",
-            category: "panel_building_civil_trench_perimeter",
-            low_usd: 160_000,
-            high_usd: 300_000,
-            notes: "300 m2 panel hall with electrical room and thermal plant room",
-        },
-        CostCategory {
-            scenario_id: "S2",
-            category: "dc_microgrid_solar_sodium_single_fallback_power",
-            low_usd: 430_000,
-            high_usd: 720_000,
-            notes: "300 kWp PV, 500 kWh sodium-ion BESS, 350 kW DC converters, 380-400 VDC bus, 48 V racks, and one fallback generator path",
-        },
-        CostCategory {
-            scenario_id: "S2",
-            category: "rack_thermal_spine_and_backup_cooling",
-            low_usd: 230_000,
-            high_usd: 470_000,
-            notes: "10 rear-door heat exchangers, thermal spine, dry cooler, chiller, and adsorption pilot allowance",
-        },
-        CostCategory {
-            scenario_id: "S2",
-            category: "fire_security_monitoring",
-            low_usd: 70_000,
-            high_usd: 150_000,
-            notes: "aspirating detection, fire alarm, suppression, access, CCTV, and monitoring",
-        },
-        CostCategory {
-            scenario_id: "S2",
-            category: "racks_structured_cabling_network",
-            low_usd: 90_000,
-            high_usd: 220_000,
-            notes: "10 racks with 25G/100G-capable network and cabling",
-        },
-        CostCategory {
-            scenario_id: "S2",
-            category: "commissioning_spares_tools_docs",
-            low_usd: 90_000,
-            high_usd: 180_000,
-            notes: "integrated systems testing, spares, local runbooks, and training",
-        },
-        CostCategory {
-            scenario_id: "S3",
-            category: "panel_building_civil_roads_perimeter_trenches",
-            low_usd: 550_000,
-            high_usd: 1_100_000,
-            notes: "1000 m2 multi-zone panel facility and plant yard",
-        },
-        CostCategory {
-            scenario_id: "S3",
-            category: "dc_microgrid_solar_sodium_single_fallback_power",
-            low_usd: 1_450_000,
-            high_usd: 2_550_000,
-            notes: "1.2 MWp PV, 2 MWh sodium-ion BESS, 1.4 MW DC converters, HVDC distribution, and single fallback plant",
-        },
-        CostCategory {
-            scenario_id: "S3",
-            category: "cooling_plant_rack_heat_capture_thermal_spine",
-            low_usd: 850_000,
-            high_usd: 1_700_000,
-            notes: "40 racks, multiple dry coolers, chillers, thermal spine zones, and pump skids",
-        },
-        CostCategory {
-            scenario_id: "S3",
-            category: "fire_security_monitoring",
-            low_usd: 180_000,
-            high_usd: 360_000,
-            notes: "multi-zone life safety and security systems",
-        },
-        CostCategory {
-            scenario_id: "S3",
-            category: "racks_cabling_network_fabric",
-            low_usd: 380_000,
-            high_usd: 750_000,
-            notes: "40 racks, redundant fabric, optics allowance, and structured cabling",
-        },
-        CostCategory {
-            scenario_id: "S3",
-            category: "commissioning_spares_tools_docs",
-            low_usd: 240_000,
-            high_usd: 520_000,
-            notes: "load banks, spares, procedures, and training",
-        },
-        CostCategory {
-            scenario_id: "S4",
-            category: "panel_buildings_civil_campus_security",
-            low_usd: 2_500_000,
-            high_usd: 5_000_000,
-            notes: "large panel campus with roads, fencing, plant yards, and security perimeter",
-        },
-        CostCategory {
-            scenario_id: "S4",
-            category: "dc_microgrid_solar_sodium_single_fallback_power",
-            low_usd: 7_500_000,
-            high_usd: 14_500_000,
-            notes: "5 MWp PV, 10 MWh sodium-ion BESS, 6 MW DC converter blocks, MV boundary gear, HVDC distribution, and single fallback plant",
-        },
-        CostCategory {
-            scenario_id: "S4",
-            category: "cooling_plant_thermal_spine_zones",
-            low_usd: 4_000_000,
-            high_usd: 8_500_000,
-            notes: "multiple cooling zones, dry coolers, backup chillers, liquid cooling, and thermal spine plant",
-        },
-        CostCategory {
-            scenario_id: "S4",
-            category: "fire_security_monitoring",
-            low_usd: 700_000,
-            high_usd: 1_600_000,
-            notes: "campus-scale life safety and security systems",
-        },
-        CostCategory {
-            scenario_id: "S4",
-            category: "racks_cabling_network_fabric",
-            low_usd: 2_000_000,
-            high_usd: 4_500_000,
-            notes: "160 racks, AI-ready network, optics, and structured cabling",
-        },
-        CostCategory {
-            scenario_id: "S4",
-            category: "commissioning_spares_tools_docs",
-            low_usd: 1_800_000,
-            high_usd: 3_500_000,
-            notes: "full integrated systems testing, spares, documentation, and training",
-        },
-    ]
+    csv_rows(
+        SCENARIO_CATEGORY_COSTS_CSV,
+        "data/costing/scenario-category-costs-2026.csv",
+    )
+}
+fn price_basis() -> Vec<PriceBasis> {
+    csv_rows(
+        MARKETPLACE_PRICE_BASIS_CSV,
+        "data/costing/marketplace-price-basis-2026.csv",
+    )
 }
 
-fn price_basis() -> Vec<PriceBasis> {
-    vec![
-        PriceBasis {
-            item_family: "100mm_pu_pir_panel",
-            unit: "m2_fob",
-            low_usd: 8.0,
-            high_usd: 18.0,
-            planning_selected_usd: 12.0,
-            source_marketplace: "Alibaba",
-            project_use: "fast insulated building envelope",
-        },
-        PriceBasis {
-            item_family: "installed_panel_envelope",
-            unit: "m2_installed",
-            low_usd: 35.0,
-            high_usd: 90.0,
-            planning_selected_usd: 55.0,
-            source_marketplace: "Derived",
-            project_use: "scenario building shell",
-        },
-        PriceBasis {
-            item_family: "prefab_steel_frame",
-            unit: "m2_fob",
-            low_usd: 45.0,
-            high_usd: 100.0,
-            planning_selected_usd: 65.0,
-            source_marketplace: "Alibaba/China prefab market",
-            project_use: "fast panel building structure",
-        },
-        PriceBasis {
-            item_family: "concrete_plinth_and_floor",
-            unit: "m2_local",
-            low_usd: 100.0,
-            high_usd: 240.0,
-            planning_selected_usd: 160.0,
-            source_marketplace: "Derived",
-            project_use: "building foundation",
-        },
-        PriceBasis {
-            item_family: "42u_server_rack",
-            unit: "each_landed",
-            low_usd: 450.0,
-            high_usd: 900.0,
-            planning_selected_usd: 650.0,
-            source_marketplace: "Alibaba",
-            project_use: "rack structure",
-        },
-        PriceBasis {
-            item_family: "dc_rack_power_shelf_or_pdu",
-            unit: "each_landed",
-            low_usd: 300.0,
-            high_usd: 900.0,
-            planning_selected_usd: 450.0,
-            source_marketplace: "Alibaba/OCP-style suppliers",
-            project_use: "rack DC power",
-        },
-        PriceBasis {
-            item_family: "rear_door_heat_exchanger",
-            unit: "each_landed",
-            low_usd: 1800.0,
-            high_usd: 6500.0,
-            planning_selected_usd: 2800.0,
-            source_marketplace: "Alibaba",
-            project_use: "rack heat capture",
-        },
-        PriceBasis {
-            item_family: "thermal_spine_pipework",
-            unit: "m_installed",
-            low_usd: 50.0,
-            high_usd: 180.0,
-            planning_selected_usd: 85.0,
-            source_marketplace: "Derived",
-            project_use: "warm-water thermal spine",
-        },
-        PriceBasis {
-            item_family: "dry_cooler_250kw",
-            unit: "each_installed",
-            low_usd: 12_000.0,
-            high_usd: 45_000.0,
-            planning_selected_usd: 35_000.0,
-            source_marketplace: "Alibaba",
-            project_use: "primary heat rejection",
-        },
-        PriceBasis {
-            item_family: "backup_chiller_250kw",
-            unit: "each_installed",
-            low_usd: 20_000.0,
-            high_usd: 70_000.0,
-            planning_selected_usd: 40_000.0,
-            source_marketplace: "Alibaba",
-            project_use: "backup cooling",
-        },
-        PriceBasis {
-            item_family: "adsorption_chiller_pilot",
-            unit: "each_installed",
-            low_usd: 40_000.0,
-            high_usd: 140_000.0,
-            planning_selected_usd: 60_000.0,
-            source_marketplace: "RFQ/Derived",
-            project_use: "heat-to-cooling pilot",
-        },
-        PriceBasis {
-            item_family: "sodium_ion_bess",
-            unit: "kwh_installed",
-            low_usd: 200.0,
-            high_usd: 420.0,
-            planning_selected_usd: 230.0,
-            source_marketplace: "Alibaba/Derived",
-            project_use: "critical ride-through and solar shifting",
-        },
-        PriceBasis {
-            item_family: "dc_microgrid_converter_controller",
-            unit: "kw_installed",
-            low_usd: 85.0,
-            high_usd: 210.0,
-            planning_selected_usd: 135.0,
-            source_marketplace: "Alibaba/Derived",
-            project_use: "380-400 VDC bus control",
-        },
-        PriceBasis {
-            item_family: "ac_boundary_rectifier_inverter",
-            unit: "kw_installed",
-            low_usd: 55.0,
-            high_usd: 150.0,
-            planning_selected_usd: 95.0,
-            source_marketplace: "Alibaba/Derived",
-            project_use: "boundary adapter",
-        },
-        PriceBasis {
-            item_family: "hvdc_distribution_protection",
-            unit: "kw_installed",
-            low_usd: 25.0,
-            high_usd: 90.0,
-            planning_selected_usd: 45.0,
-            source_marketplace: "Derived",
-            project_use: "DC distribution safety",
-        },
-        PriceBasis {
-            item_family: "solar_pv_system",
-            unit: "w_installed",
-            low_usd: 0.55,
-            high_usd: 0.95,
-            planning_selected_usd: 0.65,
-            source_marketplace: "Alibaba/Derived",
-            project_use: "core solar input",
-        },
-        PriceBasis {
-            item_family: "25g_leaf_switch",
-            unit: "each_landed",
-            low_usd: 2500.0,
-            high_usd: 9000.0,
-            planning_selected_usd: 5500.0,
-            source_marketplace: "Alibaba",
-            project_use: "network fabric",
-        },
-        PriceBasis {
-            item_family: "100g_spine_switch",
-            unit: "each_landed",
-            low_usd: 6500.0,
-            high_usd: 15_000.0,
-            planning_selected_usd: 9000.0,
-            source_marketplace: "Alibaba/SONiC vendors",
-            project_use: "network fabric",
-        },
-        PriceBasis {
-            item_family: "standard_compute_server",
-            unit: "each_landed",
-            low_usd: 1400.0,
-            high_usd: 3500.0,
-            planning_selected_usd: 1800.0,
-            source_marketplace: "Alibaba/used market",
-            project_use: "compute nodes",
-        },
-        PriceBasis {
-            item_family: "storage_server_node",
-            unit: "each_landed",
-            low_usd: 5000.0,
-            high_usd: 15_000.0,
-            planning_selected_usd: 8000.0,
-            source_marketplace: "Alibaba",
-            project_use: "Ceph storage",
-        },
-        PriceBasis {
-            item_family: "gpu_server_pilot",
-            unit: "each_landed",
-            low_usd: 15_000.0,
-            high_usd: 50_000.0,
-            planning_selected_usd: 20_000.0,
-            source_marketplace: "Alibaba",
-            project_use: "AI pilot",
-        },
-        PriceBasis {
-            item_family: "commissioning_load_bank",
-            unit: "lot",
-            low_usd: 8000.0,
-            high_usd: 80_000.0,
-            planning_selected_usd: 25_000.0,
-            source_marketplace: "Rental/Derived",
-            project_use: "integrated systems testing",
-        },
-    ]
+fn deployment_stack_profiles() -> Vec<DeploymentStackProfile> {
+    csv_rows(
+        DEPLOYMENT_STACK_PROFILES_CSV,
+        "data/software/deployment-stack-profiles.csv",
+    )
+}
+
+fn infrastructure_workflows() -> Vec<InfrastructureWorkflow> {
+    csv_rows(
+        INFRASTRUCTURE_WORKFLOWS_CSV,
+        "data/software/infrastructure-workflows.csv",
+    )
+}
+
+fn infrastructure_workbench() -> InfrastructureWorkbench {
+    let workflows = infrastructure_workflows();
+    let connectors = system_ui_connectors();
+    let test_harnesses = test_harnesses();
+    let upgrade_gates = upgrade_test_gates();
+    let automation_jobs = assurance_automation_jobs();
+    let implemented_jobs = automation_jobs
+        .iter()
+        .filter(|job| job.status == "implemented")
+        .count();
+    let guarded_connectors = connectors
+        .iter()
+        .filter(|connector| {
+            connector.write_mode.contains("guarded") || connector.write_mode.contains("approval")
+        })
+        .count();
+    let blocking_gates = upgrade_gates
+        .iter()
+        .filter(|gate| gate.blocking == "yes")
+        .count();
+
+    InfrastructureWorkbench {
+        metrics: vec![
+            LifecycleMetric {
+                label: "Workflows".to_string(),
+                value: workflows.len().to_string(),
+                detail: "create manage upgrade scan".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Guarded connectors".to_string(),
+                value: guarded_connectors.to_string(),
+                detail: "approval before risky writes".to_string(),
+                kind: "warn",
+            },
+            LifecycleMetric {
+                label: "Test harnesses".to_string(),
+                value: test_harnesses.len().to_string(),
+                detail: "mapped to user actions".to_string(),
+                kind: "normal",
+            },
+            LifecycleMetric {
+                label: "Blocking gates".to_string(),
+                value: blocking_gates.to_string(),
+                detail: format!("{implemented_jobs} runnable jobs").to_string(),
+                kind: "info",
+            },
+        ],
+        workflows,
+        stack_profiles: deployment_stack_profiles(),
+        connectors,
+        test_harnesses,
+        upgrade_gates,
+        automation_jobs,
+    }
 }
 
 fn core_cloud_services() -> Vec<CoreCloudService> {
-    vec![
-        CoreCloudService {
-            id: "identity",
-            display_name: "Identity and projects",
-            priority: "foundation",
-            aws_equivalent: "IAM, Organizations",
-            azure_equivalent: "Microsoft Entra ID, resource groups",
-            open_source_stack: "Keycloak, OPA, OpenStack Keystone",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "project.small",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "compute_vm",
-            display_name: "Virtual machines",
-            priority: "foundation",
-            aws_equivalent: "EC2",
-            azure_equivalent: "Azure Virtual Machines",
-            open_source_stack: "OpenStack Nova, KVM, libvirt",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "cpu.standard",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "compute_bare_metal",
-            display_name: "Bare metal and GPU nodes",
-            priority: "foundation",
-            aws_equivalent: "EC2 bare metal, accelerated instances",
-            azure_equivalent: "Bare metal and GPU VM families",
-            open_source_stack: "OpenStack Ironic, Metal3, Redfish, Kubernetes device plugins",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "gpu-open.1x16g",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "object_storage",
-            display_name: "Object storage",
-            priority: "foundation",
-            aws_equivalent: "S3",
-            azure_equivalent: "Blob Storage",
-            open_source_stack: "Ceph RGW",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "bucket.standard",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "block_storage",
-            display_name: "Block volumes",
-            priority: "foundation",
-            aws_equivalent: "EBS",
-            azure_equivalent: "Managed Disks",
-            open_source_stack: "Ceph RBD, OpenStack Cinder",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "volume.250gb",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "networking",
-            display_name: "Private networking",
-            priority: "foundation",
-            aws_equivalent: "VPC, subnets, security groups",
-            azure_equivalent: "Virtual Network, NSG",
-            open_source_stack: "OpenStack Neutron, OVN, FRRouting, nftables",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "network.private",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "load_dns",
-            display_name: "Load balancing and DNS",
-            priority: "foundation",
-            aws_equivalent: "ELB, Route 53",
-            azure_equivalent: "Load Balancer, Application Gateway, Azure DNS",
-            open_source_stack: "Octavia, HAProxy, Envoy, PowerDNS, Designate",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "public-api.standard",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "kubernetes",
-            display_name: "Managed Kubernetes",
-            priority: "foundation",
-            aws_equivalent: "EKS",
-            azure_equivalent: "AKS",
-            open_source_stack: "Cluster API, Metal3, Cilium, Talos/kubeadm",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "k8s.standard",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "serverless",
-            display_name: "Serverless and app hosting",
-            priority: "important",
-            aws_equivalent: "Lambda, ECS/Fargate, App Runner",
-            azure_equivalent: "Functions, Container Apps, App Service",
-            open_source_stack: "Knative, Kubernetes, KEDA",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "function.small",
-            status: "preview",
-            status_kind: "info",
-        },
-        CoreCloudService {
-            id: "database",
-            display_name: "Managed databases",
-            priority: "foundation",
-            aws_equivalent: "RDS, DynamoDB, ElastiCache",
-            azure_equivalent: "Azure SQL, Cosmos DB, Cache for Redis",
-            open_source_stack: "CloudNativePG, MariaDB/Percona operators, Valkey, FerretDB",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "postgres.small",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "messaging",
-            display_name: "Messaging and events",
-            priority: "important",
-            aws_equivalent: "SQS, SNS, EventBridge, MSK",
-            azure_equivalent: "Service Bus, Event Grid, Event Hubs",
-            open_source_stack: "NATS, Kafka/Strimzi, RabbitMQ",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "queue.standard",
-            status: "preview",
-            status_kind: "info",
-        },
-        CoreCloudService {
-            id: "secrets",
-            display_name: "Secrets, keys, certificates",
-            priority: "foundation",
-            aws_equivalent: "Secrets Manager, KMS, ACM",
-            azure_equivalent: "Key Vault",
-            open_source_stack: "OpenBao, cert-manager, Smallstep, Barbican",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "secrets.project",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "observability",
-            display_name: "Observability and audit",
-            priority: "foundation",
-            aws_equivalent: "CloudWatch, CloudTrail",
-            azure_equivalent: "Azure Monitor, Log Analytics",
-            open_source_stack: "OpenTelemetry, Prometheus/VictoriaMetrics, Grafana, Loki, Tempo",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "metrics.standard",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "backup",
-            display_name: "Backup and disaster recovery",
-            priority: "foundation",
-            aws_equivalent: "AWS Backup, snapshots, Glacier",
-            azure_equivalent: "Azure Backup, Archive Storage",
-            open_source_stack: "Velero, Restic, Kopia, Borgmatic, Ceph snapshots, offline media",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "backup.standard",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "devops_iac",
-            display_name: "DevOps and IaC",
-            priority: "important",
-            aws_equivalent: "CodeBuild, CodePipeline, CloudFormation",
-            azure_equivalent: "Azure DevOps, ARM/Bicep",
-            open_source_stack: "Forgejo, Woodpecker CI, Argo CD/Flux, OpenTofu, Ansible",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "repo.project",
-            status: "preview",
-            status_kind: "info",
-        },
-        CoreCloudService {
-            id: "ai_batch",
-            display_name: "AI batch and model serving",
-            priority: "foundation",
-            aws_equivalent: "SageMaker, Bedrock, Batch",
-            azure_equivalent: "Azure AI, Azure ML, Batch",
-            open_source_stack: "Kueue, Slurm, KServe, vLLM, SGLang, llama.cpp, MLflow",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: true,
-            default_shape: "gpu-open.1x16g",
-            status: "implemented",
-            status_kind: "normal",
-        },
-        CoreCloudService {
-            id: "costing",
-            display_name: "Cost and sustainability",
-            priority: "foundation",
-            aws_equivalent: "Cost Explorer, Budgets",
-            azure_equivalent: "Cost Management",
-            open_source_stack: "OpenCost, CloudKitty, OSDC Rust calculators",
-            tenant_visible: true,
-            operator_visible: true,
-            provisionable: false,
-            default_shape: "cost.view",
-            status: "implemented",
-            status_kind: "normal",
-        },
-    ]
+    let mut services: Vec<CoreCloudService> = csv_rows(
+        CORE_CLOUD_SERVICES_CSV,
+        "data/software/core-cloud-services.csv",
+    );
+    for service in &mut services {
+        if service.priority == "foundation" {
+            service.status = "implemented".to_string();
+            service.status_kind = "normal".to_string();
+        } else {
+            service.status = "preview".to_string();
+            service.status_kind = "info".to_string();
+        }
+    }
+    services
 }
 
 fn sovereign_cloud_services() -> Vec<SovereignCloudService> {
@@ -3269,7 +2628,7 @@ fn lifecycle_overview() -> LifecycleOverview {
             implementation: service.open_source_stack.to_string(),
             workflow: service.default_shape.to_string(),
             status: service.status.to_string(),
-            status_kind: service.status_kind,
+            status_kind: status_kind(&service.status),
         });
     }
     for service in sovereign {
@@ -3291,7 +2650,7 @@ fn lifecycle_overview() -> LifecycleOverview {
             implementation: format!("{} {}", script.tool, script.path),
             workflow: script.validation_command.to_string(),
             status: script.edit_mode.to_string(),
-            status_kind: priority_kind(script.risk),
+            status_kind: priority_kind(&script.risk),
         });
     }
 
@@ -3306,134 +2665,26 @@ fn lifecycle_overview() -> LifecycleOverview {
 }
 
 fn upgrade_policy() -> Vec<UpgradePolicy> {
-    vec![
-        UpgradePolicy {
-            update_class: "critical_cve",
-            frequency: "24-72 hours",
-            target_window: "emergency",
-            required_gates: "staging-test+scan+backup-check+fast-approval",
-            approval_owner: "platform-security-owner",
-            rollback_requirement: "rollback-plan-required",
-        },
-        UpgradePolicy {
-            update_class: "high_security",
-            frequency: "weekly",
-            target_window: "scheduled-security-window",
-            required_gates: "pr+sbom+scan+staging+smoke-test",
-            approval_owner: "platform-owner",
-            rollback_requirement: "rollback-tested",
-        },
-        UpgradePolicy {
-            update_class: "normal_patch",
-            frequency: "monthly",
-            target_window: "maintenance-window",
-            required_gates: "pr+scan+staging+smoke-test",
-            approval_owner: "service-owner",
-            rollback_requirement: "rollback-available",
-        },
-        UpgradePolicy {
-            update_class: "minor_feature",
-            frequency: "quarterly",
-            target_window: "planned-window",
-            required_gates: "compatibility-test+docs-review+staging",
-            approval_owner: "service-owner",
-            rollback_requirement: "rollback-tested",
-        },
-        UpgradePolicy {
-            update_class: "major_version",
-            frequency: "6-12 months",
-            target_window: "migration-window",
-            required_gates: "migration-plan+backup+dry-run+rollback-test",
-            approval_owner: "architecture-board",
-            rollback_requirement: "rollback-tested",
-        },
-        UpgradePolicy {
-            update_class: "firmware_bmc",
-            frequency: "quarterly-or-emergency",
-            target_window: "rack-by-rack-window",
-            required_gates: "lab-test+vendor-notes+spare-node",
-            approval_owner: "hardware-owner",
-            rollback_requirement: "firmware-rollback-or-spare",
-        },
-        UpgradePolicy {
-            update_class: "kubernetes_openstack_ceph",
-            frequency: "planned-release-train",
-            target_window: "platform-release-window",
-            required_gates: "release-plan+staging+backup-restore+rollback-test",
-            approval_owner: "platform-owner",
-            rollback_requirement: "rollback-tested",
-        },
-    ]
+    csv_rows(UPGRADE_POLICY_CSV, "data/software/upgrade-policy.csv")
 }
 
 fn config_scripts() -> Vec<ConfigScript> {
-    vec![
-        ConfigScript {
-            id: "edge_caddyfile",
-            tool: "Caddy",
-            path: "/etc/caddy/Caddyfile",
-            owner: "caddy",
-            language: "caddyfile",
-            edit_mode: "gitops-pr",
-            validation_command: "caddy validate --config /etc/caddy/Caddyfile",
-            rollout_target: "edge-a edge-b",
-            risk: "medium",
-            notes: "TLS routes reverse proxy and access middleware",
-            content: EDGE_CADDYFILE,
-        },
-        ConfigScript {
-            id: "edge_powerdns",
-            tool: "PowerDNS",
-            path: "/etc/powerdns/pdns.d/osdc.conf",
-            owner: "pdns",
-            language: "ini",
-            edit_mode: "gitops-pr",
-            validation_command: "pdnsutil check-all-zones",
-            rollout_target: "edge-a edge-b edge-c",
-            risk: "high",
-            notes: "authoritative DNS backend API and DNSSEC settings",
-            content: EDGE_POWERDNS_CONF,
-        },
-        ConfigScript {
-            id: "edge_coraza",
-            tool: "Coraza WAF",
-            path: "/etc/coraza/osdc-crs.conf",
-            owner: "root",
-            language: "modsecurity",
-            edit_mode: "gitops-pr",
-            validation_command: "coraza --validate /etc/coraza/osdc-crs.conf",
-            rollout_target: "edge-a edge-b",
-            risk: "high",
-            notes: "WAF CRS include file starts in detection mode",
-            content: EDGE_CORAZA_CONF,
-        },
-        ConfigScript {
-            id: "edge_crowdsec",
-            tool: "CrowdSec",
-            path: "/etc/crowdsec/acquis.yaml",
-            owner: "crowdsec",
-            language: "yaml",
-            edit_mode: "gitops-pr",
-            validation_command: "crowdsec hubtest run",
-            rollout_target: "edge-a edge-b",
-            risk: "medium",
-            notes: "log acquisition for WAF and proxy decisions",
-            content: EDGE_CROWDSEC_ACQUIS,
-        },
-        ConfigScript {
-            id: "edge_wireguard",
-            tool: "WireGuard",
-            path: "/etc/wireguard/osdc-edge.conf",
-            owner: "root",
-            language: "ini",
-            edit_mode: "secret-aware-pr",
-            validation_command: "wg-quick strip /etc/wireguard/osdc-edge.conf",
-            rollout_target: "edge-a edge-b",
-            risk: "high",
-            notes: "private origin tunnel with secret placeholders",
-            content: EDGE_WIREGUARD_CONF,
-        },
-    ]
+    let mut scripts: Vec<ConfigScript> = csv_rows(
+        CONFIG_SCRIPT_CATALOGUE_CSV,
+        "data/software/config-script-catalogue.csv",
+    );
+    for script in &mut scripts {
+        script.content = match script.id.as_str() {
+            "edge_caddyfile" => EDGE_CADDYFILE,
+            "edge_powerdns" => EDGE_POWERDNS_CONF,
+            "edge_coraza" => EDGE_CORAZA_CONF,
+            "edge_crowdsec" => EDGE_CROWDSEC_ACQUIS,
+            "edge_wireguard" => EDGE_WIREGUARD_CONF,
+            _ => "",
+        }
+        .to_string();
+    }
+    scripts
 }
 
 fn provisioning_blueprints() -> Vec<ProvisioningBlueprint> {
@@ -3904,16 +3155,17 @@ mod tests {
     }
 
     #[test]
-    fn root_redirects_to_tenant_console() {
+    fn root_redirects_to_infrastructure_workbench() {
         let response = route_response("GET", "/");
         let text = response_text(&response);
 
         assert!(text.starts_with("HTTP/1.1 302 Found"));
-        assert!(text.contains("Location: /user"));
+        assert!(text.contains("Location: /infrastructure"));
     }
 
     #[test]
     fn serves_all_gui_pages_with_expected_controls() {
+        let infrastructure = body(&route_response("GET", "/infrastructure"));
         let user = body(&route_response("GET", "/user"));
         let operator = body(&route_response("GET", "/operator"));
         let edge = body(&route_response("GET", "/edge"));
@@ -3925,14 +3177,25 @@ mod tests {
         let commercial = body(&route_response("GET", "/commercial"));
         let assurance = body(&route_response("GET", "/assurance"));
 
+        assert!(infrastructure.contains("Infrastructure Workbench"));
+        assert!(infrastructure.contains("infra-workflow-select"));
+        assert!(infrastructure.contains("infra-workflows"));
+        assert!(infrastructure.contains("infra-connectors"));
+        assert!(infrastructure.contains("infra-tests"));
+        assert!(infrastructure.contains("infra-gates"));
+        assert!(infrastructure.contains("href=\"/hardware\""));
+        assert!(infrastructure.contains("href=\"/assurance\""));
+        assert!(infrastructure.contains("href=\"/developer\""));
         assert!(user.contains("Tenant Cloud"));
         assert!(user.contains("tenant-service-filter"));
         assert!(user.contains("tenant-action-output"));
+        assert!(user.contains("href=\"/infrastructure\""));
         assert!(user.contains("href=\"/commercial\""));
         assert!(user.contains("href=\"/assurance\""));
         assert!(user.contains("href=\"/hardware\""));
         assert!(operator.contains("Operator Console"));
         assert!(operator.contains("operator-service-filter"));
+        assert!(operator.contains("href=\"/infrastructure\""));
         assert!(operator.contains("href=\"/commercial\""));
         assert!(operator.contains("href=\"/assurance\""));
         assert!(operator.contains("href=\"/hardware\""));
@@ -3940,12 +3203,15 @@ mod tests {
         assert!(edge.contains("edge-service-filter"));
         assert!(edge.contains("edge-config-preview"));
         assert!(edge.contains("edge-script-editor"));
+        assert!(edge.contains("href=\"/infrastructure\""));
         assert!(edge.contains("href=\"/commercial\""));
         assert!(edge.contains("href=\"/assurance\""));
         assert!(edge.contains("href=\"/hardware\""));
         assert!(planner.contains("Cost Planner"));
         assert!(planner.contains("planner-scenarios"));
+        assert!(planner.contains("planner-stack-profiles"));
         assert!(planner.contains("planner-price-basis"));
+        assert!(planner.contains("href=\"/infrastructure\""));
         assert!(planner.contains("href=\"/commercial\""));
         assert!(planner.contains("href=\"/assurance\""));
         assert!(planner.contains("href=\"/hardware\""));
@@ -3956,16 +3222,19 @@ mod tests {
         assert!(lifecycle.contains("lifecycle-commercial-gaps"));
         assert!(lifecycle.contains("lifecycle-commercial-remote-hands"));
         assert!(lifecycle.contains("lifecycle-commercial-access"));
+        assert!(lifecycle.contains("href=\"/infrastructure\""));
         assert!(lifecycle.contains("href=\"/hardware\""));
         assert!(hardware.contains("Hardware Provisioning"));
         assert!(hardware.contains("hardware-profile-select"));
         assert!(hardware.contains("hardware-pipeline"));
         assert!(hardware.contains("hardware-connectors"));
+        assert!(hardware.contains("href=\"/infrastructure\""));
         assert!(hardware.contains("href=\"/assurance\""));
         assert!(developer.contains("Developer Console"));
         assert!(developer.contains("developer-templates"));
         assert!(developer.contains("developer-vscode"));
         assert!(developer.contains("Forgejo"));
+        assert!(developer.contains("href=\"/infrastructure\""));
         assert!(developer.contains("href=\"/commercial\""));
         assert!(developer.contains("href=\"/assurance\""));
         assert!(developer.contains("href=\"/hardware\""));
@@ -3973,6 +3242,7 @@ mod tests {
         assert!(data_platform.contains("data-products"));
         assert!(data_platform.contains("data-ontology"));
         assert!(data_platform.contains("Open Data Platform Stack"));
+        assert!(data_platform.contains("href=\"/infrastructure\""));
         assert!(data_platform.contains("href=\"/commercial\""));
         assert!(data_platform.contains("href=\"/assurance\""));
         assert!(data_platform.contains("href=\"/hardware\""));
@@ -3980,6 +3250,7 @@ mod tests {
         assert!(commercial.contains("commercial-standards"));
         assert!(commercial.contains("commercial-pricebook"));
         assert!(commercial.contains("commercial-access"));
+        assert!(commercial.contains("href=\"/infrastructure\""));
         assert!(commercial.contains("href=\"/assurance\""));
         assert!(commercial.contains("href=\"/hardware\""));
         assert!(assurance.contains("Assurance Console"));
@@ -3988,6 +3259,7 @@ mod tests {
         assert!(assurance.contains("assurance-gates"));
         assert!(assurance.contains("assurance-threat-stack"));
         assert!(assurance.contains("assurance-scanners"));
+        assert!(assurance.contains("href=\"/infrastructure\""));
         assert!(assurance.contains("href=\"/hardware\""));
     }
 
@@ -4045,6 +3317,10 @@ mod tests {
                     .unwrap_or_default()
                     .contains("/assurance")
         }));
+        assert!(connectors.as_array().unwrap().iter().any(|connector| {
+            connector["connector_id"] == "CONN_PROXMOX"
+                && connector["evidence_path"] == "docs/software/deployment-stack-profiles.md"
+        }));
         assert!(pipeline.as_array().unwrap().iter().any(|stage| {
             stage["stage_id"] == "HP_STAGE_SOURCE_OF_TRUTH"
                 && stage["primary_system"]
@@ -4059,6 +3335,61 @@ mod tests {
             request["request_id"] == "HREQ_001"
                 && request["target_environment"] == "openstack-compute"
         }));
+    }
+
+    #[test]
+    fn exposes_infrastructure_workbench_with_workflow_assurance_mapping() {
+        let workbench = json_body("/api/infrastructure/workbench");
+
+        assert!(workbench["metrics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|metric| metric["label"] == "Test harnesses"));
+        assert!(workbench["workflows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|workflow| {
+                workflow["workflow_id"] == "WF_PROVISION_VM"
+                    && workflow["connector_ids"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("CONN_PROXMOX")
+                    && workflow["required_test_ids"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("TEST_ENDPOINT_POSTURE")
+                    && workflow["required_gate_ids"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .contains("GATE_STAGING")
+            }));
+        assert!(workbench["stack_profiles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|profile| profile["profile_id"] == "DSP_250KW_REGIONAL"));
+        assert!(workbench["connectors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|connector| connector["connector_id"] == "CONN_CLOUDSTACK"));
+        assert!(workbench["test_harnesses"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|test| test["test_id"] == "TEST_PORTAL_CONTRACT"));
+        assert!(workbench["upgrade_gates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|gate| gate["gate_id"] == "GATE_AUDIT"));
+        assert!(workbench["automation_jobs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|job| job["job_id"] == "JOB_ASSURANCE_RUN"));
     }
 
     #[test]
@@ -4201,8 +3532,14 @@ mod tests {
         let scenarios = json_body("/api/cost/scenarios");
         let categories = json_body("/api/cost/categories");
         let price_basis = json_body("/api/cost/price-basis");
+        let stack_profiles = json_body("/api/deployment/stack-profiles");
 
         assert_eq!(planning["metrics"].as_array().unwrap().len(), 4);
+        assert!(planning["deployment_profiles"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|profile| profile["profile_id"] == "DSP_50KW_EDGE"));
         assert!(scenarios.as_array().unwrap().iter().any(|scenario| {
             scenario["id"] == "S2"
                 && scenario["it_load_kw"] == 250
@@ -4221,6 +3558,17 @@ mod tests {
             item["item_family"] == "solar_pv_system"
                 && item["unit"] == "w_installed"
                 && item["source_marketplace"] == "Alibaba/Derived"
+        }));
+        assert!(stack_profiles.as_array().unwrap().iter().any(|profile| {
+            profile["profile_id"] == "DSP_50KW_EDGE"
+                && profile["default_cloud_substrate"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("Proxmox")
+                && profile["alternate_cloud_substrate"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .contains("OpenNebula")
         }));
     }
 

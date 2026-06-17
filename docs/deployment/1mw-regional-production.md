@@ -15,6 +15,8 @@ The 1 MW regional production pattern turns the pilot into dependable sovereign c
 - Stronger fire zoning, security zoning, fibre paths, and service corridors.
 - Larger BESS and generator strategy based on measured outage and fuel data.
 - OpenStack/Ceph/Kubernetes baseline with tenant isolation, quota, chargeback, identity, policy, and audit controls.
+- MAAS, Ironic, and Metal3 for disciplined bare-metal lifecycle, with NetBox as source of truth.
+- Wazuh, Falco, Suricata, Zeek, OpenBao, Keycloak, OPA, and Edge Shield integrated into the assurance and audit fabric.
 - Dedicated staging environment for patch and restore tests.
 
 ## Readiness Requirements

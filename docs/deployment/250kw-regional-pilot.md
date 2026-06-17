@@ -10,13 +10,14 @@ The 250 kW regional pilot is the flagship developing-world reference design. It 
 - DC-first solar sodium-ion microgrid with 380-400 VDC facility backbone and 48 VDC rack or row buses.
 - Boundary rectifiers for grid and fallback generator input.
 - Rack thermal spine cooling with measured heat capture and final heat rejection.
-- Open-source management stack with Rust adapters and operator portal.
+- Apache CloudStack or OpenStack as the IaaS substrate, selected by local operator maturity.
+- Ceph, Kubernetes, NetBox, MAAS or Ironic/Metal3, Keycloak, OpenBao, PowerDNS, Edge Shield, Forgejo, Harbor, and Argo CD or Flux under the OSDC operator portal.
 - Local fabrication for safe structural and mechanical items.
 
 ## What It Proves
 
 - Whether local contractors can build the shell, service trench, cable paths, racks, and utility areas to the required standard.
-- Whether local operators can run OpenStack, Ceph, Kubernetes, Keycloak, OPA, NetBox, telemetry, and backup workflows.
+- Whether local operators should run CloudStack or OpenStack first, and whether they can also run Ceph, Kubernetes, Keycloak, OPA, NetBox, telemetry, and backup workflows.
 - Whether the DC microgrid can ride through grid faults and transfer to fallback power.
 - Whether cooling failover and pump/control redundancy work under load.
 - Whether BOM landed cost, lead time, spares, and second-source assumptions are realistic.
@@ -26,7 +27,7 @@ The 250 kW regional pilot is the flagship developing-world reference design. It 
 Before claiming a deployable 250 kW pilot, the repository should first deliver a software-only control-plane slice:
 
 - Rust portal reading the sovereign service catalogue from CSV.
-- Keycloak, PowerDNS, NetBox, OpenBao, and Argo CD or Flux adapter stubs.
+- Keycloak, PowerDNS, NetBox, OpenBao, Argo CD or Flux, and CloudStack or Proxmox profile stubs.
 - Harbor registry and image-scanning catalogue workflow.
 - OpenBao policy model for secrets, transit keys, and break-glass handling.
 - GitOps workflow objects for change request, validation result, rollout plan, rollback plan, and audit event.

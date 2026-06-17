@@ -1603,12 +1603,324 @@ function renderPriceBasis(targetId, items) {
   }
 }
 
+function renderDeploymentStackProfiles(targetId, profiles) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const profile of profiles) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      `${profile.stage} / ${profile.it_load_kw.toLocaleString()} kW`,
+      profile.default_cloud_substrate,
+      profile.alternate_cloud_substrate,
+      profile.storage_substrate,
+      profile.bare_metal_lifecycle,
+      profile.developer_gitops,
+      profile.when_to_use,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    const status = document.createElement("td");
+    status.append(badge(profile.maturity, profile.maturity === "pilot" ? "info" : "normal"));
+    tr.append(status);
+    target.append(tr);
+  }
+}
+
+function splitTokenList(value) {
+  return String(value ?? "")
+    .split("+")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function byId(rows, key, id) {
+  return rows.find((row) => row[key] === id) ?? rows[0];
+}
+
+function renderInfrastructureOptions(workbench) {
+  renderOptions(
+    "infra-workflow-select",
+    workbench.workflows.map((workflow) => ({
+      id: workflow.workflow_id,
+      label: `${workflow.workflow_name} - ${workflow.service_domain}`,
+    })),
+    (option) => option.label
+  );
+  renderOptions(
+    "infra-stack-select",
+    workbench.stack_profiles.map((profile) => ({
+      id: profile.profile_id,
+      label: `${profile.stage} - ${profile.default_cloud_substrate}`,
+    })),
+    (option) => option.label
+  );
+
+  const workflowSelect = document.getElementById("infra-workflow-select");
+  if (workflowSelect && workbench.workflows.some((workflow) => workflow.workflow_id === "WF_PROVISION_VM")) {
+    workflowSelect.value = "WF_PROVISION_VM";
+  }
+  const stackSelect = document.getElementById("infra-stack-select");
+  if (stackSelect && workbench.stack_profiles.some((profile) => profile.profile_id === "DSP_250KW_REGIONAL")) {
+    stackSelect.value = "DSP_250KW_REGIONAL";
+  }
+}
+
+function renderInfrastructureWorkflows(targetId, workflows, selectedId, onSelect) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const workflow of workflows) {
+    const tr = document.createElement("tr");
+    tr.dataset.workflowId = workflow.workflow_id;
+    if (workflow.workflow_id === selectedId) tr.className = "selected-row";
+    tr.tabIndex = 0;
+    for (const field of [
+      `${workflow.workflow_id} ${workflow.workflow_name}`,
+      workflow.user_goal,
+      workflow.service_domain,
+      workflow.default_substrate,
+      workflow.connector_ids,
+      workflow.required_test_ids,
+      workflow.required_gate_ids,
+      workflow.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(workflow.status, statusClassFromStatus(workflow.status)));
+    tr.addEventListener("click", () => onSelect(workflow.workflow_id));
+    tr.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onSelect(workflow.workflow_id);
+      }
+    });
+    target.append(tr);
+  }
+}
+
+function renderInfrastructureConnectors(targetId, connectors) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const connector of connectors) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      connector.connector_id,
+      connector.system_name,
+      connector.capability,
+      connector.adapter_pattern,
+      connector.write_mode,
+      connector.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(connector.status, statusClassFromStatus(connector.status)));
+    target.append(tr);
+  }
+}
+
+function renderInfrastructureTests(targetId, tests) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const item of tests) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      item.test_id,
+      item.function_area,
+      item.target,
+      item.test_type,
+      item.tool_stack,
+      item.trigger,
+      item.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(item.status, statusClassFromStatus(item.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, item.required_evidence);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderInfrastructureGates(targetId, gates) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  clear(target);
+  for (const gate of gates) {
+    const tr = document.createElement("tr");
+    for (const field of [
+      gate.gate_id,
+      gate.stage,
+      gate.applies_to,
+      gate.required_checks,
+      gate.automation_tool,
+      gate.blocking,
+      gate.owner,
+    ]) {
+      const td = document.createElement("td");
+      td.append(text(field));
+      tr.append(td);
+    }
+    tr.append(statusCell(gate.status, statusClassFromStatus(gate.status)));
+    const evidence = document.createElement("td");
+    appendValueOrRepoLink(evidence, gate.evidence_path);
+    tr.append(evidence);
+    target.append(tr);
+  }
+}
+
+function renderInfrastructureSelection(workbench, applyFilters = {}) {
+  const workflowId = document.getElementById("infra-workflow-select")?.value;
+  const stackId = document.getElementById("infra-stack-select")?.value;
+  const workflow = byId(workbench.workflows, "workflow_id", workflowId);
+  const stack = byId(workbench.stack_profiles, "profile_id", stackId);
+  if (!workflow || !stack) return;
+
+  const connectorIds = new Set(splitTokenList(workflow.connector_ids));
+  const testIds = new Set(splitTokenList(workflow.required_test_ids));
+  const gateIds = new Set(splitTokenList(workflow.required_gate_ids));
+  const connectors = workbench.connectors.filter((connector) => connectorIds.has(connector.connector_id));
+  const tests = workbench.test_harnesses.filter((item) => testIds.has(item.test_id));
+  const gates = workbench.upgrade_gates.filter((gate) => gateIds.has(gate.gate_id));
+  const job = workbench.automation_jobs.find((item) => item.job_id === workflow.automation_job_id);
+  const changeMode = document.getElementById("infra-change-mode")?.value ?? "gitops-pr";
+  const environment = document.getElementById("infra-environment")?.value ?? "development";
+  const resourceName = document.getElementById("infra-resource-name")?.value || "new-resource";
+  const owner = document.getElementById("infra-owner")?.value || workflow.owner;
+
+  renderInfrastructureWorkflows("infra-workflows", workbench.workflows, workflow.workflow_id, (nextId) => {
+    const select = document.getElementById("infra-workflow-select");
+    if (select) select.value = nextId;
+    renderInfrastructureSelection(workbench, applyFilters);
+  });
+  renderInfrastructureConnectors("infra-connectors", connectors);
+  renderInfrastructureTests("infra-tests", tests);
+  renderInfrastructureGates("infra-gates", gates);
+
+  const selectedStatus = document.getElementById("infra-selected-status");
+  if (selectedStatus) {
+    selectedStatus.className = statusClass(statusClassFromStatus(workflow.status));
+    selectedStatus.textContent = workflow.status;
+  }
+  const stackStatus = document.getElementById("infra-stack-status");
+  if (stackStatus) {
+    stackStatus.className = statusClass(statusClassFromStatus(stack.maturity));
+    stackStatus.textContent = stack.maturity;
+  }
+
+  renderFlow("infra-plan-flow", [
+    { label: "Request", value: `${resourceName} / ${workflow.workflow_name}` },
+    { label: "Policy", value: `${owner} owns ${workflow.service_domain}` },
+    { label: "Tests", value: `${tests.length} harnesses / ${gates.length} gates` },
+    { label: "Rollout", value: `${changeMode} to ${environment}` },
+    { label: "Audit", value: workflow.evidence_path },
+  ]);
+  renderFlow("infra-stack-flow", [
+    { label: "Cloud", value: stack.default_cloud_substrate },
+    { label: "Storage", value: stack.storage_substrate },
+    { label: "Source", value: stack.source_of_truth },
+    { label: "Security", value: stack.edge_security },
+    { label: "GitOps", value: stack.developer_gitops },
+  ]);
+
+  const output = document.getElementById("infra-action-output");
+  if (output) {
+    const jobText = job ? `${job.job_id} (${job.command})` : workflow.automation_job_id;
+    output.textContent = [
+      `Preview: ${workflow.user_goal} for ${resourceName} in ${environment}.`,
+      `Use ${stack.stage} on ${stack.default_cloud_substrate}.`,
+      `Stage through ${changeMode} with ${connectors.length} connectors, ${tests.length} tests, ${gates.length} gates, and automation ${jobText}.`,
+      `Evidence target: ${workflow.evidence_path}.`,
+    ].join(" ");
+  }
+
+  applyFilters.workflows?.();
+  applyFilters.connectors?.();
+  applyFilters.tests?.();
+  applyFilters.gates?.();
+}
+
+async function hydrateInfrastructure() {
+  const workbench = await api("/api/infrastructure/workbench");
+  renderMetrics("infra-metrics", workbench.metrics);
+  renderInfrastructureOptions(workbench);
+
+  const applyFilters = {
+    workflows: attachTableFilters({
+      textInputId: "infra-workflow-filter",
+      statusSelectId: "infra-workflow-status",
+      tbodyId: "infra-workflows",
+    }),
+    connectors: attachTableFilters({
+      textInputId: "infra-connector-filter",
+      tbodyId: "infra-connectors",
+    }),
+    tests: attachTableFilters({
+      textInputId: "infra-test-filter",
+      tbodyId: "infra-tests",
+    }),
+    gates: attachTableFilters({
+      textInputId: "infra-gate-filter",
+      tbodyId: "infra-gates",
+    }),
+  };
+
+  renderInfrastructureSelection(workbench, applyFilters);
+
+  for (const id of [
+    "infra-workflow-select",
+    "infra-stack-select",
+    "infra-environment",
+    "infra-resource-name",
+    "infra-owner",
+    "infra-change-mode",
+  ]) {
+    document
+      .getElementById(id)
+      ?.addEventListener("change", () => renderInfrastructureSelection(workbench, applyFilters));
+  }
+  document
+    .getElementById("infra-resource-name")
+    ?.addEventListener("input", () => renderInfrastructureSelection(workbench, applyFilters));
+  document.getElementById("infra-preview")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    renderInfrastructureSelection(workbench, applyFilters);
+  });
+
+  wireActionButton("infra-refresh", "Infrastructure workbench refreshed.", "infra-action-output");
+  wireActionButton(
+    "infra-run-tests",
+    "Required workflow tests staged; evidence will be written to target/assurance before promotion.",
+    "infra-action-output"
+  );
+  wireActionButton(
+    "infra-open-change",
+    "Change request staged with connector plan, required tests, gates, rollback path, and evidence target.",
+    "infra-action-output"
+  );
+  wireDownloadButton("infra-export-workflows", "infra-workflows", "osdc-infrastructure-workflows.csv");
+  wireDownloadButton("infra-export-tests", "infra-tests", "osdc-infrastructure-required-tests.csv");
+  wireDownloadButton("infra-export-gates", "infra-gates", "osdc-infrastructure-required-gates.csv");
+}
+
 async function hydratePlanner() {
   const planning = await api("/api/cost/planning");
   let selectedId = "S2";
 
   renderMetrics("planner-metrics", planning.metrics);
   renderPriceBasis("planner-price-basis", planning.price_basis);
+  renderDeploymentStackProfiles("planner-stack-profiles", planning.deployment_profiles);
   const applyCategoryFilter = attachTableFilters({
     textInputId: "planner-category-filter",
     tbodyId: "planner-categories",
@@ -1637,10 +1949,19 @@ async function hydratePlanner() {
     textInputId: "planner-price-filter",
     tbodyId: "planner-price-basis",
   });
+  attachTableFilters({
+    textInputId: "planner-stack-filter",
+    tbodyId: "planner-stack-profiles",
+  });
   wireActionButton("planner-refresh", "Planner data refreshed", "planner-action-output");
   wireDownloadButton("planner-export", "planner-scenarios", "osdc-cost-scenarios.csv");
   wireDownloadButton("planner-category-export", "planner-categories", "osdc-cost-categories.csv");
   wireDownloadButton("planner-price-export", "planner-price-basis", "osdc-price-basis.csv");
+  wireDownloadButton(
+    "planner-stack-export",
+    "planner-stack-profiles",
+    "osdc-deployment-stack-profiles.csv"
+  );
   document.getElementById("planner-select-pilot")?.addEventListener("click", () => {
     selectedId = "S2";
     renderSelected();
@@ -2359,6 +2680,9 @@ async function hydrateEdge() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (document.body.dataset.portal === "infrastructure") {
+    hydrateInfrastructure().catch((error) => console.error(error));
+  }
   if (document.body.dataset.portal === "tenant") {
     hydrateTenant().catch((error) => console.error(error));
   }

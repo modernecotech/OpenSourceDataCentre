@@ -31,6 +31,7 @@ The project combines:
 | Commercial readiness pack | Gap register, standards matrix, SLA model, colocation products, cross-connect workflows, audit evidence, and customer responsibility boundaries. |
 | Delivery control pack | Project lifecycle gates, authority permits, owner-engineer review, design freeze, operational readiness, handover, risk, action, and commissioning evidence registers. |
 | Sovereign cloud service catalogue | Open-source cloud, edge, security, developer, data, AI, observability, backup, and operations services under one portal/API. |
+| Unified infrastructure workbench | Browser front door for guided infrastructure requests, selected deployment stack, connector paths, required tests, blocking gates, automation jobs, and evidence targets. |
 | Hardware provisioning control plane | Source-of-truth-first rack-to-running workflow using NetBox, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, security enrolment, and assurance closeout. |
 | Sovereign developer platform | Forgejo-style repos, CI, Harbor registry, GitOps deployment, OpenTofu IaC, promotion gates, service templates, and VS Code-ready developer workflows. |
 | Data Platform as a Service | Optional open-source Foundry-like layer for governed data products, lakehouse tables, catalog, lineage, ontology objects, dashboards, apps, notebooks, and AI context. |
@@ -48,12 +49,29 @@ The project combines:
 - A way for countries to reduce dependency on closed cloud platforms and proprietary datacentre management stacks.
 - A national implementation manual for cloud capacity that can be operated and repaired locally.
 
+## Strategic Position
+
+OSDC is not an alternative to OpenStack, CloudStack, OpenNebula, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, OpenBMC, OCP, or Open19.
+
+It is the missing sovereign datacentre integration layer above and around them:
+
+```text
+country build path + lifecycle console + commercial readiness
+        |
+OSDC policy, cost, evidence, approvals, GitOps, audit
+        |
+OpenStack / CloudStack / Proxmox / Kubernetes / Ceph / NetBox / MAAS / Ironic / Metal3 / Keycloak / OpenBao / PowerDNS / Wazuh
+```
+
+Mature infrastructure projects own the specialist layers. OSDC owns the national implementation model: which systems to combine at each scale, how they are commissioned, how they are made commercially credible, how changes are approved, how evidence is captured, and how operators manage them through one sovereign portal.
+
 ## What This Project Is Not
 
 - It is not a certified datacentre design.
 - It is not a substitute for licensed local engineers, fire engineers, electrical engineers, code approval, or authority review.
 - It is not a promise that marketplace parts are safe, compliant, or suitable for life-safety and critical-power systems.
 - It is not a hyperscaler clone.
+- It is not a replacement for OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, OpenBMC, or OCP.
 - It is not a Cloudflare clone or a claim to reproduce global anycast/DDoS capacity.
 - It is not a reason to skip commissioning, documentation, training, spare parts, security review, or disaster recovery.
 
@@ -69,12 +87,12 @@ The project combines:
 
 ## Deployment Ladder
 
-| Stage | Use case | Main goal |
-| --- | --- | --- |
-| **50 kW edge micro** | University, hospital group, ministry edge, ISP edge | Prove local operation and sovereign services. |
-| **250 kW regional pilot** | First serious public-sector cloud | Validate power, cooling, cloud stack, operators, costs, and commissioning discipline. |
-| **1 MW regional production** | National health, education, government apps, research | Deliver reliable sovereign cloud capacity. |
-| **5 MW national/AI-ready** | National AI, HPC, larger public cloud | Build strategic compute infrastructure. |
+| Stage | Use case | Main goal | Likely software substrate |
+| --- | --- | --- | --- |
+| **50 kW edge micro** | University, hospital group, ministry edge, ISP edge | Prove local operation and sovereign services. | Proxmox VE or CloudStack, Ceph/ZFS, NetBox/openDCIM, PowerDNS, Edge Shield. |
+| **250 kW regional pilot** | First serious public-sector cloud | Validate power, cooling, cloud stack, operators, costs, and commissioning discipline. | CloudStack or OpenStack, Ceph, Kubernetes, NetBox, MAAS/Ironic/Metal3, Keycloak/OpenBao, Forgejo/Harbor/GitOps. |
+| **1 MW regional production** | National health, education, government apps, research | Deliver reliable sovereign cloud capacity. | OpenStack, Ceph, Kubernetes with Kueue/Slurm, NetBox, Wazuh/Falco/Suricata/Zeek, full lifecycle registers. |
+| **5 MW national/AI-ready** | National AI, HPC, larger public cloud | Build strategic compute infrastructure. | OpenStack/Ironic/Metal3, Ceph NVMe tiers, Kubernetes, Slurm/Kueue, OpenBMC/Redfish, SONiC where supportable, OCP/Open19 profiles. |
 
 The flagship developing-world pilot is the 250 kW regional design: 10 racks at 25 kW average, N+1 pumps and controls, DC-first solar sodium-ion microgrid, fallback generator path, open-source management stack, and local fabrication where safe.
 
@@ -101,11 +119,11 @@ The Rust layer does not replace mature infrastructure systems. It provides the u
 
 ## Current Maturity
 
-This repository is currently a strong architecture, planning framework, and working Rust prototype. It is not yet a deployable national cloud platform.
+This repository is currently a strong architecture, planning framework, CSV-backed catalogue, and working Rust prototype. It is not yet a deployable national cloud platform.
 
-The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended tenant, operator, Edge Shield, config-editor, lifecycle, hardware provisioning, commercial, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, or MLflow installations.
+The current portal is a small standard-library Rust HTTP server with in-process sample data and CSV-backed catalogues. It demonstrates the intended infrastructure workbench, tenant, operator, Edge Shield, config-editor, lifecycle, hardware provisioning, commercial, assurance, developer, data-platform, and planner surfaces, but it is not yet integrated with real Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, Keycloak, NetBox, PowerDNS, OpenBao, Wazuh, Argo CD, Flux, Trino, Iceberg, OpenMetadata, Superset, DefectDojo, Dependency-Track, Kubescape, OpenVAS, OpenSCAP, Falco, Redfish/OpenBMC, MAAS, Ironic, Metal3, Tinkerbell, or MLflow installations.
 
-The next engineering phase is to continue replacing hardcoded samples with CSV-backed catalogue loading, then add adapter stubs for real infrastructure systems.
+The next engineering phase is to turn the plan-only adapter contracts into real read-first integrations, starting with PowerDNS, NetBox, Keycloak, OpenBao, GitOps, and one small-site cloud substrate such as Proxmox or CloudStack before deeper OpenStack automation.
 
 Commercial readiness is also early. The repository now tracks the gap between the OSDC blueprint and a commercial colocation or hyperscale-grade datacentre through a gap register, standards/control matrix, SLA model, commercial product catalogue, MEP evidence targets, operations templates, and audit-evidence register. These artifacts are templates and planning controls, not certification evidence until project-specific professionals review and sign them off.
 
@@ -276,9 +294,19 @@ Machine-readable catalogue data lives in:
 - [security-controls.csv](data/software/security-controls.csv) - compliance/control catalogue and evidence requirements.
 - [upgrade-policy.csv](data/software/upgrade-policy.csv) - update classes, cadence, gates, owners, and rollback requirements.
 - [config-script-catalogue.csv](data/software/config-script-catalogue.csv) - browser-editable config-script catalogue.
+- [deployment-stack-profiles.csv](data/software/deployment-stack-profiles.csv) - recommended Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, bare-metal, Edge Shield, and GitOps pairings by deployment size.
+- [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv) - front-door workflows that map user goals to connectors, test harnesses, gates, automation jobs, owners, and evidence paths.
 - [developer platform catalogues](data/software/) - developer services, templates, deployment environments, promotion gates, and VS Code workflows.
 - [data platform catalogues](data/software/) - data services, products, pipelines, ontology objects, access policies, and templates.
 - [service catalogue examples](examples/service-catalogue/)
+
+## Unified Infrastructure Workbench
+
+The portal now has one front door for infrastructure creation and management: `/infrastructure`.
+
+The workbench is CSV-backed and workflow-first. A user chooses an action such as creating a tenant, provisioning a VM, deploying Kubernetes, provisioning storage, requesting GPU capacity, provisioning physical hardware, exposing an edge endpoint, creating a data product, running an upgrade, or running a security scan. The UI then shows the selected deployment profile, connector path, required test harnesses, blocking gates, automation job, owner, evidence target, and staged change mode before anything is promoted.
+
+The source of truth is [infrastructure-workflows.csv](data/software/infrastructure-workflows.csv). It joins the deployment stack profiles, system connector contracts, assurance test harnesses, upgrade gates, and automation jobs already in the repository. The main guide is [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md).
 
 ## Sovereign Developer Platform
 
@@ -460,12 +488,15 @@ Work outside that scope should remain documented but not block the first real co
 
 - [Sovereign Datacentre Mission](docs/strategy/sovereign-datacentre-mission.md) - mission, audience, and national implementation outputs.
 - [Developing-World Deployment Model](docs/strategy/developing-world-deployment-model.md) - adoption ladder and planning assumptions.
+- [Open-Source Integration Positioning](docs/strategy/open-source-integration-positioning.md) - why OSDC composes OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, OpenBMC, and OCP rather than replacing them.
 - [What This Is and Is Not](docs/strategy/what-this-is-and-is-not.md) - scope guardrails and safety boundaries.
 - [Sovereign Edge Security Stack](docs/security/sovereign-edge-security-stack.md) - OSDC Edge Shield as the security fabric around sovereign datacentres.
 - [Cloudflare Equivalent Open Tooling](docs/security/cloudflare-equivalent-open-tooling.md) - open-source mapping for DNS, CDN, WAF, access, tunnels, telemetry, secrets, IaC, and SOC tools.
 - [DDoS Realistic Threat Model](docs/security/ddos-realistic-threat-model.md) - what Edge Shield can and cannot absorb locally.
 - [Zero Trust Access](docs/security/zero-trust-access.md), [WAF and API Protection](docs/security/waf-and-api-protection.md), and [SIEM/SOC Open Source Stack](docs/security/siem-soc-open-source-stack.md) - operating guides for the edge/security pillar.
 - [Sovereign Cloud Service Catalogue](docs/software/sovereign-cloud-service-catalogue.md) - broad open-source cloud service catalogue and bundles.
+- [Deployment Stack Profiles](docs/software/deployment-stack-profiles.md) - recommended mature infrastructure substrate by deployment size.
+- [Unified Infrastructure Workbench](docs/software/infrastructure-workbench.md) - front-door workflow UI for infrastructure requests, connector paths, required tests, gates, automation, and evidence.
 - [Unified Portal Integration Model](docs/software/unified-portal-integration-model.md) - Rust API and workflow layer over mature open-source systems.
 - [Browser-Based Config Management](docs/software/browser-config-management.md) - expose real tool config scripts through browser editing, validation, GitOps, and audit.
 - [Patching and Upgrade Policy](docs/software/patching-and-upgrade-policy.md) - GitOps-based managed upgrade path.
@@ -508,13 +539,13 @@ Work outside that scope should remain documented but not block the first real co
 - [Alibaba/AliExpress Cost Scenarios](docs/costing/alibaba-aliexpress-scenarios.md) - marketplace price basis, scale scenarios, and build-time estimates.
 - [Open AI Governance](docs/process/open-ai-governance.md) - model selection and queueing guidance.
 - [Rust Workspace](crates/) - calculator, model, adapter, CLI, portal, Edge Shield, Edge config, and Edge policy crates.
-- [Adapter Crate](crates/osdc-adapters/) - trait skeletons for Keycloak, PowerDNS, NetBox, OpenBao, and Argo CD or Flux integrations.
-- [Portal Crate](crates/osdc-portal/) - Rust-served tenant, operator, and Edge Shield GUI/API prototype.
+- [Adapter Crate](crates/osdc-adapters/) - plan-only trait skeletons for Keycloak, PowerDNS, NetBox, OpenBao, GitOps, Proxmox, CloudStack, OpenStack, Kubernetes, Ceph, Redfish/OpenBMC, MAAS, Ironic, Metal3, Harbor, and scanner/finding integrations.
+- [Portal Crate](crates/osdc-portal/) - Rust-served infrastructure workbench, tenant, operator, Edge Shield, lifecycle, hardware, commercial, assurance, developer, data, and planner GUI/API prototype.
 - [Edge Crate](crates/osdc-edge/) - Radxa-local Edge Shield status and config-preview service.
 - [BOM Data](data/bom/) - component catalogue and starter 250 kW bill of materials.
 - [Costing Data](data/costing/) - current marketplace price basis and scenario cost ranges.
 - [Hardware Data](data/hardware/) - chosen SBC/GPU baseline profiles plus provisioning stages, profiles, and request queue.
-- [Software Service Data](data/software/) - open cloud service catalogue mappings, developer/data catalogues, upgrade rings, and test-harness coverage.
+- [Software Service Data](data/software/) - open cloud service catalogue mappings, infrastructure workflows, developer/data catalogues, upgrade rings, and test-harness coverage.
 - [Developer Platform Examples](examples/developer-platform/) - VS Code devcontainer, CI, GitOps, and OpenTofu starter artifacts.
 - [Data Platform Examples](examples/data-platform/) - Dagster, dbt, Superset, ontology, and data pipeline starter artifacts.
 - [Commercial Readiness Data](data/commercial/) - gap register, standards matrix, SLA classes, colocation products, cross-connects, remote hands, and audit evidence.
@@ -535,7 +566,7 @@ Work outside that scope should remain documented but not block the first real co
 The project should not try to rewrite mature infrastructure tools. The core software should be Rust, but the platform should integrate best-in-class open-source systems through typed adapters:
 
 - Rust for the unified API, policy-aware automation, calculators, adapters, and eventually the web/control interface.
-- A Rust-served tenant portal and operator console for user provisioning and datacentre operations.
+- A Rust-served infrastructure workbench, tenant portal, and operator console for user provisioning and datacentre operations.
 - NetBox or openDCIM as inventory/DCIM sources of truth, with Rust services adding cost, workflow, and facility-aware orchestration.
 - Kubernetes, Kueue, Slurm, and open model-serving engines for AI and batch workloads.
 - BACnet, Modbus, OPC UA, MQTT, Project Haystack, and Brick-compatible semantics for building-system integrations.
@@ -554,8 +585,9 @@ cargo run -p osdc-edge -- 127.0.0.1:8790
 
 The first CLI calculates high-level energy, water, carbon, and cost metrics from an example site profile. It is intentionally small: the value is establishing tested formulas and typed inputs early.
 
-The first portal serves ten GUI surfaces:
+The first portal serves eleven GUI surfaces and redirects `/` to the infrastructure workbench:
 
+- Infrastructure workbench: `http://127.0.0.1:8787/infrastructure`
 - Tenant portal: `http://127.0.0.1:8787/user`
 - Operator console: `http://127.0.0.1:8787/operator`
 - Edge Shield console: `http://127.0.0.1:8787/edge`
@@ -567,10 +599,11 @@ The first portal serves ten GUI surfaces:
 - Developer console: `http://127.0.0.1:8787/developer`
 - Data platform console: `http://127.0.0.1:8787/data-platform`
 
-The portal GUI exposes tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, hardware provisioning requests and connector controls, commercial readiness products and evidence controls, assurance test/upgrade/scanner controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
+The portal GUI exposes a unified infrastructure workbench, tenant provisioning previews, service-catalog filtering, tenant resource CSV export, operator power/cooling/cloud-stack views, Edge Shield service/config rollout previews, browser-based config-script editing, a unified design-to-run lifecycle console, hardware provisioning requests and connector controls, commercial readiness products and evidence controls, assurance test/upgrade/scanner controls, developer platform templates and GitOps workflows, data-platform products and ontology workflows, delivery/commissioning catalogues, and scale/cost planning from the marketplace scenario data.
 
 Useful portal APIs:
 
+- `/api/infrastructure/workbench`
 - `/api/catalog/core-services`
 - `/api/catalog/sovereign-services`
 - `/api/catalog/upgrade-policy`
@@ -585,6 +618,7 @@ Useful portal APIs:
 - `/api/edge/status`
 - `/api/edge/config-preview`
 - `/api/cost/planning`
+- `/api/deployment/stack-profiles`
 - `/api/commercial/gaps`
 - `/api/commercial/standards`
 - `/api/commercial/sla-classes`

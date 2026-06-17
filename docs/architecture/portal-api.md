@@ -4,6 +4,7 @@ Last reviewed: 2026-06-17.
 
 `osdc-portal` is the first Rust-served prototype for the OSDC GUI surfaces:
 
+- Infrastructure workbench: `/infrastructure`
 - Tenant portal: `/user`
 - Operator console: `/operator`
 - Edge Shield console: `/edge`
@@ -15,14 +16,16 @@ Last reviewed: 2026-06-17.
 - Developer console: `/developer`
 - Data platform console: `/data-platform`
 
-It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, NetBox, Ceph, Kubernetes, Kueue, OpenBao, and the facility gateways.
+It deliberately starts as a small standard-library HTTP server. That keeps the first interface easy to inspect, portable, and dependency-light. The production version can later move to `axum`, OpenAPI, auth middleware, PostgreSQL, and adapters for OpenStack, CloudStack, Proxmox, NetBox, Ceph, Kubernetes, Kueue, OpenBao, PowerDNS, Keycloak, GitOps, and the facility gateways.
 
-Current maturity: prototype. Most routes below return hardcoded or embedded sample data so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. `/api/catalog/sovereign-services` is loaded from `data/software/service-catalogue-v1.csv`; commercial-readiness, assurance, delivery, commissioning, engineering, operations, site-selection, physical-security, sustainability, AI-ready, developer-platform, and data-platform planning routes are loaded from CSVs under `data/`. `/api/lifecycle/overview` composes those catalogues into one design-to-run operator view.
+Current maturity: prototype. Many catalogue routes are now loaded from CSVs under `data/`, while status summaries and action previews still use in-process sample state so UI, API, and data-model contracts can stabilize before real infrastructure adapters are attached. OSDC is not a replacement for mature systems such as OpenStack, CloudStack, Proxmox, Kubernetes, Ceph, NetBox, MAAS, Foreman, SONiC, or OpenBMC; the portal is the workflow, policy, evidence, cost, and GitOps layer above them. `/api/infrastructure/workbench` composes workflow, connector, deployment, test, gate, and automation catalogues into the main user/operator front door. `/api/lifecycle/overview` composes project catalogues into one design-to-run operator view.
 
 ## Current Routes
 
 | Route | Type | Purpose |
 | --- | --- | --- |
+| `/` | HTML redirect | Redirects to `/infrastructure` as the front-door workbench. |
+| `/infrastructure` | HTML | Unified infrastructure workbench for guided create/manage/upgrade/scan workflows, deployment profile selection, connector paths, required tests, blocking gates, automation jobs, and evidence targets. |
 | `/user` | HTML | Tenant provisioning and resource-management GUI. |
 | `/operator` | HTML | Datacentre operator GUI for power, cooling, hardware, cloud stack health, and operations. |
 | `/edge` | HTML | Edge Shield GUI for DNS, proxy, cache, WAF, tunnels, config scripts, and rollout previews. |
@@ -56,6 +59,8 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 | `/api/cost/scenarios` | JSON | Four datacentre build scenarios from 50 kW edge micro to 5 MW national AI-ready. |
 | `/api/cost/categories` | JSON | Category-level cost ranges for each scenario. |
 | `/api/cost/price-basis` | JSON | Marketplace and derived unit-cost planning basis. |
+| `/api/deployment/stack-profiles` | JSON | Recommended Proxmox, CloudStack, OpenStack, Ceph, Kubernetes, NetBox, bare-metal, Edge Shield, and GitOps pairings by deployment size. |
+| `/api/infrastructure/workbench` | JSON | Composed workbench view joining infrastructure workflows, deployment stack profiles, system connectors, required test harnesses, upgrade gates, automation jobs, and metrics. |
 | `/api/commercial/gaps` | JSON | Commercial-readiness gap register for certification, MEP, operations, compliance, and interconnection gaps. |
 | `/api/commercial/standards` | JSON | Standards/control matrix mapping candidate standards to evidence files and owners. |
 | `/api/commercial/sla-classes` | JSON | Power, cooling, network, remote-hands, and cloud-platform SLA class templates. |
@@ -90,7 +95,7 @@ Current maturity: prototype. Most routes below return hardcoded or embedded samp
 
 ## Data Direction
 
-The next production step is to replace the in-process sample data with adapters:
+CSV-backed catalogue sources currently wired into the portal include:
 
 - Hardware catalog from `data/hardware/compute-baseline-2026.csv`.
 - Hardware provisioning catalogues from `data/hardware/provisioning-pipeline.csv`, `data/hardware/provisioning-profiles.csv`, and `data/hardware/provisioning-requests.csv`.
@@ -101,23 +106,34 @@ The next production step is to replace the in-process sample data with adapters:
 - Edge Shield deployment catalog from `data/software/edge-shield-service-map.csv`.
 - Security control catalog from `data/software/security-control-map.csv`.
 - Proprietary-to-open-source replacement catalog from `data/software/proprietary-to-open-source-map.csv`.
-- Sovereign cloud service catalogue from `data/software/service-catalogue-v1.csv` is already wired into `/api/catalog/sovereign-services`.
+- Sovereign cloud service catalogue from `data/software/service-catalogue-v1.csv`.
+- Deployment substrate pairings from `data/software/deployment-stack-profiles.csv`.
+- Infrastructure workflow mappings from `data/software/infrastructure-workflows.csv`.
 - Upgrade policy from `data/software/upgrade-policy.csv`.
 - Software security controls from `data/software/security-controls.csv`.
 - Config script catalogue from `data/software/config-script-catalogue.csv` and source examples from `examples/config-scripts/`.
 - Developer platform catalogues from `data/software/developer-*.csv`, `data/software/deployment-environments.csv`, `data/software/vscode-workflows.csv`, and `examples/developer-platform/`.
 - Data platform catalogues from `data/software/data-*.csv` and `examples/data-platform/`.
 - Assurance test, upgrade, automation, and scanner catalogues from `data/software/test-harness-catalogue.csv`, `data/software/assurance-automation-jobs.csv`, `data/software/upgrade-rings.csv`, `data/software/upgrade-test-gates.csv`, `data/security/threat-management-stack.csv`, and `data/security/scanner-coverage.csv`.
-- Inventory and rack truth from NetBox/openDCIM.
-- VM and bare-metal state from OpenStack Nova/Ironic.
-- Storage state from Ceph.
-- Kubernetes and queue state from Kubernetes, Kueue, and Slurm.
-- Facility status from Modbus/BACnet/OPC UA gateways.
 - Cost and carbon estimates from the Rust calculator crate.
 - Commercial readiness data from `data/commercial/` is already wired into `/api/commercial/*`.
 - Site-selection, physical-security, sustainability, and AI-ready planning data is already wired into the corresponding `/api/*` catalogue routes.
 - Engineering evidence and operations procedure catalogues are already wired into `/api/engineering/evidence` and `/api/operations/procedures`.
 - Delivery and commissioning catalogues from `data/delivery/` and `data/commissioning/` are already wired into `/api/delivery/*` and `/api/commissioning/evidence`.
+
+The next production step is live adapters and persistence:
+
+- Inventory and rack truth from NetBox/openDCIM.
+- DNS zone and record workflows from PowerDNS.
+- Identity tenants, groups, and roles from Keycloak.
+- Secret namespaces and policies from OpenBao.
+- GitOps pull requests or Argo CD/Flux changes for declarative configuration.
+- VM state from Proxmox, CloudStack, or OpenStack depending on deployment profile.
+- Bare-metal state from MAAS, Foreman, OpenStack Ironic, Metal3, or Tinkerbell.
+- Storage state from Ceph.
+- Kubernetes and queue state from Kubernetes, Kueue, and Slurm.
+- Facility status from Modbus/BACnet/OPC UA gateways.
+- PostgreSQL persistence for lifecycle state, approval history, evidence records, and audit events.
 
 ## Run
 
@@ -127,6 +143,7 @@ cargo run -p osdc-portal -- 127.0.0.1:8787
 
 Open:
 
+- `http://127.0.0.1:8787/infrastructure`
 - `http://127.0.0.1:8787/user`
 - `http://127.0.0.1:8787/operator`
 - `http://127.0.0.1:8787/edge`
@@ -138,7 +155,7 @@ Open:
 - `http://127.0.0.1:8787/developer`
 - `http://127.0.0.1:8787/data-platform`
 
-The GUI includes table filtering, tenant provisioning preview recalculation, hardware request preview, CSV export for visible tenant/planner/lifecycle/hardware/commercial/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged operator, lifecycle, hardware, commercial, assurance, developer, data, and edge workflows.
+The GUI includes table filtering, infrastructure workflow preview recalculation, tenant provisioning preview recalculation, hardware request preview, CSV export for visible infrastructure/tenant/planner/lifecycle/hardware/commercial/assurance/developer/data-platform tables, repo document links, VS Code clone/action links, and visible action feedback for staged infrastructure, operator, lifecycle, hardware, commercial, assurance, developer, data, and edge workflows.
 
 The Radxa-local edge service can be run separately:
 
